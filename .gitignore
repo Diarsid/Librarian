@@ -1,0 +1,12 @@
+*.class
+*.idea
+*.iml
+target
+classes
+gitbash*
+dev_private
+desktop.ini
+
+# Package Files
+*.war
+*.ear

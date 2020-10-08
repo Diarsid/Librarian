@@ -1,0 +1,289 @@
+TABLE properties
+ uuid
+ name
+ value
+ type
+
+--
+	SELECT uuid, value, type
+	FROM properties p
+	WHERE p.name = ?
+
+ ================================ entries ================================
+
+TABLE entries
+ uuid
+ entry UNIQUE
+ label
+ time
+ type = WORD / PHRASE / PATH
+
+TABLE words
+ uuid
+ string_lower
+ time
+
+TABLE phrases
+ uuid
+ string_lower
+ time
+
+TABLE words_in_phrases
+TABLE words_in_paths
+TABLE phrases_in_entries
+
+TABLE characters_in_phrases
+ uuid
+ char
+ count
+ word_uuid
+
+TABLE characters_in_words
+ uuid
+ char
+ count
+ word_uuid
+
+
+TABLE phrases
+
+-- search pattern 'aabc'
+
+	[1]
+	SELECT entry, label, time
+	FROM characters_in_entries cw
+		JOIN entries w
+			ON cw.entry_uuid = w.uuid
+	WHERE
+		CASE WHEN ( cw.character IS 'a' AND cw.character_count >= 2 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'a' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'b' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'c' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END
+		= 4
+
+	if ( select_1.size > 0 ) {
+		return select;
+	}
+
+	[2]
+	SELECT entry, label
+	FROM characters_in_entries cw
+		JOIN entries w
+			ON cw.entry_uuid = w.uuid
+	WHERE
+		CASE WHEN ( cw.character IS 'a' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'b' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'c' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END
+		= 3
+
+	if ( select_2.size > 0 ) {
+		return select_2;
+	}
+
+	[3]
+	SELECT entry, label
+	FROM characters_in_entries cw
+		JOIN entries w
+			ON cw.entry_uuid = w.uuid
+	WHERE
+		CASE WHEN ( cw.character IS 'a' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'b' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END +
+		CASE WHEN ( cw.character IS 'c' AND cw.character_count >= 1 ) THEN 1 ELSE 0 END
+		= 2
+
+	return select_3
+
+ ================================ Metas ================================
+
+TABLE labels
+ uuid
+ name
+
+ ================================ Patterns ================================
+
+TABLE patterns
+ uuid
+ pattern UNIQUE
+ time
+
+TABLE characters_in_patterns
+ uuid
+ character
+ character_count
+ pattern_uuid
+
+TABLE patterns_to_entries
+ uuid
+ input_pattern_uuid
+ match_entry_uuid
+ match_weight
+ match_algorithm_name
+ match_algorithm_version
+ time
+    UNIQUE(input_pattern_uuid, match_entry_uuid)
+
+ ================================ Choices ================================
+
+TABLE user_choices
+ uuid
+ pattern_to_entry_uuid 	FK to patterns_to_entries.uuid
+ time
+
+-- does choice exist for pattern ?
+	SELECT
+	FROM user_choices uc
+		JOIN patterns p
+			ON uc.input_pattern_uuid = p.uuid
+	WHERE p.pattern IS ?
+
+-- get entry choice for pattern
+	SELECT w_choice.entry
+	FROM patterns p
+		JOIN user_choices uc
+			ON uc.pattern_uuid = p.uuid
+		JOIN patterns_to_entries p2w
+			ON uc.pattern_to_entry_uuid = p2w.uuid
+		JOIN entries w
+			ON p2w.match_entry_uuid = w.uuid
+	WHERE
+		p.pattern IS ?
+
+-- get all patterns and weights for entry ? and algorithm ?
+
+	SELECT pattern, match_weight, match_algorithm_version
+	FROM entries w
+		JOIN patterns_to_entries p2w
+			ON w.uuid = p2w.match_entry_uuid
+		JOIN patterns p
+			ON p.uuid = p2w.input_pattern_uuid
+	WHERE
+		w.entry IS ? AND
+		p2w.match_algorithm_version IS ?
+
+-- get all entries and weights for pattern ? and algorithm ?
+
+	SELECT entry, match_weight, match_algorithm_version
+	FROM patterns p
+		JOIN patterns_to_entries p2w
+			ON p.uuid = p2w.input_pattern_uuid
+		JOIN entries w
+			ON w.uuid = p2w.match_entry_uuid
+	WHERE
+		p.pattern IS ? AND
+		p2w.match_algorithm_version IS ?
+
+TABLE patterns_to_patterns
+ uuid
+ input_pattern_uuid
+ match_pattern_uuid
+ match_weight
+ match_algorithm_name
+ match_algorithm_version
+
+-- get all patterns that matching pattern ?
+
+	SELECT p_match.pattern
+	FROM patterns p
+		JOIN patterns_to_patterns p2p
+			ON p2p.input_pattern_uuid = p.uuid
+		JOIN patterns p_match
+			ON p2p.match_pattern_uuid = p_match.uuid
+	WHERE
+		p.pattern IS ? AND
+		p2p.match_algorithm_name = ? AND
+		p2p.match_algorithm_version = ? AND
+		p2p.match_weight >= 80%
+	ORDER BY p2p.match_weight
+
+
+-- V1
+	search( pattern ) {
+		if ( patterns.exist(pattern) ) {
+			List<Entry+Weight> entriesLikePattern = patternsToentries.getPreviouslyMatchedentriesFor(pattern);
+			List<Entry> entriesByChars = entries.getentriesByCharactersLike(pattern)
+			List<Entry+Weight> entriesWeightByChars = analysis(pattern, entriesByChars)
+			List<Entry+Weight> allentries = entriesLikePattern + entriesWeightByChars;
+
+			if ( choices.existFor(pattern) ) {
+				Entry choosenEntry = choices.getFor(pattern)
+				if (allentries.best == chosenEntry) {
+					return choosenEntry;
+				}
+				else {
+
+				}
+			}
+			else {
+
+			}
+
+
+		}
+		else {
+
+		}
+		List patterns = patterns.getPatternsLike(pattern)
+		List entriesByChars = entries.getentriesByCharactersLike(pattern)
+		weightAndSort(entriesByChars)
+
+		if ( patterns.exist(pattern) ) {
+			List entriesLikePattern = patternsToentries.getentriesLike(pattern)
+		}
+
+
+	}
+
+-- V2
+
+	List<Entry+Weight> searchAllentriesFor( pattern ) {
+		if ( patterns.exists(pattern) ) {
+
+		}
+		else {
+
+		}
+	}
+
+	Entry+Weight searchSingleEntryFor( pattern ) {
+		Time lastentriesModify = properties.getentriesLastModified();
+
+		Optional<Choice> oldChoice = choices.getBy(pattern);
+		if ( oldChoice.isPresent ) {
+			Time oldChoiceTime = oldChoice.time;
+			if ( lastentriesModify.isAfter(oldChoiceTime) ) {
+				List<Entry> newentriesByChars = entries.getentriesByCharactersLikePatternAfterTime(pattern, choiceTime);
+				List<Entry+Weight> newentriesLikePattern = analysis(pattern, entriesByChars);
+				save(pattern, newentriesLikePattern);
+
+				if ( newentriesLikePattern.isEmpty ) {
+					choices.assertActualForNow(oldChoice);
+					return oldChoice.entry;
+				}
+				else {
+					List<Entry+Weight> oldentriesLikePattern = patternsToentries.getPreviouslyMatchedentriesFor(pattern);
+					List<Entry+Weight> allentriesLikePattern = newentriesWeightByChars + newentriesLikePattern;
+					sort(allentriesLikePattern);
+
+					UserAction userAction = interactWithUser(pattern, allentriesLikePattern);
+					if ( userAction.isMade ) {
+						Choice newChoice = choices.replace(oldChoice, userAction.<Entry+Weight>);
+					}
+					else if ( userAction.isRejection ) {
+
+					}
+					else {
+
+					}
+				}
+			}
+			else {
+				return oldChoice.entry;
+			}
+		}
+		else if ( patterns.exists(pattern) ) {
+
+		}
+		else {
+
+		}
+	}
