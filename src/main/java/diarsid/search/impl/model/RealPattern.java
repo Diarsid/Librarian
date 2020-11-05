@@ -6,7 +6,7 @@ import java.util.UUID;
 import diarsid.search.api.model.Pattern;
 import diarsid.jdbc.api.rows.Row;
 
-import static diarsid.search.api.model.Storable.State.STORED;
+import static diarsid.search.api.model.meta.Storable.State.STORED;
 
 public class RealPattern extends AbstractIdentifiableUserScoped implements Pattern {
 

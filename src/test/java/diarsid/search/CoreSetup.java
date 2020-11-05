@@ -1,27 +1,36 @@
 package diarsid.search;
 
-import diarsid.jdbc.JdbcTransactionFactory;
-import diarsid.jdbc.JdbcTransactionFactoryBuilder;
+import diarsid.jdbc.JdbcFactory;
+import diarsid.jdbc.JdbcFactoryBuilder;
 import diarsid.search.api.Core;
 import diarsid.search.api.interaction.UserInteraction;
-import diarsid.search.api.model.User;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
 import diarsid.search.api.required.UserProvidedResources;
+import diarsid.search.impl.logic.impl.CoreImpl;
+import diarsid.search.impl.model.RealUser;
 import diarsid.tests.db.embedded.h2.H2TestDataBase;
-import diarsid.tests.db.embedded.h2.JdbcConnectionsSourceTestBase;
+import diarsid.tests.db.embedded.h2.SqlConnectionsSourceTestBase;
 
-import static java.util.UUID.randomUUID;
+import static diarsid.support.configuration.Configuration.configure;
 
 public class CoreSetup {
 
-    Core core;
-    User user;
+    static {
+        configure().withDefault();
+    }
 
-    public CoreSetup() {
+    public static final CoreSetup INSTANCE = new CoreSetup();
+    public static final String TEST_USER_NAME = "JUNIT_TEST_USER";
+
+    public final CoreImpl core;
+    public final RealUser user;
+    public final JdbcFactory transactionFactory;
+
+    private CoreSetup() {
         H2TestDataBase dataBase = new H2TestDataBase("search");
 
-        JdbcConnectionsSourceTestBase connections = new JdbcConnectionsSourceTestBase(dataBase);
-        JdbcTransactionFactory transactionFactory = JdbcTransactionFactoryBuilder
+        SqlConnectionsSourceTestBase connections = new SqlConnectionsSourceTestBase(dataBase);
+        transactionFactory = JdbcFactoryBuilder
                 .buildTransactionFactoryWith(connections)
                 .done();
 
@@ -37,13 +46,15 @@ public class CoreSetup {
             }
 
             @Override
-            public JdbcTransactionFactory transactionFactory() {
+            public JdbcFactory jdbcFactory() {
                 return transactionFactory;
             }
         };
 
-        core = Core.buildWith(impl);
-        String userName = randomUUID().toString();
-        user = core.users().create(userName);
+        core = (CoreImpl) Core.buildWith(impl);
+        user = (RealUser) core
+                .users()
+                .findBy(TEST_USER_NAME)
+                .orElseGet(() -> core.users().create(TEST_USER_NAME));
     }
 }

@@ -67,14 +67,6 @@ public class H2TestDataBase implements TestDataBase {
             throw new RuntimeException();
         }
     }
-
-
-
-    public static void main(String... args) {
-        CharactersCount count = new CharactersCount();
-        count.calculateIn("Mandalor");
-        count.forEach((c, i) -> System.out.println(c + " " + i));
-    }
     
     @Override
     public int countRowsInTable(String tableName) {

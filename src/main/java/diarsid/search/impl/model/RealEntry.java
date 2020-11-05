@@ -5,16 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.search.api.model.Entry;
 import diarsid.jdbc.api.rows.Row;
+import diarsid.search.api.model.Entry;
 
-import static diarsid.search.api.model.Storable.State.STORED;
+import static diarsid.search.api.model.meta.Storable.State.STORED;
 
 public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
 
     private final List<Label> labels;
     private String stringOrigin;
     private String stringLower;
+    private Entry.Type type;
 
     public RealEntry(String string, UUID userUuid) {
         super(userUuid);
@@ -22,6 +23,7 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         this.stringOrigin = string;
         this.stringLower = string.toLowerCase();
         this.labels = new ArrayList<>();
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     public RealEntry(String string, List<Label> labels, UUID userUuid) {
@@ -30,6 +32,7 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         this.stringOrigin = string;
         this.stringLower = string.toLowerCase();
         this.labels = labels;
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     public RealEntry(
@@ -44,6 +47,7 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         this.stringOrigin = string;
         this.stringLower = string.toLowerCase();
         this.labels = labels;
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     public RealEntry(Row row) {
@@ -55,6 +59,7 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         this.stringOrigin = row.get("string_origin", String.class);
         this.stringLower = row.get("string_lower", String.class);
         this.labels = new ArrayList<>();
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     public RealEntry(String columnPrefix, Row row) {
@@ -66,6 +71,7 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         this.stringOrigin = row.get(columnPrefix + "string_origin", String.class);
         this.stringLower = row.get(columnPrefix + "string_lower", String.class);
         this.labels = new ArrayList<>();
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     @Override
@@ -81,10 +87,17 @@ public class RealEntry extends AbstractIdentifiableUserScoped implements Entry {
         newString = newString.trim();
         this.stringOrigin = newString;
         this.stringLower = newString.toLowerCase();
+        this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
     @Override
     public List<Label> labels() {
         return labels;
     }
+
+    @Override
+    public Type type() {
+        return type;
+    }
+
 }

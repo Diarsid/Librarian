@@ -12,7 +12,7 @@ import diarsid.jdbc.api.rows.Row;
 
 import static java.time.LocalDateTime.now;
 
-import static diarsid.search.api.model.Storable.State.NON_STORED;
+import static diarsid.search.api.model.meta.Storable.State.NON_STORED;
 
 public class RealPatternToEntryChoice extends AbstractIdentifiable implements PatternToEntryChoice {
 

@@ -2,7 +2,9 @@ package diarsid.search.api.model;
 
 import java.time.LocalDateTime;
 
-public interface PatternToEntryChoice extends Identifiable  {
+import diarsid.search.api.model.meta.Identifiable;
+
+public interface PatternToEntryChoice extends Identifiable {
 
     PatternToEntry patternToEntry();
 

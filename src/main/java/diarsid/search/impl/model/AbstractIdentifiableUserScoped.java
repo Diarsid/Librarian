@@ -3,7 +3,7 @@ package diarsid.search.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import diarsid.search.api.model.UserScoped;
+import diarsid.search.api.model.meta.UserScoped;
 
 public abstract class AbstractIdentifiableUserScoped extends AbstractIdentifiable implements UserScoped {
 

@@ -2,7 +2,7 @@ package diarsid.search.api.required;
 
 import diarsid.search.api.annotations.ImplementationRequired;
 import diarsid.search.api.interaction.UserInteraction;
-import diarsid.jdbc.JdbcTransactionFactory;
+import diarsid.jdbc.JdbcFactory;
 
 @ImplementationRequired
 public interface UserProvidedResources {
@@ -11,5 +11,5 @@ public interface UserProvidedResources {
 
     UserInteraction userInteraction();
 
-    JdbcTransactionFactory transactionFactory();
+    JdbcFactory jdbcFactory();
 }

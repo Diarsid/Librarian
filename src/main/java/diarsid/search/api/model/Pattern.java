@@ -1,6 +1,9 @@
 package diarsid.search.api.model;
 
-public interface Pattern extends Identifiable, UserScoped  {
+import diarsid.search.api.model.meta.Identifiable;
+import diarsid.search.api.model.meta.UserScoped;
+
+public interface Pattern extends Identifiable, UserScoped {
 
     String string();
 }

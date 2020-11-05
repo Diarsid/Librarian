@@ -200,8 +200,8 @@ TABLE patterns_to_patterns
 	search( pattern ) {
 		if ( patterns.exist(pattern) ) {
 			List<Entry+Weight> entriesLikePattern = patternsToentries.getPreviouslyMatchedentriesFor(pattern);
-			List<Entry> entriesByChars = entries.getentriesByCharactersLike(pattern)
-			List<Entry+Weight> entriesWeightByChars = analysis(pattern, entriesByChars)
+			List<Entry> charsInEntries = entries.getentriesByCharactersLike(pattern)
+			List<Entry+Weight> entriesWeightByChars = analysis(pattern, charsInEntries)
 			List<Entry+Weight> allentries = entriesLikePattern + entriesWeightByChars;
 
 			if ( choices.existFor(pattern) ) {
@@ -223,8 +223,8 @@ TABLE patterns_to_patterns
 
 		}
 		List patterns = patterns.getPatternsLike(pattern)
-		List entriesByChars = entries.getentriesByCharactersLike(pattern)
-		weightAndSort(entriesByChars)
+		List charsInEntries = entries.getentriesByCharactersLike(pattern)
+		weightAndSort(charsInEntries)
 
 		if ( patterns.exist(pattern) ) {
 			List entriesLikePattern = patternsToentries.getentriesLike(pattern)
@@ -252,7 +252,7 @@ TABLE patterns_to_patterns
 			Time oldChoiceTime = oldChoice.time;
 			if ( lastentriesModify.isAfter(oldChoiceTime) ) {
 				List<Entry> newentriesByChars = entries.getentriesByCharactersLikePatternAfterTime(pattern, choiceTime);
-				List<Entry+Weight> newentriesLikePattern = analysis(pattern, entriesByChars);
+				List<Entry+Weight> newentriesLikePattern = analysis(pattern, charsInEntries);
 				save(pattern, newentriesLikePattern);
 
 				if ( newentriesLikePattern.isEmpty ) {

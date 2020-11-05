@@ -1,6 +1,8 @@
 package diarsid.search.api.model;
 
-public interface PatternToEntry extends Identifiable  {
+import diarsid.search.api.model.meta.Identifiable;
+
+public interface PatternToEntry extends Identifiable {
 
     Entry entry();
 
