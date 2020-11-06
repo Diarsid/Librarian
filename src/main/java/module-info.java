@@ -1,4 +1,4 @@
-module BeamSearch {
+module diarsid.search {
 
     requires java.sql;
     requires slf4j.api;
