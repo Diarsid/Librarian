@@ -8,11 +8,10 @@ import java.util.UUID;
 import diarsid.jdbc.JdbcTransactionThreadBindings;
 import diarsid.jdbc.api.JdbcTransaction;
 import diarsid.search.api.Entries;
-import diarsid.search.api.Labels;
-import diarsid.search.api.Store;
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
+import diarsid.search.impl.logic.api.BehaviorsByUsers;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.PatternsToEntries;
 import diarsid.search.impl.logic.api.PhrasesInEntries;
@@ -27,10 +26,9 @@ import diarsid.search.impl.model.PhraseInEntry;
 import diarsid.search.impl.model.RealEntry;
 import diarsid.search.impl.model.RealLabel;
 import diarsid.search.impl.model.WordInEntry;
-import diarsid.support.strings.StringCacheForRepeatedSeparated;
+import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.time.LocalDateTime.now;
-import static java.util.Arrays.stream;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -52,7 +50,8 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
     private final LabelsToCharsInEntries labelsToCharsInEntries;
     private final LabelsToCharsInWords labelsToCharsInWords;
     private final LabelsToCharsInPhrases labelsToCharsInPhrases;
-    private final StringCacheForRepeatedSeparated sqlQuestionMarks;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByLabels;
+    private final BehaviorsByUsers behaviorsByUsers;
 
     public EntriesImpl(
             JdbcTransactionThreadBindings jdbcTransactionThreadBindings,
@@ -63,7 +62,8 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
             LabelsToCharsInWords labelsToCharsInWords,
             LabelsToCharsInPhrases labelsToCharsInPhrases,
             WordsInEntries wordsInEntries,
-            PhrasesInEntries phrasesInEntries) {
+            PhrasesInEntries phrasesInEntries,
+            BehaviorsByUsers behaviorsByUsers) {
         super(jdbcTransactionThreadBindings);
         this.patternsToEntries = patternsToEntries;
         this.choices = choices;
@@ -73,7 +73,23 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
         this.labelsToCharsInPhrases = labelsToCharsInPhrases;
         this.wordsInEntries = wordsInEntries;
         this.phrasesInEntries = phrasesInEntries;
-        this.sqlQuestionMarks = new StringCacheForRepeatedSeparated("?", ", ");
+        this.behaviorsByUsers = behaviorsByUsers;
+        this.sqlSelectEntriesAndLabelsByLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT " +
+                "   e.uuid        AS e_uuid, " +
+                "   e.time        AS e_time, " +
+                "   e.string      AS e_string, " +
+                "   e.user_uuid   AS e_user_uuid, " +
+                "   l.uuid         AS l_uuid, " +
+                "   l.time         AS l_time," +
+                "   l.name         AS l_name," +
+                "   l.user_uuid    AS l_user_uuid " +
+                "FROM labels l " +
+                "   JOIN labels_to_entries le " +
+                "       ON le.label_uuid = l.uuid " +
+                "   JOIN entries e " +
+                "       ON le.entry_uuid = e.uuid " +
+                "WHERE l.uuid IN ( ", "/* repeated */ ?", "/* separator */  ,", " )");
     }
 
     @Override
@@ -132,7 +148,7 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
     }
 
     @Override
-    public Entry save(User user, String entryString, Entry.Label... labels) {
+    public Entry save(User user, String entryString, List<Entry.Label> labels) {
         checkLabelsMustBeStored(labels);
 
         Entry entry = this.save(user, entryString);
@@ -164,10 +180,10 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
                 .doQueryAndStream(
                         RealLabel::new,
                         "SELECT * " +
-                        "FROM labels " +
-                        "   JOIN entries_labels relations" +
-                        "       ON relations.label_uuid = labels.uuid " +
-                        "WHERE relations.entry_uuid = ?",
+                        "FROM labels l " +
+                        "   JOIN labels_to_entries le " +
+                        "       ON le.label_uuid = l.uuid " +
+                        "WHERE le.entry_uuid = ? ",
                         foundEntry.get().uuid())
                 .collect(toList());
 
@@ -177,41 +193,29 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
     }
 
     @Override
-    public List<Entry> findAllBy(User user, Entry.Label... labels) {
+    public List<Entry> findAllBy(User user, List<Entry.Label> labels) {
         checkLabelsMustBelongToUser(user.uuid(), labels);
         checkLabelsMustBeStored(labels);
 
-        List<UUID> labelUuids = stream(labels)
+        List<UUID> labelUuids = labels
+                .stream()
                 .map(Entry.Label::uuid)
                 .collect(toList());
 
-        EntriesAndLabelsRowCollector entryToLabelsCollector = new EntriesAndLabelsRowCollector();
+        EntriesAndLabelsRowCollector entryToLabelsCollector = new EntriesAndLabelsRowCollector("e_", "l_");
 
         super.currentTransaction()
                 .doQuery(
                         entryToLabelsCollector,
-                        "SELECT * " +
-//                        "   entries.uuid AS e_uuid, " +
-//                        "   entries.string AS e_string, " +
-//                        "   entries.time AS e_time, " +
-//                        "   entries.user_uuid AS e_user_uuid, " +
-//                        "   labels.uuid AS m_uuid, " +
-//                        "   labels.time AS m_time," +
-//                        "   labels.name AS m_name," +
-//                        "   labels.value AS m_value" +
-                        "FROM labels " +
-                        "   JOIN entries_labels relations " +
-                        "       ON relations.label_uuid = labels.uuid " +
-                        "   JOIN entries " +
-                        "       ON relations.entry_uuid = entry.uuid" +
-                        "WHERE labels.uuid IN (:in)".replace(":in", this.sqlQuestionMarks.getFor(labelUuids)),
+                        this.sqlSelectEntriesAndLabelsByLabels.getFor(labelUuids),
                         labelUuids);
 
         return entryToLabelsCollector.ones();
     }
 
-    private void checkLabelsMustBeStored(Entry.Label... labels) {
-        String unstoredLabelsNames = stream(labels)
+    private void checkLabelsMustBeStored(List<Entry.Label> labels) {
+        String unstoredLabelsNames = labels
+                .stream()
                 .filter(label -> label.hasState(NON_STORED))
                 .map(Entry.Label::name)
                 .collect(joining(", "));
@@ -221,8 +225,9 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
         }
     }
 
-    private static void checkLabelsMustBelongToUser(UUID userUuid, Entry.Label[] labels) {
-        List<Entry.Label> otherLabels = stream(labels)
+    private static void checkLabelsMustBelongToUser(UUID userUuid, List<Entry.Label> labels) {
+        List<Entry.Label> otherLabels =labels
+                .stream()
                 .filter(label -> label.doesNotHaveUserUuid(userUuid))
                 .collect(toList());
 
@@ -350,7 +355,7 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
     }
 
     @Override
-    public Entry addLabels(User user, String entryString, Entry.Label... labels) {
+    public Entry addLabels(User user, String entryString, List<Entry.Label> labels) {
         Optional<Entry> foundEntry = this.findBy(user, entryString);
 
         if ( foundEntry.isEmpty() ) {
@@ -365,7 +370,7 @@ public class EntriesImpl extends ThreadTransactional implements Entries {
     }
 
     @Override
-    public boolean addLabels(Entry entry, Entry.Label... labels) {
+    public boolean addLabels(Entry entry, List<Entry.Label> labels) {
         checkMustBeStored(entry);
         checkLabelsMustBelongToUser(entry.userUuid(), labels);
         checkMustBeStored(labels);

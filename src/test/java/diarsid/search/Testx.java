@@ -1,7 +1,10 @@
 package diarsid.search;
 
+import java.util.List;
+
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
+import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.User;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,8 +22,8 @@ public class Testx {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        core = CoreSetup.INSTANCE.core;
-        user = CoreSetup.INSTANCE.user;
+        core = TestCoreSetup.INSTANCE.core;
+        user = TestCoreSetup.INSTANCE.user;
     }
 
     @Test
@@ -28,7 +31,7 @@ public class Testx {
         Entry entry = core.store().entries().save(user, "Lord of the Rings by J.R.R Tolkien");
         assertThat(entry.state(), equalTo(STORED));
 
-//        core.search().findAllBy(user, "lortjrrtolk");
+        List<PatternToEntry> relations = core.search().findAllBy(user, "lortjrrtolk");
     }
 
     @Test

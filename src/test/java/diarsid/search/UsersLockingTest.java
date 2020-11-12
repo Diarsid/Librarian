@@ -18,9 +18,9 @@ import static junit.framework.TestCase.fail;
 public class UsersLockingTest {
 
 
-    CoreImpl core = CoreSetup.INSTANCE.core;
+    CoreImpl core = TestCoreSetup.INSTANCE.core;
     UsersLocking locking = new UsersLockingImpl(core.transactionThreadBindings());
-    User user = CoreSetup.INSTANCE.user;
+    User user = TestCoreSetup.INSTANCE.user;
 
     @Test
     public void test() {

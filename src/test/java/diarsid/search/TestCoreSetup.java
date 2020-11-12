@@ -13,20 +13,20 @@ import diarsid.tests.db.embedded.h2.SqlConnectionsSourceTestBase;
 
 import static diarsid.support.configuration.Configuration.configure;
 
-public class CoreSetup {
+public class TestCoreSetup {
 
     static {
         configure().withDefault();
     }
 
-    public static final CoreSetup INSTANCE = new CoreSetup();
+    public static final TestCoreSetup INSTANCE = new TestCoreSetup();
     public static final String TEST_USER_NAME = "JUNIT_TEST_USER";
 
     public final CoreImpl core;
     public final RealUser user;
     public final JdbcFactory transactionFactory;
 
-    private CoreSetup() {
+    private TestCoreSetup() {
         H2TestDataBase dataBase = new H2TestDataBase("search");
 
         SqlConnectionsSourceTestBase connections = new SqlConnectionsSourceTestBase(dataBase);

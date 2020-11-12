@@ -4,9 +4,11 @@ import java.lang.reflect.Proxy;
 
 import diarsid.jdbc.JdbcFactory;
 import diarsid.jdbc.JdbcTransactionThreadBindings;
+import diarsid.search.api.model.User;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
 import diarsid.search.api.required.UserProvidedResources;
 import diarsid.search.impl.StoreImpl;
+import diarsid.search.impl.logic.api.BehaviorsByUsers;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.Patterns;
 import diarsid.search.impl.logic.api.PatternsToEntries;
@@ -23,6 +25,7 @@ import diarsid.search.impl.logic.api.labels.LabelsToCharsInEntries;
 import diarsid.search.impl.logic.api.labels.LabelsToCharsInPhrases;
 import diarsid.search.impl.logic.api.labels.LabelsToCharsInWords;
 import diarsid.search.impl.logic.api.search.SearchByChars;
+import diarsid.search.impl.logic.impl.BehaviorsByUsersImpl;
 import diarsid.search.impl.logic.impl.ChoicesImpl;
 import diarsid.search.impl.logic.impl.CoreImpl;
 import diarsid.search.impl.logic.impl.PatternsImpl;
@@ -50,6 +53,8 @@ import diarsid.search.impl.logic.impl.support.TransactionalProxy;
 import diarsid.search.impl.validity.StringsComparisonAlgorithmValidation;
 
 public interface Core {
+
+    Behavior behavior(User user);
 
     Users users();
 
@@ -86,6 +91,7 @@ public interface Core {
         LabelsToCharsInEntries labelsToCharsInEntries = new LabelsToCharsInEntriesImpl(transactionThreadBindings);
         LabelsToCharsInWords labelsToCharsInWords = new LabelsToCharsInWordsImpl(transactionThreadBindings);
         LabelsToCharsInPhrases labelsToCharsInPhrases = new LabelsToCharsInPhrasesImpl(transactionThreadBindings);
+        BehaviorsByUsers behaviorsByUsers = new BehaviorsByUsersImpl();
 
         Entries entries = new EntriesImpl(
                 transactionThreadBindings,
@@ -96,7 +102,8 @@ public interface Core {
                 labelsToCharsInWords,
                 labelsToCharsInPhrases,
                 wordsInEntries,
-                phrasesInEntries);
+                phrasesInEntries,
+                behaviorsByUsers);
 
         Properties properties = new PropertiesImpl(transactionThreadBindings);
         Patterns patterns = new PatternsImpl(transactionThreadBindings);
@@ -120,7 +127,7 @@ public interface Core {
 
         Store store = new StoreImpl(txLabels, txEntries);
 
-        Core core = new CoreImpl(transactionThreadBindings, users, store, txSearch, properties);
+        Core core = new CoreImpl(transactionThreadBindings, users, store, txSearch, behaviorsByUsers, properties);
 
         return core;
     }
