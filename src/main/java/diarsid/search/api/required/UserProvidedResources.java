@@ -1,8 +1,8 @@
 package diarsid.search.api.required;
 
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.annotations.ImplementationRequired;
 import diarsid.search.api.interaction.UserInteraction;
-import diarsid.jdbc.JdbcFactory;
 
 @ImplementationRequired
 public interface UserProvidedResources {
@@ -11,5 +11,5 @@ public interface UserProvidedResources {
 
     UserInteraction userInteraction();
 
-    JdbcFactory jdbcFactory();
+    Jdbc jdbc();
 }

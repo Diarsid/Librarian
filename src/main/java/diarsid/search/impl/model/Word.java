@@ -5,8 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.api.rows.ColumnGetter;
-import diarsid.jdbc.api.rows.Row;
+import diarsid.jdbc.api.sqltable.rows.Row;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
@@ -17,9 +16,7 @@ public class Word extends AbstractIdentifiableUserScoped {
 
     public final static String SEPARATOR = "_";
 
-    public final static Comparator<Word> COMPARE_WORDS_BY_STRING = (word1, word2) -> {
-        return word1.string.compareTo(word2.string);
-    };
+    public final static Comparator<Word> COMPARE_WORDS_BY_STRING = Comparator.comparing(word -> word.string);
 
     private final String string;
 
@@ -30,11 +27,11 @@ public class Word extends AbstractIdentifiableUserScoped {
 
     public Word(Row row) {
         super(
-                ColumnGetter.uuidOf("uuid").getFrom(row),
-                ColumnGetter.timeOf("time").getFrom(row),
-                ColumnGetter.uuidOf("user_uuid").getFrom(row),
+                row.uuidOf("uuid"),
+                row.timeOf("time"),
+                row.uuidOf("user_uuid"),
                 STORED);
-        this.string = ColumnGetter.stringOf("string").getFrom(row);
+        this.string = row.stringOf("string");
     }
 
     public String string() {

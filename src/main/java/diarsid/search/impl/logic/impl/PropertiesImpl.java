@@ -2,26 +2,29 @@ package diarsid.search.impl.logic.impl;
 
 import java.time.LocalDateTime;
 
+import diarsid.jdbc.api.Jdbc;
+import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
+import diarsid.jdbc.api.sqltable.rows.RowGetter;
 import diarsid.search.api.Properties;
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.User;
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.rows.ColumnGetter;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 
-public class PropertiesImpl extends ThreadTransactional implements Properties {
+public class PropertiesImpl extends ThreadBoundTransactional implements Properties {
 
-    public PropertiesImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    private static final RowGetter<LocalDateTime> GET_TIME = ColumnGetter.timeOf("time");
+
+    public PropertiesImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
     public LocalDateTime lastModificationTime(User user) {
         return super.currentTransaction()
                 .doQueryAndConvertFirstRow(
-                        ColumnGetter.timeOf("time"),
-                        "SELECT time " +
-                        "FROM entries " +
+                        GET_TIME,
+                        "SELECT time \n" +
+                        "FROM entries \n" +
                         "ORDER BY time DESC")
                 .orElseThrow(NotFoundException::new);
     }

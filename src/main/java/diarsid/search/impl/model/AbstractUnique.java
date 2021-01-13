@@ -1,5 +1,6 @@
 package diarsid.search.impl.model;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import diarsid.search.api.model.meta.Unique;
@@ -43,5 +44,26 @@ public abstract class AbstractUnique implements Unique {
     @Override
     public State setState(State newState) {
         return this.state.resetTo(newState);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractUnique)) return false;
+        AbstractUnique that = (AbstractUnique) o;
+        return uuid.equals(that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "uuid=" + uuid +
+                ", state=" + state +
+                '}';
     }
 }

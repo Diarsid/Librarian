@@ -3,8 +3,8 @@ package diarsid.search.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.User;
-import diarsid.jdbc.api.rows.Row;
 
 import static diarsid.search.api.model.meta.Storable.State.STORED;
 
@@ -38,5 +38,13 @@ public class RealUser extends AbstractIdentifiable implements User {
     @Override
     public String name() {
         return this.name;
+    }
+
+    @Override
+    public String toString() {
+        return "RealUser{" +
+                "uuid='" + super.uuid() + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

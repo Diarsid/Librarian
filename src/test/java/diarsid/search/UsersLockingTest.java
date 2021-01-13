@@ -4,9 +4,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import diarsid.search.api.model.User;
+import diarsid.search.impl.logic.api.UsersLocking;
 import diarsid.search.impl.logic.impl.CoreImpl;
 import diarsid.search.impl.logic.impl.UsersLockingImpl;
-import diarsid.search.impl.logic.api.UsersLocking;
 import org.junit.Test;
 
 import static java.lang.System.currentTimeMillis;
@@ -19,7 +19,7 @@ public class UsersLockingTest {
 
 
     CoreImpl core = TestCoreSetup.INSTANCE.core;
-    UsersLocking locking = new UsersLockingImpl(core.transactionThreadBindings());
+    UsersLocking locking = new UsersLockingImpl(core.jdbc());
     User user = TestCoreSetup.INSTANCE.user;
 
     @Test
@@ -31,24 +31,22 @@ public class UsersLockingTest {
         AtomicReference<Long> transact2End = new AtomicReference<>();
 
         CompletableFuture asyncTransact1 = runAsync(() -> {
-            core.transactionThreadBindings().beginTransaction();
-            core.transactionThreadBindings().currentTransaction().logHistoryAfterCommit();
-            transact1Begin.set(currentTimeMillis());
-            locking.lock(user);
-            sleepSafely(500);
-            transact1BeforeUnlock.set(currentTimeMillis());
-            core.transactionThreadBindings().commitTransaction();
+            core.jdbc().doInTransaction(transaction -> {
+                transact1Begin.set(currentTimeMillis());
+                locking.lock(user);
+                sleepSafely(500);
+                transact1BeforeUnlock.set(currentTimeMillis());
+            });
         });
 
         CompletableFuture asyncTransact2 = runAsync(() -> {
-            sleepSafely(100);
-            core.transactionThreadBindings().beginTransaction();
-            core.transactionThreadBindings().currentTransaction().logHistoryAfterCommit();
-            transact2Begin.set(currentTimeMillis());
-            locking.lock(user);
-            transact2AfterLock.set(currentTimeMillis());
-            core.transactionThreadBindings().commitTransaction();
-            transact2End.set(currentTimeMillis());
+            core.jdbc().doInTransaction(transaction -> {
+                sleepSafely(100);
+                transact2Begin.set(currentTimeMillis());
+                locking.lock(user);
+                transact2AfterLock.set(currentTimeMillis());
+                transact2End.set(currentTimeMillis());
+            });
         });
 
         CompletableFuture.allOf(asyncTransact1, asyncTransact2).join();

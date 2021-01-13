@@ -29,9 +29,11 @@ FOREIGN KEY(user_uuid) REFERENCES users(uuid);
 
 
 CREATE TABLE patterns_to_entries(
-    uuid            UUID PRIMARY KEY,
-    entry_uuid      UUID NOT NULL,
-    pattern_uuid    UUID NOT NULL,
+    uuid            UUID    PRIMARY KEY,
+    entry_uuid      UUID    NOT NULL,
+    pattern_uuid    UUID    NOT NULL,
+    algorithm       VARCHAR NOT NULL,
+    weight          FLOAT4  NOT NULL,
     time            TIMESTAMP WITHOUT TIME ZONE NOT NULL);
 
 ALTER TABLE patterns_to_entries
@@ -112,7 +114,7 @@ CREATE TABLE phrases_in_entries(
     entry_uuid  UUID    NOT NULL);
 
 ALTER TABLE phrases_in_entries
-ADD CONSTRAINT FK_phrase_relations_to_words
+ADD CONSTRAINT FK_phrase_relations_to_phrases
 FOREIGN KEY(phrase_uuid) REFERENCES phrases(uuid);
 
 ALTER TABLE phrases_in_entries
@@ -166,7 +168,7 @@ FOREIGN KEY(entry_uuid) REFERENCES entries(uuid);
 CREATE TABLE words_in_phrases(
     uuid        UUID    PRIMARY KEY,
     word_uuid   UUID    NOT NULL,
-    phrase_uuid  UUID    NOT NULL
+    phrase_uuid UUID    NOT NULL
 );
 
 -- ALTER TABLE *
@@ -243,6 +245,21 @@ ALTER TABLE labels_to_chars_in_words
 ADD CONSTRAINT FK_wordchars_to_chars
 FOREIGN KEY(chars_uuid) REFERENCES chars_in_words(uuid);
 
+CREATE TABLE behavior_features_by_users(
+    user_uuid   UUID    NOT NULL,
+    name        VARCHAR NOT NULL,
+    enabled     BOOLEAN NOT NULL,
+    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    PRIMARY KEY(user_uuid, name)
+);
+
+ALTER TABLE behavior_features_by_users
+ADD CONSTRAINT FK_behaviors_to_users
+FOREIGN KEY(user_uuid) REFERENCES users(uuid);
+
+CREATE INDEX IX_ENTRIES_TIME
+ON entries(time);
+
 CREATE INDEX IX_CHARS_IN_ENTRIES
 ON chars_in_entries(ch, qty, entry_size, user_uuid);
 
@@ -257,6 +274,15 @@ ON phrases(string, user_uuid);
 
 CREATE INDEX IX_STRING_AND_USER_IN_WORDS
 ON words(string, user_uuid);
+
+CREATE INDEX IX_LABELS_TO_CHARS_IN_PHRASES
+ON labels_to_chars_in_phrases(chars_uuid, label_uuid);
+
+CREATE INDEX IX_LABELS_TO_CHARS_IN_WORDS
+ON labels_to_chars_in_words(chars_uuid, label_uuid);
+
+CREATE INDEX IX_LABELS_TO_CHARS_IN_ENTRIES
+ON labels_to_chars_in_entries(chars_uuid, label_uuid);
 
 DROP TABLE labels_to_chars_in_entries;
 DROP TABLE labels_to_chars_in_words;
@@ -275,6 +301,7 @@ DROP TABLE choices;
 DROP TABLE patterns_to_entries;
 DROP TABLE patterns;
 DROP TABLE entries;
+DROP TABLE behavior_features_by_users;
 DROP TABLE users;
 
 DELETE FROM labels_to_chars_in_entries;
@@ -289,3 +316,4 @@ DELETE FROM words_in_phrases;
 DELETE FROM words;
 DELETE FROM phrases;
 DELETE FROM entries;
+DELETE FROM labels;

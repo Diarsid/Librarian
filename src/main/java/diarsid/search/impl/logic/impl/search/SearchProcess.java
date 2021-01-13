@@ -3,8 +3,8 @@ package diarsid.search.impl.logic.impl.search;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
@@ -43,7 +43,7 @@ class SearchProcess extends PooledReusable {
             return direction;
         }
 
-        public LocalDateTime time() {
+        public LocalDateTime value() {
             return value;
         }
     }
@@ -59,9 +59,12 @@ class SearchProcess extends PooledReusable {
     private final Possible<User> user;
     private final Possible<String> pattern;
     private final Possible<Time> time;
+    private final Possible<Entry.Label.Matching> labelsMatching;
     private final Possible<List<Entry.Label>> labels;
     private final CharactersCount charactersCount;
-    private final List<Object> queryArguments;
+    private int charsClausesQtyInArguments;
+    private final List<Object> charsQueryArguments;
+    private final List<Object> extendedArguments;
     private final CriteriaSteps criteriaSteps;
 
     private final CharactersCount.CountConsumer fillArgumentsForPreciseQuery;
@@ -73,33 +76,43 @@ class SearchProcess extends PooledReusable {
         this.status = simplePresentOf(IDLE);
         this.user = simplePossibleButEmpty();
         this.pattern = simplePossibleButEmpty();
+        this.labelsMatching = simplePossibleButEmpty();
         this.labels = simplePossibleButEmpty();
         this.time = simplePossibleButEmpty();
         this.result = simplePossibleButEmpty();
         this.charactersCount = new CharactersCount();
-        this.queryArguments = new ArrayList<>();
+        this.charsQueryArguments = new ArrayList<>();
+        this.extendedArguments = new ArrayList<>();
         this.criteriaSteps = new CriteriaSteps();
 
         this.fillArgumentsForPreciseQuery = (ch, count) -> {
-            this.queryArguments.add(ch);
-            this.queryArguments.add(count);
-            this.queryArguments.add(pattern.orThrow().length());
-            this.queryArguments.add(user.orThrow().uuid());
+            this.charsQueryArguments.add(ch);
+            this.charsQueryArguments.add(count);
+            this.charsQueryArguments.add(pattern.orThrow().length());
+            this.charsQueryArguments.add(user.orThrow().uuid());
+
+            this.charsClausesQtyInArguments++;
         };
 
         this.fillArgumentsForNonPreciseQuery = (ch, count) -> {
             if ( count == 1 ) {
-                this.queryArguments.add(ch);
-                this.queryArguments.add(count);
-                this.queryArguments.add(this.pattern.orThrow().length());
-                this.queryArguments.add(this.user.orThrow().uuid());
+                this.charsQueryArguments.add(ch);
+                this.charsQueryArguments.add(count);
+                this.charsQueryArguments.add(this.pattern.orThrow().length());
+                this.charsQueryArguments.add(this.user.orThrow().uuid());
+
+                this.charsClausesQtyInArguments++;
             }
             else { // > 1
+                int patternLength = this.pattern.orThrow().length();
+                UUID userUuid = this.user.orThrow().uuid();
                 for (int i = 1; i <= count; i++) {
-                    this.queryArguments.add(ch);
-                    this.queryArguments.add(i);
-                    this.queryArguments.add(this.pattern.orThrow().length());
-                    this.queryArguments.add(this.user.orThrow().uuid());
+                    this.charsQueryArguments.add(ch);
+                    this.charsQueryArguments.add(i);
+                    this.charsQueryArguments.add(patternLength);
+                    this.charsQueryArguments.add(userUuid);
+
+                    this.charsClausesQtyInArguments++;
                 }
             }
         };
@@ -110,21 +123,30 @@ class SearchProcess extends PooledReusable {
         this.status.resetTo(IDLE);
         this.user.nullify();
         this.pattern.nullify();
+        this.labelsMatching.nullify();
         this.labels.nullify();
         this.time.nullify();
         this.result.nullify();
         this.charactersCount.clear();
-        this.queryArguments.clear();
+        this.clearQueryArguments();
         this.criteriaSteps.clear();
     }
 
-    private void fillUserPatternLabels(User user, String pattern, List<Entry.Label> labels) {
+    private void fillUserPattern(
+            User user, String pattern) {
         this.status.resetTo(STARTED);
         this.user.resetTo(user);
         this.pattern.resetTo(pattern);
         this.charactersCount.calculateIn(pattern);
-        this.labels.resetTo(labels);
         this.criteriaSteps.setMaxSteps(this.defineMaxDecreasingSteps());
+        this.labels.resetTo(emptyList());
+    }
+
+    private void fillUserPatternLabels(
+            User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels) {
+        this.fillUserPattern(user, pattern);
+        this.labelsMatching.resetTo(matching);
+        this.labels.resetTo(labels);
     }
 
     private int defineMaxDecreasingSteps() {
@@ -159,12 +181,16 @@ class SearchProcess extends PooledReusable {
         return maxDecreasingSteps;
     }
 
-    void fill(User user, String pattern, List<Entry.Label> labels) {
-        this.fillUserPatternLabels(user, pattern, labels);
+    void fill(User user, String pattern) {
+        this.fillUserPattern(user, pattern);
     }
 
-    void fill(User user, String pattern, List<Entry.Label> labels, TimeDirection direction, LocalDateTime time) {
-        this.fillUserPatternLabels(user, pattern, labels);
+    void fill(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels) {
+        this.fillUserPatternLabels(user, pattern, matching, labels);
+    }
+
+    void fill(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels, TimeDirection direction, LocalDateTime time) {
+        this.fillUserPatternLabels(user, pattern, matching, labels);
         this.time.resetTo(new Time(direction, time));
     }
 
@@ -230,43 +256,35 @@ class SearchProcess extends PooledReusable {
         this.result.resetTo(emptyList());
     }
 
-    public void composeQueryArguments() {
-        if ( this.labels.orThrow().isEmpty() ) {
-            if ( this.time.isPresent() ) {
-
-            }
-            else {
-                if ( this.criteriaSteps.decreasedCriteriaSteps() == 0 ) { // precise query
-                    if ( this.queryArguments.isEmpty() ) {
-                        this.charactersCount.forEach(this.fillArgumentsForPreciseQuery);
-                    }
-                }
-                else { // non precise query
-                    int decreasedRate = this.pattern.orThrow().length() - this.criteriaSteps.decreasedCriteriaSteps();
-
-                    if ( this.criteriaSteps.decreasedCriteriaSteps() == 1 ) {
-                        this.queryArguments.clear(); // clear argument filled for precise query
-                        this.charactersCount.forEach(this.fillArgumentsForNonPreciseQuery);
-                        this.queryArguments.add(decreasedRate);
-                    }
-                    else { // > 1
-                        this.queryArguments.set(queryArguments.size() - 1, decreasedRate); // change dercreased rate argument
-                    }
-                }
-            }
-        }
-        else {
-            if ( this.time.isPresent() ) {
-
-            }
-            else {
-
-            }
-        }
-
+    void clearQueryArguments() {
+        this.charsQueryArguments.clear();
+        this.extendedArguments.clear();
+        this.charsClausesQtyInArguments = 0;
     }
 
-    public List<Object> queryArguments() {
-        return this.queryArguments;
+    public List<Object> charsQueryArguments() {
+        return this.charsQueryArguments;
+    }
+
+    public List<Object> extendedArguments() {
+        return this.extendedArguments;
+    }
+
+    public int charsQueryArgumentsClausesQty() {
+        return charsClausesQtyInArguments;
+    }
+
+    public Entry.Label.Matching labelsMatching() {
+        return this.labelsMatching.or(null);
+    }
+
+    void fillCharsArgumentsForPreciseQuery() {
+        this.charactersCount().forEach(this.fillArgumentsForPreciseQuery);
+        this.extendedArguments.addAll(this.charsQueryArguments);
+    }
+
+    void fillCharsArgumentsForNonPreciseQuery() {
+        this.charactersCount().forEach(this.fillArgumentsForNonPreciseQuery);
+        this.extendedArguments.addAll(this.charsQueryArguments);
     }
 }

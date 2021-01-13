@@ -28,4 +28,14 @@ public abstract class AbstractIdentifiableUserScoped extends AbstractIdentifiabl
     public UUID userUuid() {
         return this.userUuid;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "uuid=" + super.uuid() +
+                ", state=" + super.state() +
+                ", time=" + super.time() +
+                ", userUuid=" + userUuid +
+                '}';
+    }
 }

@@ -4,28 +4,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.JdbcTransaction;
-import diarsid.jdbc.api.Params;
-import diarsid.jdbc.api.rows.ColumnGetter;
+import diarsid.jdbc.api.Jdbc;
+import diarsid.jdbc.api.ThreadBoundJdbcTransaction;
+import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.search.api.model.Entry;
 import diarsid.search.impl.logic.api.labels.LabelsToCharsInEntries;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.jdbc.api.Params.params;
+public class LabelsToCharsInEntriesImpl extends ThreadBoundTransactional implements LabelsToCharsInEntries {
 
-public class LabelsToCharsInEntriesImpl extends ThreadTransactional implements LabelsToCharsInEntries {
-
-    public LabelsToCharsInEntriesImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    public LabelsToCharsInEntriesImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
     public void join(Entry entry, Entry.Label label, LocalDateTime joiningTime) {
-        JdbcTransaction transaction = super.currentTransaction();
+        ThreadBoundJdbcTransaction transaction = super.currentTransaction();
 
         List<UUID> charsUuids = transaction
                 .doQueryAndStream(
@@ -33,13 +31,26 @@ public class LabelsToCharsInEntriesImpl extends ThreadTransactional implements L
                         "SELECT " +
                         "   ce.uuid AS char_uuid, " +
                         "FROM chars_in_entries ce " +
-                        "WHERE ce.entry_uuid = ?",
-                        entry.uuid())
+                        "WHERE " +
+                        "   ce.entry_uuid = ? AND " +
+                        "   NOT EXISTS " +
+                        "       (" +
+                        "       SELECT * " +
+                        "       FROM labels_to_chars_in_entries lce " +
+                        "       WHERE " +
+                        "           lce.chars_uuid = ce.uuid AND " +
+                        "           lce.label_uuid = ? " +
+                        "       )",
+                        entry.uuid(), label.uuid())
                 .collect(toList());
 
-        List<Params> params = charsUuids
+        if ( charsUuids.isEmpty() ) {
+            return;
+        }
+
+        List<List> params = charsUuids
                 .stream()
-                .map(charUuid -> params(
+                .map(charUuid -> asList(
                         randomUUID(),
                         charUuid,
                         label.uuid(),

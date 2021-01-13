@@ -3,39 +3,38 @@ package diarsid.search.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
-import diarsid.jdbc.api.rows.ColumnGetter;
-import diarsid.jdbc.api.rows.Row;
 
 public class RealPatternToEntry extends AbstractIdentifiable implements PatternToEntry {
 
     private final Entry entry;
     private final Pattern pattern;
     private final String algorithmName;
-    private final double weight;
+    private final float weight;
 
     public RealPatternToEntry(Entry entry, Pattern pattern, String columnPrefix, Row row) {
         super(
-                ColumnGetter.uuidOf(columnPrefix + "uuid").getFrom(row),
-                ColumnGetter.timeOf(columnPrefix + "time").getFrom(row));
+                row.uuidOf(columnPrefix + "uuid"),
+                row.timeOf(columnPrefix + "time"));
         this.entry = entry;
         this.pattern = pattern;
-        this.algorithmName = ColumnGetter.stringOf(columnPrefix + "algorithm").getFrom(row);
-        this.weight = ColumnGetter.doubleOf(columnPrefix + "weight").getFrom(row);
+        this.algorithmName = row.stringOf(columnPrefix + "algorithm");
+        this.weight = row.floatOf(columnPrefix + "weight");
     }
 
     public RealPatternToEntry(
             Entry entry, Pattern pattern, Row row) {
         super(
-                ColumnGetter.uuidOf("uuid").getFrom(row),
-                ColumnGetter.timeOf("time").getFrom(row));
+                row.uuidOf("uuid"),
+                row.timeOf("time"));
         this.entry = entry;
         this.pattern = pattern;
-        this.algorithmName = ColumnGetter.stringOf("algorithm").getFrom(row);
-        this.weight = ColumnGetter.doubleOf("weight").getFrom(row);
+        this.algorithmName = row.stringOf("algorithm");
+        this.weight = row.floatOf("weight");
     }
 
     public RealPatternToEntry(
@@ -44,7 +43,7 @@ public class RealPatternToEntry extends AbstractIdentifiable implements PatternT
             RealEntry entry,
             RealPattern pattern,
             StringsComparisonAlgorithm algorithm,
-            double weight) {
+            float weight) {
         super(uuid, time);
         this.entry = entry;
         this.pattern = pattern;
@@ -68,7 +67,18 @@ public class RealPatternToEntry extends AbstractIdentifiable implements PatternT
     }
 
     @Override
-    public double weight() {
+    public float weight() {
         return weight;
+    }
+
+    @Override
+    public String toString() {
+        return "RealPatternToEntry{" +
+                "uuid='" + super.uuid() + '\'' +
+                ", entry=" + entry +
+                ", pattern=" + pattern +
+                ", algorithmName='" + algorithmName + '\'' +
+                ", weight=" + weight +
+                '}';
     }
 }

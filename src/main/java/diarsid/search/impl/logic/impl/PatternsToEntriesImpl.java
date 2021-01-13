@@ -6,52 +6,83 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.Params;
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
 import diarsid.search.impl.logic.api.PatternsToEntries;
-import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntry;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
-import diarsid.support.strings.StringCacheForRepeatedSeparated;
+import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryAndLabels;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.support.objects.GuardedPool;
+import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.jdbc.api.Params.params;
 import static diarsid.search.api.model.meta.Storable.checkMustBeStored;
 
-public class PatternsToEntriesImpl extends ThreadTransactional implements PatternsToEntries {
+public class PatternsToEntriesImpl extends ThreadBoundTransactional implements PatternsToEntries {
 
     private final StringsComparisonAlgorithm algorithm;
-    private final StringCacheForRepeatedSeparated questionMarks;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectPatternToEntryAndLabelsByEntries;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntries;
+    private final GuardedPool<RowCollectorForPatternToEntryAndLabels> rowCollectorsPool;
 
     public PatternsToEntriesImpl(
-            JdbcTransactionThreadBindings transactionThreadBindings, StringsComparisonAlgorithm algorithm) {
-        super(transactionThreadBindings);
+            Jdbc jdbc,
+            StringsComparisonAlgorithm algorithm,
+            GuardedPool<RowCollectorForPatternToEntryAndLabels> rowCollectorsPool) {
+        super(jdbc);
         this.algorithm = algorithm;
-        this.questionMarks = new StringCacheForRepeatedSeparated("?", ", ");
+        this.rowCollectorsPool = rowCollectorsPool;
+        this.sqlSelectPatternToEntryAndLabelsByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT p.*, e.*, l.*, pe.* \n" +
+                "FROM entries e \n" +
+                "   JOIN patterns_to_entries pe \n" +
+                "       ON pe.entry_uuid = e.uuid \n" +
+                "   JOIN patterns p \n" +
+                "       ON pe.pattern_uuid = p.uuid \n" +
+                "   LEFT JOIN labels_to_entries le \n" +
+                "       ON e.uuid = le.entry_uuid \n" +
+                "   LEFT JOIN label l \n" +
+                "       ON le.label_uuid = l.uuid \n" +
+                "WHERE \n" +
+                "   p.uuid = ? AND \n" +
+                "   e.uuid IN ( \n",
+                "       ?", ", \n",
+                "   )");
+
+        this.sqlDeleterPatternToEntryByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "DELETE FROM patterns_to_entries \n" +
+                "WHERE patterns_to_entries.uuid IN ( \n",
+                "   ?", ", \n",
+                ") ");
+
     }
 
     @Override
     public List<PatternToEntry> findBy(Pattern pattern) {
         checkMustBeStored(pattern);
 
-        RowCollectorForPatternToEntry relationsCollector = new RowCollectorForPatternToEntry();
+        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
+            super.currentTransaction()
+                    .doQuery(
+                            relationsCollector,
+                            "SELECT p.*, e.*, l.*, pe.* \n" +
+                            "FROM entries e \n" +
+                            "   JOIN patterns_to_entries pe \n" +
+                            "       ON pe.entry_uuid = e.uuid \n" +
+                            "   JOIN patterns p \n" +
+                            "       ON pe.pattern_uuid = p.uuid \n" +
+                            "   LEFT JOIN labels_to_entries le \n" +
+                            "       ON e.uuid = le.entry_uuid \n" +
+                            "   LEFT JOIN label l \n" +
+                            "       ON le.label_uuid = l.uuid \n" +
+                            "WHERE patterns.uuid = ? \n",
+                            pattern.uuid());
 
-        super.currentTransaction()
-                .doQuery(
-                        relationsCollector,
-                        "SELECT * FROM entries " +
-                        "   JOIN patterns_to_entries relations " +
-                        "       ON relations.entry_uuid = entries.uuid " +
-                        "   JOIN patterns " +
-                        "       ON relations.pattern_uuid = patterns.uuid " +
-                        "WHERE patterns.uuid = ? ",
-                        pattern.uuid());
-
-        return relationsCollector.relations();
+            return relationsCollector.relations();
+        }
     }
 
     @Override
@@ -69,47 +100,45 @@ public class PatternsToEntriesImpl extends ThreadTransactional implements Patter
             throw new IllegalArgumentException();
         }
 
-        RowCollectorForPatternToEntry relationsCollector = new RowCollectorForPatternToEntry();
-
         List<UUID> uuids = entries
                 .stream()
                 .map(Entry::uuid)
                 .collect(toList());
 
-        super.currentTransaction()
-                .doQuery(
-                        relationsCollector,
-                        "SELECT * FROM entries " +
-                        "   JOIN patterns_to_entries relations " +
-                        "       ON relations.entry_uuid = entries.uuid " +
-                        "   JOIN patterns " +
-                        "       ON relations.pattern_uuid = patterns.uuid " +
-                        "WHERE " +
-                        "   patterns.uuid = ? AND " +
-                        "   entries.uuid IN (:in)".replace(":in", this.questionMarks.getFor(uuids)),
-                        pattern.uuid(), uuids);
+        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
+            super.currentTransaction()
+                    .doQuery(
+                            relationsCollector,
+                            this.sqlSelectPatternToEntryAndLabelsByEntries.getFor(uuids),
+                            pattern.uuid(), uuids);
 
-        return relationsCollector.relations();
+            return relationsCollector.relations();
+        }
     }
 
     @Override
     public List<PatternToEntry> findBy(Entry entry) {
         checkMustBeStored(entry);
 
-        RowCollectorForPatternToEntry relationsCollector = new RowCollectorForPatternToEntry();
+        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
+            super.currentTransaction()
+                    .doQuery(
+                            relationsCollector,
+                            "SELECT * \n" +
+                            "FROM entries e \n" +
+                            "   JOIN patterns_to_entries pe \n" +
+                            "       ON pe.entry_uuid = e.uuid \n" +
+                            "   JOIN patterns p \n" +
+                            "       ON pe.pattern_uuid = p.uuid " +
+                            "   LEFT JOIN labels_to_entries le \n" +
+                            "       ON e.uuid = le.entry_uuid \n" +
+                            "   LEFT JOIN label l \n" +
+                            "       ON le.label_uuid = l.uuid \n" +
+                            "WHERE e.uuid = ? ",
+                            entry.uuid());
 
-        super.currentTransaction()
-                .doQuery(
-                        relationsCollector,
-                        "SELECT * FROM entries " +
-                        "   JOIN patterns_to_entries relations " +
-                        "       ON relations.entry_uuid = entries.uuid " +
-                        "   JOIN patterns " +
-                        "       ON relations.pattern_uuid = patterns.uuid " +
-                        "WHERE entries.uuid = ? ",
-                        entry.uuid());
-
-        return relationsCollector.relations();
+            return relationsCollector.relations();
+        }
     }
 
     @Override
@@ -118,7 +147,7 @@ public class PatternsToEntriesImpl extends ThreadTransactional implements Patter
 
         int removed = super.currentTransaction()
                 .doUpdate(
-                        "DELETE FROM patterns_to_entries " +
+                        "DELETE FROM patterns_to_entries \n" +
                         "WHERE patterns_to_entries.entry_uuid = ? ",
                         entry.uuid());
 
@@ -143,9 +172,7 @@ public class PatternsToEntriesImpl extends ThreadTransactional implements Patter
 
         int removed = super.currentTransaction()
                 .doUpdate(
-                        "DELETE FROM patterns_to_entries " +
-                        "WHERE patterns_to_entries.uuid IN (:in) ".replace(
-                                ":in", this.questionMarks.getFor(relationUuids)),
+                        this.sqlDeleterPatternToEntryByEntries.getFor(relationUuids),
                         relationUuids);
 
         return removed;
@@ -153,9 +180,9 @@ public class PatternsToEntriesImpl extends ThreadTransactional implements Patter
 
     @Override
     public void save(List<PatternToEntry> relations) {
-        List<Params> params = relations
+        List<List> params = relations
                 .stream()
-                .map(relation -> params(
+                .map(relation -> List.of(
                         relation.uuid(),
                         relation.time(),
                         relation.pattern().uuid(),
@@ -164,11 +191,11 @@ public class PatternsToEntriesImpl extends ThreadTransactional implements Patter
 
         int[] inserted = super.currentTransaction()
                 .doBatchUpdate(
-                        "INSERT INTO patterns_to_entries (" +
-                        "   uuid, " +
-                        "   time, " +
-                        "   pattern_uuid, " +
-                        "   entry_uuid) " +
+                        "INSERT INTO patterns_to_entries ( \n" +
+                        "   uuid, \n" +
+                        "   time, \n" +
+                        "   pattern_uuid, \n" +
+                        "   entry_uuid) \n" +
                         "VALUES (?, ?, ?, ?) ",
                         params);
 

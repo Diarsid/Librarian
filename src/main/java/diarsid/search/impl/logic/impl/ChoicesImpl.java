@@ -2,23 +2,28 @@ package diarsid.search.impl.logic.impl;
 
 import java.util.Optional;
 
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.PatternToEntryChoice;
 import diarsid.search.impl.logic.api.Choices;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryChoice;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealPatternToEntryChoice;
-import diarsid.jdbc.JdbcTransactionThreadBindings;
+import diarsid.support.objects.GuardedPool;
 
 import static diarsid.search.api.model.meta.Storable.State.STORED;
 import static diarsid.search.api.model.meta.Storable.checkMustBeStored;
 
-public class ChoicesImpl extends ThreadTransactional implements Choices {
+public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
-    public ChoicesImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    private final GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors;
+
+    public ChoicesImpl(Jdbc jdbc, GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors) {
+        super(jdbc);
+        this.rowCollectors = rowCollectors;
     }
 
     @Override
@@ -29,8 +34,8 @@ public class ChoicesImpl extends ThreadTransactional implements Choices {
 
         int inserted = super.currentTransaction()
                 .doUpdate(
-                        "INSERT INTO choices (uuid, time, time_actual, relation_uuid) " +
-                        "VALUES (?, ?, ?) ",
+                        "INSERT INTO choices (uuid, time, time_actual, relation_uuid) \n" +
+                        "VALUES (?, ?, ?) \n",
                         choice.uuid(),
                         choice.time(),
                         choice.patternToEntry().uuid());
@@ -48,19 +53,27 @@ public class ChoicesImpl extends ThreadTransactional implements Choices {
     public Optional<PatternToEntryChoice> findBy(Pattern pattern) {
         checkMustBeStored(pattern);
 
-        return super.currentTransaction()
-                .doQueryAndConvertFirstRow(
-                        RealPatternToEntryChoice::new,
-                        "SELECT * " +
-                        "FROM choices " +
-                        "   JOIN patterns_to_entries relations " +
-                        "       ON choices.relation_uuid = relations.uuid" +
-                        "   JOIN entries " +
-                        "       ON relations.entry_uuid = entries.uuid " +
-                        "   JOIN patterns " +
-                        "       ON relations.pattern_uuid = pattern.uuid " +
-                        "WHERE patterns.uuid = ?",
-                        pattern.uuid());
+        try (RowCollectorForPatternToEntryChoice rowCollector = this.rowCollectors.give()) {
+            super.currentTransaction()
+                    .doQuery(
+                            rowCollector,
+                            "SELECT * \n" +
+                            "FROM choices c \n" +
+                            "   JOIN patterns_to_entries pe \n" +
+                            "       ON c.relation_uuid = pe.uuid \n" +
+                            "   JOIN entries e \n" +
+                            "       ON pe.entry_uuid = e.uuid \n" +
+                            "   JOIN patterns p \n" +
+                            "       ON pe.pattern_uuid = p.uuid \n" +
+                            "   LEFT JOIN labels_to_entries le \n" +
+                            "       ON le.entry_uuid = e.uuid \n" +
+                            "   LEFT JOIN labels l \n" +
+                            "       ON le.label_uuid = l.uuid \n" +
+                            "WHERE p.uuid = ? ",
+                            pattern.uuid());
+
+            return rowCollector.patternToEntryChoice();
+        }
     }
 
     @Override
@@ -68,15 +81,15 @@ public class ChoicesImpl extends ThreadTransactional implements Choices {
         checkMustBeStored(oldChoice);
         checkMustBeStored(newRelation);
 
-        if ( oldChoice.patternToEntry().entry().doesNotHaveUserUuid(newRelation.entry().userUuid()) ) {
+        if ( oldChoice.patternToEntry().entry().doesNotHaveUserUuid(newRelation.userUuid()) ) {
             throw new IllegalArgumentException();
         }
 
         int found = super.currentTransaction()
                 .countQueryResults(
-                        "SELECT * " +
-                        "FROM choices " +
-                        "WHERE uuid = ?",
+                        "SELECT * \n" +
+                        "FROM choices \n" +
+                        "WHERE uuid = ? ",
                         oldChoice.uuid());
 
         if ( found != 1 ) {
@@ -87,11 +100,11 @@ public class ChoicesImpl extends ThreadTransactional implements Choices {
 
         int updated = super.currentTransaction()
                 .doUpdate(
-                        "UPDATE choices " +
-                        "SET " +
-                        "   uuid = ? " +
-                        "   time_actual = ? " +
-                        "   relation_uuid = ?, " +
+                        "UPDATE choices \n" +
+                        "SET \n" +
+                        "   uuid = ? \n" +
+                        "   time_actual = ? \n" +
+                        "   relation_uuid = ?, \n" +
                         "WHERE uuid = ?",
                         newChoice.uuid(), newChoice.actualTime(), newRelation.uuid(), oldChoice.uuid());
 

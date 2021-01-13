@@ -4,21 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.Params;
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.impl.logic.api.chars.CharsInWords;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.Word;
 import diarsid.support.strings.CharactersCount;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 
-import static diarsid.jdbc.api.Params.params;
+public class CharsInWordsImpl extends ThreadBoundTransactional implements CharsInWords {
 
-public class CharsInWordsImpl extends ThreadTransactional implements CharsInWords {
-
-    public CharsInWordsImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    public CharsInWordsImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
@@ -28,11 +26,11 @@ public class CharsInWordsImpl extends ThreadTransactional implements CharsInWord
         CharactersCount counter = new CharactersCount();
         counter.calculateIn(word.string());
 
-        List<Params> params = new ArrayList<>();
+        List<List> params = new ArrayList<>();
         counter.forEach((c, qty) -> {
             UUID uuid = randomUUID();
             charsRecordUuids.add(uuid);
-            params.add(params(
+            params.add(asList(
                     uuid,
                     c,
                     qty,
@@ -49,7 +47,7 @@ public class CharsInWordsImpl extends ThreadTransactional implements CharsInWord
                         "   qty, " +
                         "   word_size, " +
                         "   word_uuid, " +
-                        "   user_uuid) " +
+                        "   user_uuid) \n" +
                         "VALUES (?, ?, ?, ?, ?, ?)",
                         params);
 

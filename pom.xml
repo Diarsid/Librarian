@@ -30,6 +30,12 @@
         </dependency>
 
         <dependency>
+            <groupId>diarsid</groupId>
+            <artifactId>strings.similarity</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>

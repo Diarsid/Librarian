@@ -3,8 +3,8 @@ package diarsid.search.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.Pattern;
-import diarsid.jdbc.api.rows.Row;
 
 import static diarsid.search.api.model.meta.Storable.State.STORED;
 
@@ -43,5 +43,13 @@ public class RealPattern extends AbstractIdentifiableUserScoped implements Patte
     @Override
     public String string() {
         return this.string;
+    }
+
+    @Override
+    public String toString() {
+        return "RealPattern{" +
+                "uuid='" + super.uuid() + '\'' +
+                ", string='" + string + '\'' +
+                '}';
     }
 }

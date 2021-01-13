@@ -1,42 +1,40 @@
 package diarsid.search.impl.logic.impl;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.Behavior;
 import diarsid.search.api.Core;
 import diarsid.search.api.Properties;
 import diarsid.search.api.Search;
 import diarsid.search.api.Store;
 import diarsid.search.api.Users;
-import diarsid.search.api.model.User;
-import diarsid.search.impl.logic.api.BehaviorsByUsers;
 
 public class CoreImpl implements Core {
 
-    private final JdbcTransactionThreadBindings transactionThreadBindings;
+    private final Jdbc jdbc;
     private final Users users;
     private final Store store;
     private final Search entriesSearch;
     private final Properties properties;
-    private final BehaviorsByUsers behaviorsByUsers;
+    private final Behavior behavior;
 
     public CoreImpl(
-            JdbcTransactionThreadBindings transactionThreadBindings,
+            Jdbc jdbc,
             Users users,
             Store store,
             Search entriesSearch,
-            BehaviorsByUsers behaviorsByUsers,
+            Behavior behavior,
             Properties properties) {
-        this.transactionThreadBindings = transactionThreadBindings;
+        this.jdbc = jdbc;
         this.users = users;
         this.store = store;
         this.entriesSearch = entriesSearch;
         this.properties = properties;
-        this.behaviorsByUsers = behaviorsByUsers;
+        this.behavior = behavior;
     }
 
     @Override
-    public Behavior behavior(User user) {
-        return behaviorsByUsers.getBehaviorFor(user);
+    public Behavior behavior() {
+        return behavior;
     }
 
     @Override
@@ -59,7 +57,7 @@ public class CoreImpl implements Core {
         return properties;
     }
 
-    public JdbcTransactionThreadBindings transactionThreadBindings() {
-        return transactionThreadBindings;
+    public Jdbc jdbc() {
+        return jdbc;
     }
 }

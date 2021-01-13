@@ -30,4 +30,13 @@ public abstract class AbstractIdentifiable extends AbstractUnique implements Ide
     public LocalDateTime time() {
         return this.time;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "uuid=" + super.uuid() +
+                ", state=" + super.state() +
+                ", time=" + time +
+                '}';
+    }
 }

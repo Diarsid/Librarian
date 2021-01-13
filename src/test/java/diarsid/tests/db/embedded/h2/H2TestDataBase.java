@@ -43,7 +43,7 @@ public class H2TestDataBase implements TestDataBase {
     
     public H2TestDataBase(String name) {
         this.conPool = JdbcConnectionPool.create(
-                format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name), "sa", "");
+                format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name), "sa", "sa");
         this.conPool.setMaxConnections(POOL_SIZE);
         logger.info(format("H2 test based established with URL: %s",
                            format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name)));

@@ -2,25 +2,25 @@ package diarsid.search.impl.logic.impl;
 
 import java.util.UUID;
 
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.impl.logic.api.UsersLocking;
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 
-public class UsersLockingImpl extends ThreadTransactional implements UsersLocking {
+public class UsersLockingImpl extends ThreadBoundTransactional implements UsersLocking {
 
-    public UsersLockingImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    public UsersLockingImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
     public void lock(UUID userUuid) {
         int count = super.currentTransaction()
                 .countQueryResults(
-                        "SELECT * " +
-                        "FROM users " +
-                        "WHERE users.uuid = ? " +
-                        "FOR UPDATE",
+                        "SELECT * \n" +
+                        "FROM users \n" +
+                        "WHERE users.uuid = ? \n" +
+                        "FOR UPDATE ",
                         userUuid);
 
         if ( count == 0 ) {

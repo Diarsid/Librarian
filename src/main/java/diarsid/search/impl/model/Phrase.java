@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.api.rows.ColumnGetter;
-import diarsid.jdbc.api.rows.Row;
+import diarsid.jdbc.api.sqltable.rows.Row;
 
 import static java.util.UUID.randomUUID;
 
@@ -26,11 +25,11 @@ public class Phrase extends AbstractIdentifiableUserScoped {
 
     public Phrase(Row row) {
         super(
-                ColumnGetter.uuidOf("uuid").getFrom(row),
-                ColumnGetter.timeOf("time").getFrom(row),
-                ColumnGetter.uuidOf("user_uuid").getFrom(row),
+                row.uuidOf("uuid"),
+                row.timeOf("time"),
+                row.uuidOf("user_uuid"),
                 STORED);
-        this.string = ColumnGetter.stringOf("string").getFrom(row);
+        this.string = row.stringOf("string");
         this.words = new ArrayList<>();
     }
 

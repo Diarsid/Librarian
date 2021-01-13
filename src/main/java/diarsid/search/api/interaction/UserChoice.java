@@ -1,16 +1,18 @@
 package diarsid.search.api.interaction;
 
+import diarsid.search.api.annotations.ImplementationRequired;
 import diarsid.support.objects.CommonEnum;
 
+@ImplementationRequired
 public interface UserChoice {
 
-    enum Result implements CommonEnum<UserChoice.Result> {
+    enum Decision implements CommonEnum<Decision> {
         DONE,
         NOT_DONE,
         REJECTION
     }
 
-    UserChoice.Result result();
+    Decision decision();
 
     /*
     < 0 when this.type() returns REJECTION or NOT_DONE

@@ -2,8 +2,9 @@ module diarsid.search {
 
     requires java.sql;
     requires slf4j.api;
-    requires diarsid.support;
     requires diarsid.jdbc;
+    requires diarsid.strings.similarity;
+    requires diarsid.support;
 
     exports diarsid.search.api;
     exports diarsid.search.api.annotations;

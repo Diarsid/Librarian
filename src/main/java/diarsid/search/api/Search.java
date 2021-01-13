@@ -10,25 +10,35 @@ import diarsid.search.api.model.User;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
+import static diarsid.search.api.model.Entry.Label.Matching.ANY_OF;
+
 public interface Search {
 
-    List<PatternToEntry> findAllBy(User user, String pattern, List<Entry.Label> labels);
+    List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);
 
     default List<PatternToEntry> findAllBy(User user, String pattern) {
-        return this.findAllBy(user, pattern, emptyList());
+        return this.findAllBy(user, pattern, null, emptyList());
     }
 
-    default List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label... labels) {
-        return this.findAllBy(user, pattern, asList(labels));
+    default List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label label) {
+        return this.findAllBy(user, pattern, ANY_OF, List.of(label));
     }
 
-    Optional<PatternToEntry> findSingleBy(User user, String pattern, List<Entry.Label> labels);
+    default List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label.Matching matching, Entry.Label... labels) {
+        return this.findAllBy(user, pattern, matching, asList(labels));
+    }
 
-    default Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label... labels) {
-        return this.findSingleBy(user, pattern, asList(labels));
+    Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);
+
+    default Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label label) {
+        return this.findSingleBy(user, pattern, ANY_OF, List.of(label));
+    }
+
+    default Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label.Matching matching, Entry.Label... labels) {
+        return this.findSingleBy(user, pattern, matching, asList(labels));
     }
 
     default Optional<PatternToEntry> findSingleBy(User user, String pattern) {
-        return this.findSingleBy(user, pattern, emptyList());
+        return this.findSingleBy(user, pattern, null, emptyList());
     }
 }

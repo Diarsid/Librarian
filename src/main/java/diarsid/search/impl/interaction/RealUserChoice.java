@@ -5,16 +5,16 @@ import diarsid.search.api.interaction.UserChoice;
 public class RealUserChoice implements UserChoice {
 
     private final int index;
-    private final Result result;
+    private final Decision decision;
 
-    public RealUserChoice(Result result, int index) {
+    public RealUserChoice(Decision decision, int index) {
         this.index = index;
-        this.result = result;
+        this.decision = decision;
     }
 
     @Override
-    public Result result() {
-        return this.result;
+    public Decision decision() {
+        return this.decision;
     }
 
     @Override

@@ -4,21 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.Params;
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.impl.logic.api.chars.CharsInEntries;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealEntry;
 import diarsid.support.strings.CharactersCount;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 
-import static diarsid.jdbc.api.Params.params;
+public class CharsInEntriesImpl extends ThreadBoundTransactional implements CharsInEntries {
 
-public class CharsInEntriesImpl extends ThreadTransactional implements CharsInEntries {
-
-    public CharsInEntriesImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    public CharsInEntriesImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
@@ -29,11 +27,11 @@ public class CharsInEntriesImpl extends ThreadTransactional implements CharsInEn
         charactersCount.calculateIn(entry.stringLower());
 
         UUID entryUuid = entry.uuid();
-        List<Params> params = new ArrayList<>();
+        List<List> params = new ArrayList<>();
         charactersCount.forEach((c, qty) -> {
             UUID charsRecordUuid = randomUUID();
             charsRecordsUuids.add(charsRecordUuid);
-            params.add(params(
+            params.add(asList(
                     charsRecordUuid,
                     c,
                     qty,

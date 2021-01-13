@@ -4,47 +4,54 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
-import diarsid.jdbc.api.JdbcTransaction;
-import diarsid.jdbc.api.Params;
-import diarsid.jdbc.api.rows.ColumnGetter;
+import diarsid.jdbc.api.Jdbc;
+import diarsid.jdbc.api.ThreadBoundJdbcTransaction;
+import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.search.api.model.Entry;
 import diarsid.search.impl.logic.api.labels.LabelsToCharsInWords;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.jdbc.api.Params.params;
+public class LabelsToCharsInWordsImpl extends ThreadBoundTransactional implements LabelsToCharsInWords {
 
-public class LabelsToCharsInWordsImpl extends ThreadTransactional implements LabelsToCharsInWords {
-
-    public LabelsToCharsInWordsImpl(JdbcTransactionThreadBindings transactionThreadBindings) {
-        super(transactionThreadBindings);
+    public LabelsToCharsInWordsImpl(Jdbc jdbc) {
+        super(jdbc);
     }
 
     @Override
     public void join(Entry entry, Entry.Label label, LocalDateTime joiningTime) {
-        JdbcTransaction transaction = super.currentTransaction();
+        ThreadBoundJdbcTransaction transaction = super.currentTransaction();
 
         List<UUID> charsUuids = transaction
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("char_uuid"),
                         "SELECT " +
-                        "   cw.uuid AS char_uuid, " +
-                        "   w.uuid AS word_uuid " +
+                        "   cw.uuid AS char_uuid " +
                         "FROM chars_in_words cw " +
-                        "   JOIN words w " +
-                        "       ON cw.word_uuid = w.uuid " +
                         "   JOIN words_in_entries we " +
-                        "       ON we.word_uuid = w.uuid " +
-                        "WHERE we.entry_uuid = ?",
-                        entry.uuid())
+                        "       ON we.word_uuid = cw.word_uuid " +
+                        "WHERE " +
+                        "   we.entry_uuid = ? AND " +
+                        "   NOT EXISTS " +
+                        "       ( " +
+                        "       SELECT * " +
+                        "       FROM labels_to_chars_in_words lcw" +
+                        "       WHERE " +
+                        "           lcw.chars_uuid = cw.uuid AND lcw.label_uuid = ? " +
+                        "       ) ",
+                        entry.uuid(), label.uuid())
                 .collect(toList());
 
-        List<Params> params = charsUuids
+        if ( charsUuids.isEmpty() ) {
+            return;
+        }
+
+        List<List> params = charsUuids
                 .stream()
-                .map(charUuid -> params(
+                .map(charUuid -> asList(
                         randomUUID(),
                         charUuid,
                         label.uuid(),

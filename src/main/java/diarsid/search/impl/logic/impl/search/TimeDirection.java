@@ -1,6 +1,8 @@
 package diarsid.search.impl.logic.impl.search;
 
-public enum TimeDirection {
+import diarsid.support.objects.CommonEnum;
+
+public enum TimeDirection implements CommonEnum<TimeDirection> {
     BEFORE,
     AFTER_OR_EQUAL
 }

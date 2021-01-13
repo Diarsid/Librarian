@@ -3,12 +3,9 @@ package diarsid.search.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import diarsid.search.api.model.Entry;
-import diarsid.search.api.model.Pattern;
+import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.PatternToEntryChoice;
-import diarsid.jdbc.api.rows.ColumnGetter;
-import diarsid.jdbc.api.rows.Row;
 
 import static java.time.LocalDateTime.now;
 
@@ -43,14 +40,20 @@ public class RealPatternToEntryChoice extends AbstractIdentifiable implements Pa
         this.actual = super.time();
     }
 
-    public RealPatternToEntryChoice(Row row) {
+    public RealPatternToEntryChoice(PatternToEntry patternToEntry, Row row) {
         super(
-                ColumnGetter.uuidOf("uuid").getFrom(row),
-                ColumnGetter.timeOf("time").getFrom(row));
-        Entry entry = new RealEntry("entries.", row);
-        Pattern pattern = new RealPattern("pattern.", row);
-        this.patternToEntry = new RealPatternToEntry(entry, pattern, "relations.", row);
-        this.actual = ColumnGetter.timeOf("time_actual").getFrom(row);
+                row.uuidOf("uuid"),
+                row.timeOf("time"));
+        this.patternToEntry = patternToEntry;
+        this.actual = row.timeOf("time_actual");
+    }
+
+    public RealPatternToEntryChoice(PatternToEntry patternToEntry, String prefix, Row row) {
+        super(
+                row.uuidOf(prefix + "uuid"),
+                row.timeOf(prefix + "time"));
+        this.patternToEntry = patternToEntry;
+        this.actual = row.timeOf(prefix + "time_actual");
     }
 
     @Override
@@ -72,5 +75,14 @@ public class RealPatternToEntryChoice extends AbstractIdentifiable implements Pa
     @Override
     public LocalDateTime actualTime() {
         return actual;
+    }
+
+    @Override
+    public String toString() {
+        return "RealPatternToEntryChoice{" +
+                "uuid='" + super.uuid() + '\'' +
+                ", patternToEntry=" + patternToEntry +
+                ", actual=" + actual +
+                '}';
     }
 }

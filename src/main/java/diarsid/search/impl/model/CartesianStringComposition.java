@@ -94,8 +94,4 @@ public class CartesianStringComposition {
                 .collect(toList());
     }
 
-    public static void main(String[] args) {
-//        List<String> list = List.of("A", "B", "C", "D", "E", "F", "G", "H");
-//        composeFrom(list, 3).forEach(System.out::println);
-    }
 }

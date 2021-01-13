@@ -1,8 +1,11 @@
 package diarsid.search.api.model;
 
-import diarsid.search.api.model.meta.Identifiable;
+import java.util.UUID;
 
-public interface PatternToEntry extends Identifiable {
+import diarsid.search.api.model.meta.Identifiable;
+import diarsid.search.api.model.meta.UserScoped;
+
+public interface PatternToEntry extends Identifiable, UserScoped {
 
     Entry entry();
 
@@ -10,7 +13,7 @@ public interface PatternToEntry extends Identifiable {
 
     String algorithmCanonicalName();
 
-    double weight();
+    float weight();
 
     default String entryString() {
         return this.entry().string();
@@ -18,5 +21,10 @@ public interface PatternToEntry extends Identifiable {
 
     default String patternString() {
         return this.pattern().string();
+    }
+
+    @Override
+    default UUID userUuid() {
+        return this.entry().userUuid();
     }
 }

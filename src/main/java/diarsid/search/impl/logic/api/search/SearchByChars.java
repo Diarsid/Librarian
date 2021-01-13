@@ -9,14 +9,20 @@ import diarsid.search.impl.logic.impl.search.TimeDirection;
 
 public interface SearchByChars {
 
-    List<Entry> findByChars(
+    List<Entry> findBy(
+            User user,
+            String pattern);
+
+    List<Entry> findBy(
             User user,
             String pattern,
+            Entry.Label.Matching matching,
             List<Entry.Label> labels);
 
-    List<Entry> findByChars(
+    List<Entry> findBy(
             User user,
             String pattern,
+            Entry.Label.Matching matching,
             List<Entry.Label> labels,
             TimeDirection timeDirection,
             LocalDateTime time);

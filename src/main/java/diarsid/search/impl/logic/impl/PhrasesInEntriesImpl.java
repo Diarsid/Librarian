@@ -6,31 +6,30 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import diarsid.jdbc.JdbcTransactionThreadBindings;
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.model.Entry;
 import diarsid.search.impl.logic.api.Phrases;
 import diarsid.search.impl.logic.api.PhrasesInEntries;
-import diarsid.search.impl.logic.impl.support.ThreadTransactional;
+import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.Phrase;
 import diarsid.search.impl.model.PhraseInEntry;
 import diarsid.search.impl.model.RealEntry;
 import diarsid.search.impl.model.Word;
 import diarsid.search.impl.model.WordInEntry;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.search.impl.model.CartesianStringComposition.composeFrom;
 
-public class PhrasesInEntriesImpl extends ThreadTransactional implements PhrasesInEntries {
+public class PhrasesInEntriesImpl extends ThreadBoundTransactional implements PhrasesInEntries {
 
     private final Phrases phrases;
     private final Function<WordInEntry, String> wordInEntryString;
 
     public PhrasesInEntriesImpl(
-            JdbcTransactionThreadBindings transactionThreadBindings,
+            Jdbc jdbc,
             Phrases phrases) {
-        super(transactionThreadBindings);
+        super(jdbc);
         this.phrases = phrases;
         this.wordInEntryString = (wordInEntry) -> wordInEntry.word().string();
     }
@@ -72,10 +71,10 @@ public class PhrasesInEntriesImpl extends ThreadTransactional implements Phrases
 
         int updated = super.currentTransaction()
                 .doUpdate(
-                        "INSERT INTO phrases_in_entries(" +
-                        "   uuid, " +
-                        "   phrase_uuid, " +
-                        "   entry_uuid)" +
+                        "INSERT INTO phrases_in_entries( \n" +
+                        "   uuid, \n" +
+                        "   phrase_uuid, \n" +
+                        "   entry_uuid) \n" +
                         "VALUES(?, ?, ?)",
                         phraseInEntry.uuid(),
                         phrase.uuid(),

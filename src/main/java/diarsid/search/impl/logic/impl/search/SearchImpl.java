@@ -21,6 +21,7 @@ import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.Patterns;
 import diarsid.search.impl.logic.api.PatternsToEntries;
 import diarsid.search.impl.logic.api.search.SearchByChars;
+import diarsid.support.exceptions.TODOException;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -55,7 +56,8 @@ public class SearchImpl implements Search {
     }
 
     @Override
-    public List<PatternToEntry> findAllBy(User user, String pattern, List<Entry.Label> labels) {
+    public List<PatternToEntry> findAllBy(
+            User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels) {
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, pattern);
         List<PatternToEntry> foundRelations;
 
@@ -64,8 +66,8 @@ public class SearchImpl implements Search {
 
             List<PatternToEntry> entriesOldRelations = patternsToEntries.findBy(storedPattern);
 
-            List<Entry> matchingEntriesAfterPattern = searchByChars.findByChars(
-                    user, storedPattern.string(), labels, AFTER_OR_EQUAL, storedPattern.time());
+            List<Entry> matchingEntriesAfterPattern = searchByChars.findBy(
+                    user, storedPattern.string(), matching, labels, AFTER_OR_EQUAL, storedPattern.time());
 
             if ( matchingEntriesAfterPattern.isEmpty() ) {
                 foundRelations = emptyList();
@@ -82,7 +84,7 @@ public class SearchImpl implements Search {
         }
         else {
             Pattern newPattern = patterns.save(user, pattern);
-            List<Entry> matchingEntries = searchByChars.findByChars(user, pattern, labels);
+            List<Entry> matchingEntries = searchByChars.findBy(user, pattern, matching, labels);
 
             if ( matchingEntries.isEmpty() ) {
                 foundRelations = emptyList();
@@ -102,7 +104,8 @@ public class SearchImpl implements Search {
     }
 
     @Override
-    public Optional<PatternToEntry> findSingleBy(User user, String pattern, List<Entry.Label> labels) {
+    public Optional<PatternToEntry> findSingleBy(
+            User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels) {
         LocalDateTime lastDomainModify = properties.lastModificationTime(user);
 
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, pattern);
@@ -116,7 +119,7 @@ public class SearchImpl implements Search {
                 LocalDateTime storedChoiceTime = storedChoice.time();
 
                 if ( lastDomainModify.isAfter(storedChoiceTime) ) {
-                    List<Entry> freshEntries = searchByChars.findByChars(user, pattern, labels, AFTER_OR_EQUAL, storedChoiceTime);
+                    List<Entry> freshEntries = searchByChars.findBy(user, pattern, matching, labels, AFTER_OR_EQUAL, storedChoiceTime);
 
                     if ( freshEntries.isEmpty() ) {
                         return Optional.of(storedChoice.patternToEntry());
@@ -135,7 +138,7 @@ public class SearchImpl implements Search {
                                     .analyze(storedPattern, freshEntriesWithoutRelation);
                             patternsToEntries.save(freshEntriesNewRelations);
 
-                            List<Entry> oldEntries = searchByChars.findByChars(user, pattern, labels, BEFORE, storedChoiceTime);
+                            List<Entry> oldEntries = searchByChars.findBy(user, pattern, matching, labels, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
                             List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
 
@@ -143,7 +146,8 @@ public class SearchImpl implements Search {
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
-                                switch ( userChoice.result() ) {
+                                UserChoice.Decision userDecision = userChoice.decision();
+                                switch ( userDecision ) {
                                     case DONE: {
                                         int chosenIndex = userChoice.chosenVariantIndex();
                                         PatternToEntry chosenRelation = allRelations.get(chosenIndex);
@@ -162,7 +166,7 @@ public class SearchImpl implements Search {
                                         return Optional.empty();
                                     }
                                     default: {
-                                        throw new UnsupportedOperationException();
+                                        throw userDecision.unsupported();
                                     }
                                 }
                             }
@@ -180,7 +184,7 @@ public class SearchImpl implements Search {
                 // pattern does not have associated choice
                 List<PatternToEntry> storedRelations = patternsToEntries.findBy(storedPattern);
                 List<Entry> entriesWithoutRelations = searchByChars
-                        .findByChars(user, pattern, labels, AFTER_OR_EQUAL, storedPattern.time());
+                        .findBy(user, pattern, matching, labels, AFTER_OR_EQUAL, storedPattern.time());
 
                 List<PatternToEntry> allRelations;
 
@@ -199,7 +203,8 @@ public class SearchImpl implements Search {
                 try {
                     UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
-                    switch ( userChoice.result() ) {
+                    UserChoice.Decision decision = userChoice.decision();
+                    switch (decision) {
                         case DONE: {
                             int chosenIndex = userChoice.chosenVariantIndex();
                             PatternToEntry chosenRelation = allRelations.get(chosenIndex);
@@ -211,7 +216,7 @@ public class SearchImpl implements Search {
                             return Optional.empty();
                         }
                         default: {
-                            throw new UnsupportedOperationException();
+                            throw decision.unsupported();
                         }
                     }
                 }
@@ -222,7 +227,7 @@ public class SearchImpl implements Search {
         }
         else {
             Pattern newPattern = patterns.save(user, pattern);
-            List<Entry> matchingEntries = searchByChars.findByChars(user, pattern, labels);
+            List<Entry> matchingEntries = searchByChars.findBy(user, pattern, matching, labels);
 
             List<PatternToEntry> entriesNewRelations = implementations
                     .algorithm()
@@ -234,7 +239,7 @@ public class SearchImpl implements Search {
             try {
                 UserChoice userChoice = userInteraction.askForChoice(user, entriesNewRelations);
 
-                switch ( userChoice.result() ) {
+                switch ( userChoice.decision() ) {
                     case DONE: {
                         int chosenIndex = userChoice.chosenVariantIndex();
                         PatternToEntry chosenRelation = entriesNewRelations.get(chosenIndex);
@@ -246,7 +251,7 @@ public class SearchImpl implements Search {
                         return Optional.empty();
                     }
                     default: {
-                        throw new UnsupportedOperationException();
+                        throw userChoice.decision().unsupported();
                     }
                 }
             }
@@ -281,8 +286,9 @@ public class SearchImpl implements Search {
             List<PatternToEntry> newRelations,
             List<PatternToEntry> storedRelations) {
         newRelations.addAll(storedRelations);
-        // sort
+        // TODO sort
         // find duplicates if any
+        TODOException.throwIt();
         return newRelations;
     }
 
@@ -292,8 +298,9 @@ public class SearchImpl implements Search {
             List<PatternToEntry> oldEntriesRelations) {
         oldEntriesRelations.addAll(freshEntiresNewRelations);
         oldEntriesRelations.addAll(freshEntriesStoredRelations);
-        // sort
+        // TODO sort
         // find duplicates if any
+        TODOException.throwIt();
         return oldEntriesRelations;
     }
 }
