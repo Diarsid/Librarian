@@ -14,14 +14,16 @@ import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealPatternToEntryChoice;
 import diarsid.support.objects.GuardedPool;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
-import static diarsid.search.api.model.meta.Storable.checkMustBeStored;
+import static diarsid.support.model.Storable.State.STORED;
+import static diarsid.support.model.Storable.checkMustBeStored;
 
 public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
     private final GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors;
 
-    public ChoicesImpl(Jdbc jdbc, GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors) {
+    public ChoicesImpl(
+            Jdbc jdbc,
+            GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors) {
         super(jdbc);
         this.rowCollectors = rowCollectors;
     }
@@ -37,7 +39,7 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
                         "INSERT INTO choices (uuid, time, time_actual, relation_uuid) \n" +
                         "VALUES (?, ?, ?) \n",
                         choice.uuid(),
-                        choice.time(),
+                        choice.createdAt(),
                         choice.patternToEntry().uuid());
 
         if ( inserted != 1 ) {

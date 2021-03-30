@@ -2,6 +2,7 @@ module diarsid.search {
 
     requires java.sql;
     requires slf4j.api;
+    requires com.h2database;
     requires diarsid.jdbc;
     requires diarsid.strings.similarity;
     requires diarsid.support;

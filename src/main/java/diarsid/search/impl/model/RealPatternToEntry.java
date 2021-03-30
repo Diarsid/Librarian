@@ -9,7 +9,7 @@ import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
 
-public class RealPatternToEntry extends AbstractIdentifiable implements PatternToEntry {
+public class RealPatternToEntry extends AbstractCreatedAt implements PatternToEntry {
 
     private final Entry entry;
     private final Pattern pattern;

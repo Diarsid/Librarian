@@ -11,7 +11,7 @@ import diarsid.search.api.model.User;
 import diarsid.search.impl.model.RealUser;
 
 import static diarsid.jdbc.api.JdbcTransaction.ThenDo.CLOSE;
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.support.model.Storable.State.STORED;
 
 public class UsersTransactionalImpl implements Users {
 
@@ -34,7 +34,7 @@ public class UsersTransactionalImpl implements Users {
                             "VALUES (?, ?, ?);",
                             user.uuid(),
                             user.name(),
-                            user.time());
+                            user.createdAt());
 
             if ( updated == 1 ) {
                 user.setState(STORED);

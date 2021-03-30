@@ -6,19 +6,16 @@ import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.search.impl.logic.api.Words;
-import diarsid.search.impl.logic.api.chars.CharsInWords;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.Word;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.search.impl.logic.impl.search.v2.CharSort.transform;
+import static diarsid.support.model.Storable.State.STORED;
 
 public class WordsImpl extends ThreadBoundTransactional implements Words {
 
-    private final CharsInWords charsInWords;
-
-    public WordsImpl(Jdbc jdbc, CharsInWords charsInWords) {
+    public WordsImpl(Jdbc jdbc) {
         super(jdbc);
-        this.charsInWords = charsInWords;
     }
 
     @Override
@@ -48,17 +45,17 @@ public class WordsImpl extends ThreadBoundTransactional implements Words {
     }
 
     private void save(Word word) {
+        String string = word.string();
+
         int updated = super.currentTransaction()
                 .doUpdate(
-                        "INSERT INTO words (uuid, string, word_size, user_uuid, time) \n" +
-                        "VALUES(?, ?, ?, ?, ?)",
-                        word.uuid(), word.string(), word.string().length(), word.userUuid(), word.time());
+                        "INSERT INTO words (uuid, string, string_sort, word_size, user_uuid, time) \n" +
+                        "VALUES(?, ?, ?, ?, ?, ?)",
+                        word.uuid(), string, transform(string), string.length(), word.userUuid(), word.createdAt());
 
         if ( updated != 1 ) {
             throw new IllegalStateException();
         }
-
-        charsInWords.save(word);
 
         word.setState(STORED);
     }

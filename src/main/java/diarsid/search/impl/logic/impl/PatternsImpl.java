@@ -10,7 +10,7 @@ import diarsid.search.impl.logic.api.Patterns;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealPattern;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.support.model.Storable.State.STORED;
 
 public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
 
@@ -43,7 +43,7 @@ public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
                 .doUpdate(
                         "INSERT INTO patterns (uuid, time, user_uuid, string) \n" +
                         "VALUES (?, ?, ?, ?)",
-                        pattern.uuid(), pattern.time(), pattern.userUuid(), pattern.string());
+                        pattern.uuid(), pattern.createdAt(), pattern.userUuid(), pattern.string());
 
         if ( inserted == 1 ) {
             pattern.setState(STORED);

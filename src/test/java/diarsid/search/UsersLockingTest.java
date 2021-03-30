@@ -7,16 +7,15 @@ import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.UsersLocking;
 import diarsid.search.impl.logic.impl.CoreImpl;
 import diarsid.search.impl.logic.impl.UsersLockingImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 import static diarsid.support.concurrency.threads.ThreadsUtil.sleepSafely;
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class UsersLockingTest {
-
 
     CoreImpl core = TestCoreSetup.INSTANCE.core;
     UsersLocking locking = new UsersLockingImpl(core.jdbc());

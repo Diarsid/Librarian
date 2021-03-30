@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.ThreadBoundJdbcTransaction;
+import diarsid.jdbc.api.sqltable.rows.RowGetter;
 import diarsid.search.api.Behavior;
 import diarsid.search.api.Entries;
 import diarsid.search.api.exceptions.NotFoundException;
@@ -14,16 +15,9 @@ import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.PatternsToEntries;
-import diarsid.search.impl.logic.api.PhrasesInEntries;
 import diarsid.search.impl.logic.api.WordsInEntries;
-import diarsid.search.impl.logic.api.chars.CharsInEntries;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInEntries;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInPhrases;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInWords;
 import diarsid.search.impl.logic.impl.jdbc.PooledRowCollectorForEntriesAndLabels;
-import diarsid.search.impl.logic.impl.jdbc.RowCollectorForEntriesAndLabels;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
-import diarsid.search.impl.model.PhraseInEntry;
 import diarsid.search.impl.model.RealEntry;
 import diarsid.search.impl.model.RealLabel;
 import diarsid.search.impl.model.WordInEntry;
@@ -38,13 +32,11 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.search.api.Behavior.Feature.APPLY_PARENT_LABELS_TO_DERIVED_ENTRIES;
 import static diarsid.search.api.Behavior.Feature.DECOMPOSE_ENTRY_PATH;
-import static diarsid.search.api.Entries.RelatedPatternsAction.ANALYZE_AGAIN;
-import static diarsid.search.api.Entries.RelatedPatternsAction.REMOVE;
 import static diarsid.search.api.model.Entry.Type.PATH;
-import static diarsid.search.api.model.meta.Storable.State.NON_STORED;
-import static diarsid.search.api.model.meta.Storable.State.STORED;
-import static diarsid.search.api.model.meta.Storable.checkMustBeStored;
 import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_TO_LOWER;
+import static diarsid.support.model.Storable.State.NON_STORED;
+import static diarsid.support.model.Storable.State.STORED;
+import static diarsid.support.model.Storable.checkMustBeStored;
 import static diarsid.support.strings.PathUtils.decomposePath;
 import static diarsid.support.strings.StringUtils.nonEmpty;
 
@@ -55,41 +47,31 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     private final PatternsToEntries patternsToEntries;
     private final Choices choices;
-    private final CharsInEntries charsInEntries;
     private final WordsInEntries wordsInEntries;
-    private final PhrasesInEntries phrasesInEntries;
-    private final LabelsToCharsInEntries labelsToCharsInEntries;
-    private final LabelsToCharsInWords labelsToCharsInWords;
-    private final LabelsToCharsInPhrases labelsToCharsInPhrases;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAllOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAnyOfLabels;
     private final Behavior behavior;
     private final GuardedPool<PooledRowCollectorForEntriesAndLabels> rowCollectorsPool;
-    private final boolean useLabelsToChars = false;
+    private final RowGetter<Entry.Label> newLabel;
 
     public EntriesImpl(
             Jdbc jdbc,
             PatternsToEntries patternsToEntries,
             Choices choices,
-            CharsInEntries charsInEntries,
-            LabelsToCharsInEntries labelsToCharsInEntries,
-            LabelsToCharsInWords labelsToCharsInWords,
-            LabelsToCharsInPhrases labelsToCharsInPhrases,
             WordsInEntries wordsInEntries,
-            PhrasesInEntries phrasesInEntries,
             Behavior behavior) {
         super(jdbc);
         this.patternsToEntries = patternsToEntries;
         this.choices = choices;
-        this.charsInEntries = charsInEntries;
-        this.labelsToCharsInEntries = labelsToCharsInEntries;
-        this.labelsToCharsInWords = labelsToCharsInWords;
-        this.labelsToCharsInPhrases = labelsToCharsInPhrases;
         this.wordsInEntries = wordsInEntries;
-        this.phrasesInEntries = phrasesInEntries;
         this.behavior = behavior;
 
-        this.rowCollectorsPool = new GuardedPool<>(() -> new PooledRowCollectorForEntriesAndLabels("e_", "l_"));
+        this.rowCollectorsPool = new GuardedPool<>(
+                () -> new PooledRowCollectorForEntriesAndLabels("e_", "l_"),
+                (collector) -> {
+                    ThreadBoundJdbcTransaction transaction = super.currentTransaction();
+                    collector.context().fill(transaction.uuid(), transaction.created());
+                });
 
         this.sqlSelectEntriesAndLabelsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -146,6 +128,8 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                 "       ON e.uuid = le.entry_uuid \n" +
                 "   JOIN labels l \n" +
                 "       ON l.uuid = le.label_uuid ");
+
+        this.newLabel = (row) -> new RealLabel(row);
     }
 
     @Override
@@ -170,16 +154,14 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                         entry.string(),
                         entry.stringLower(),
                         entry.type(),
-                        entry.time(),
+                        entry.createdAt(),
                         entry.userUuid());
 
         if ( inserted != 1 ) {
             throw new IllegalStateException();
         }
 
-        this.charsInEntries.save(entry);
         List<WordInEntry> entryWords = this.wordsInEntries.save(user, entry);
-        List<PhraseInEntry> entryPhrases = this.phrasesInEntries.save(entryWords);
 
         entry.setState(STORED);
     }
@@ -202,12 +184,13 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
         checkLabelsMustBeStored(labels);
         checkLabelsMustBelongToUser(user, labels);
 
-        RealEntry entry = new RealEntry(entryString, user.uuid());
+        RealEntry entry = new RealEntry(entryString, user.uuid(), super.currentTransaction().uuid());
         boolean entryExists = this.doesEntryExistBy(user.uuid(), entry.stringLower());
 
         if ( entryExists ) {
             throw new IllegalArgumentException();
         }
+
         this.saveInternally(user, entry);
         this.addLabels(entry, labels);
 
@@ -239,14 +222,79 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
     }
 
     @Override
+    public Entry reload(Entry entry) {
+        if ( super.isBoundToCurrentTransaction((RealEntry) entry) ) {
+            return entry;
+        }
+
+        try (PooledRowCollectorForEntriesAndLabels entryAndLabelsCollector = this.rowCollectorsPool.give()) {
+
+            super.currentTransaction()
+                    .doQuery(
+                            entryAndLabelsCollector,
+                            "SELECT \n" +
+                            "   e.uuid          AS e_uuid, \n" +
+                            "   e.time          AS e_time, \n" +
+                            "   e.string_origin AS e_string_origin, \n" +
+                            "   e.string_lower  AS e_string_lower, \n" +
+                            "   e.user_uuid     AS e_user_uuid, \n" +
+                            "   l.uuid          AS l_uuid, \n" +
+                            "   l.time          AS l_time, \n" +
+                            "   l.name          AS l_name, \n" +
+                            "   l.user_uuid     AS l_user_uuid \n" +
+                            "FROM entries e \n" +
+                            "   JOIN labels_to_entries le \n" +
+                            "       ON e.uuid = le.entry_uuid \n" +
+                            "   JOIN labels l \n" +
+                            "       ON l.uuid = le.label_uuid \n" +
+                            "WHERE e.uuid = ?",
+                            entry.uuid());
+
+            List<Entry> entries = entryAndLabelsCollector.entries();
+
+            if ( entries.size() == 1 ) {
+                return entries.get(0);
+            }
+            else if ( entries.isEmpty() ) {
+                throw new NotFoundException();
+            }
+            else {
+                throw new IllegalStateException();
+            }
+        }
+    }
+
+    @Override
+    public boolean doesNotRequireReload(Entry entry) {
+        return super.currentTransaction().uuid().equals(((RealEntry) entry).transactionUuid());
+    }
+
+    @Override
+    public List<Entry> reload(List<Entry> entries) {
+        return null;
+    }
+
+    @Override
+    public Entry getBy(User user, UUID entryUuid) {
+        return null;
+    }
+
+    @Override
+    public List<Entry> getBy(List<UUID> uuids) {
+        return null;
+    }
+
+    @Override
     public Optional<Entry> findBy(User user, String entryString) {
         ThreadBoundJdbcTransaction transaction = super.currentTransaction();
 
         entryString = RealEntry.unifyOriginalString(entryString, CASE_TO_LOWER);
 
+        LocalDateTime entriesActualAt = now();
+
         Optional<Entry> foundEntry = transaction
                 .doQueryAndConvertFirstRow(
-                        RealEntry::new,
+                        row -> new RealEntry(entriesActualAt, transaction.uuid(), row),
                         "SELECT * \n" +
                         "FROM entries \n" +
                         "WHERE \n" +
@@ -260,7 +308,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
         List<Entry.Label> labels = transaction
                 .doQueryAndStream(
-                        RealLabel::new,
+                        this.newLabel,
                         "SELECT * \n" +
                         "FROM labels l \n" +
                         "   JOIN labels_to_entries le \n" +
@@ -294,8 +342,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
         else {
             switch ( matching ) {
                 case ANY_OF: {
-                    try (PooledRowCollectorForEntriesAndLabels pooledRowCollector = this.rowCollectorsPool.give()) {
-                        RowCollectorForEntriesAndLabels entryAndLabelsCollector = pooledRowCollector.get();
+                    try (PooledRowCollectorForEntriesAndLabels entryAndLabelsCollector = this.rowCollectorsPool.give()) {
 
                         super.currentTransaction()
                                 .doQuery(
@@ -307,8 +354,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                     }
                 }
                 case ALL_OF: {
-                    try (PooledRowCollectorForEntriesAndLabels pooledRowCollector = this.rowCollectorsPool.give()) {
-                        RowCollectorForEntriesAndLabels entryAndLabelsCollector = pooledRowCollector.get();
+                    try (PooledRowCollectorForEntriesAndLabels entryAndLabelsCollector = this.rowCollectorsPool.give()) {
 
                         super.currentTransaction()
                                 .doQuery(
@@ -358,30 +404,24 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public Entry replace(User user, String oldEntryString, String newEntryString, RelatedPatternsAction action) {
-        String unifiedNewEntryString = RealEntry.unifyOriginalString(newEntryString, CASE_TO_LOWER);
         Optional<Entry> foundEntry = this.findBy(user, oldEntryString);
 
         if ( foundEntry.isEmpty() ) {
             throw new NotFoundException();
         }
 
-        boolean entryWithNewStringExists = this.doesEntryExistBy(user.uuid(), unifiedNewEntryString);
+        RealEntry entry = (RealEntry) foundEntry.get();
+
+        return this.replaceInternally(entry, newEntryString, action);
+    }
+
+    private RealEntry replaceInternally(RealEntry entry, String newEntryString,  RelatedPatternsAction action) {
+        RealEntry changed = entry.changeTo(now(), newEntryString);
+
+        boolean entryWithNewStringExists = this.doesEntryExistBy(changed.userUuid(), changed.stringLower());
 
         if ( entryWithNewStringExists ) {
             throw new IllegalArgumentException();
-        }
-
-        RealEntry entry = (RealEntry) foundEntry.get();
-
-        return this.replaceInternally(entry, newEntryString, unifiedNewEntryString, action);
-    }
-
-    private RealEntry replaceInternally(
-            RealEntry entry,
-            String newEntryString, String unifiedNewEntryString,
-            RelatedPatternsAction action) {
-        if ( action.equalTo(REMOVE) ) {
-            this.patternsToEntries.removeAllBy(entry);
         }
 
         int updated = super.currentTransaction()
@@ -392,35 +432,35 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                         "   string_lower = ?, \n" +
                         "   time = ? \n" +
                         "WHERE entries.uuid = ? ",
-                        newEntryString, unifiedNewEntryString, entry.uuid());
+                        changed.string(), changed.stringLower(), changed.createdAt(), changed.uuid());
 
         if ( updated != 1 ) {
             throw new IllegalStateException();
         }
 
-        entry.changeTo(newEntryString, unifiedNewEntryString);
-
-        if ( action.equalTo(ANALYZE_AGAIN) ) {
-            this.patternsToEntries.analyzeAgainAllRelationsOf(entry);
+        switch ( action ) {
+            case REMOVE:
+                this.patternsToEntries.removeAllBy(changed);
+                break;
+            case ANALYZE_AGAIN:
+                this.patternsToEntries.analyzeAgainAllRelationsOf(changed);
+                break;
+            default:
+                throw action.unsupported();
         }
 
-        this.choices.removeAllBy(entry);
+        this.choices.removeAllBy(changed);
 
-        return entry;
+        entry.setState(NON_STORED);
+
+        return changed;
     }
 
     @Override
     public Entry replace(Entry entry, String newEntryString, RelatedPatternsAction action) {
-        checkMustBeStored(entry);
-        String unifiedNewEntryString = RealEntry.unifyOriginalString(newEntryString, CASE_TO_LOWER);
+        this.checkMustExistAndBeStored(entry);
 
-        boolean entryWithNewStringExists = this.doesEntryExistBy(entry.userUuid(), unifiedNewEntryString);
-
-        if ( entryWithNewStringExists ) {
-            throw new IllegalArgumentException();
-        }
-
-        return this.replaceInternally((RealEntry) entry, newEntryString, unifiedNewEntryString, action);
+        return this.replaceInternally((RealEntry) entry, newEntryString, action);
     }
 
     @Override
@@ -441,6 +481,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
     private boolean removeInternally(RealEntry entry) {
         this.choices.removeAllBy(entry);
         this.patternsToEntries.removeAllBy(entry);
+//        this.removeLabelsToEntries(entry);
 
         int removed = super.currentTransaction()
                 .doUpdate(
@@ -463,7 +504,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public boolean remove(Entry entry) {
-        checkMustBeStored(entry);
+        this.checkMustExistAndBeStored(entry);
 
         RealEntry realEntry = (RealEntry) entry;
         boolean removed = this.removeInternally(realEntry);
@@ -496,7 +537,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
             return false;
         }
 
-        checkMustBeStored(entry);
+        this.checkMustExistAndBeStored(entry);
         checkLabelsMustBelongToUser(entry.userUuid(), labels);
         checkMustBeStored(labels);
 
@@ -532,16 +573,59 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                 throw new IllegalStateException();
             }
 
-            if ( this.useLabelsToChars ) {
-                this.labelsToCharsInEntries.join(entry, label, joiningTime);
-                this.labelsToCharsInPhrases.join(entry, label, joiningTime);
-                this.labelsToCharsInWords.join(entry, label, joiningTime);
-            }
-
             entry.labels().add(label);
         }
 
         return true;
+    }
+
+    @Override
+    public Entry removeLabels(User user, String entry, List<Entry.Label> labels) {
+        return null;
+    }
+
+    @Override
+    public boolean removeLabels(Entry entry, List<Entry.Label> labels) {
+        return false;
+    }
+
+    @Override
+    public long countEntriesOf(User user) {
+        return 0;
+    }
+
+    @Override
+    public long countEntriesBy(User user, String label) {
+        return 0;
+    }
+
+    @Override
+    public long countEntriesBy(Entry.Label label) {
+        return 0;
+    }
+
+    @Override
+    public long countEntriesBy(User user, Entry.Label.Matching matching, List<String> labels) {
+        return 0;
+    }
+
+    @Override
+    public long countEntriesBy(Entry.Label.Matching matching, List<Entry.Label> labels) {
+        return 0;
+    }
+
+    private void checkMustExistAndBeStored(Entry entry) {
+        checkMustBeStored(entry);
+        int count = super.currentTransaction()
+                .countQueryResults(
+                        "SELECT * " +
+                        "FROM entries " +
+                        "WHERE uuid = ?",
+                        entry.uuid());
+
+        if ( count != 1 ) {
+            throw new IllegalArgumentException();
+        }
     }
 
 }

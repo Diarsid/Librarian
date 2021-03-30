@@ -10,7 +10,7 @@ class LabelConditionBindable extends RealLabel implements Entry.Label.ConditionB
     private final Entry.Label original;
 
     LabelConditionBindable(Entry.Label label, BiPredicate<Entry, Entry.Label> condition) {
-        super(label.uuid(), label.time(), label.userUuid(), label.name());
+        super(label.uuid(), label.createdAt(), label.userUuid(), label.name());
         this.original = label;
         this.condition = condition;
     }

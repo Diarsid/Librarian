@@ -1,5 +1,6 @@
 package diarsid.search.impl.logic.impl.jdbc;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,18 +10,20 @@ import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.PatternToEntryChoice;
-import diarsid.search.api.model.meta.Unique;
 import diarsid.search.impl.model.RealEntry;
 import diarsid.search.impl.model.RealLabel;
 import diarsid.search.impl.model.RealPattern;
 import diarsid.search.impl.model.RealPatternToEntry;
 import diarsid.search.impl.model.RealPatternToEntryChoice;
+import diarsid.support.model.Unique;
 import diarsid.support.objects.PooledReusable;
 
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
-public class RowCollectorForPatternToEntryChoice extends PooledReusable implements RowOperation {
+public class RowCollectorForPatternToEntryChoice extends PooledReusable implements RowOperation, ContextBoundRowOperation {
+
+    private final RowOperationContext context;
 
     private final String patternPrefix;
     private final String entryPrefix;
@@ -47,6 +50,8 @@ public class RowCollectorForPatternToEntryChoice extends PooledReusable implemen
             String labelPrefix,
             String patternToEntryPrefix,
             String choicePrefix) {
+        this.context = new RowOperationContext();
+
         this.patternPrefix = patternPrefix;
         this.entryPrefix = entryPrefix;
         this.labelPrefix = labelPrefix;
@@ -61,9 +66,19 @@ public class RowCollectorForPatternToEntryChoice extends PooledReusable implemen
     }
 
     @Override
+    protected void clearForReuse() {
+        context.clear();
+        firstRowProcessed = false;
+        entry = null;
+        choice = null;
+        pattern = null;
+        patternToEntry = null;
+    }
+
+    @Override
     public void process(Row row) {
         if ( ! firstRowProcessed ) {
-            entry = new RealEntry(entryPrefix, row);
+            entry = new RealEntry(context.get(LocalDateTime.class), context.get(UUID.class), entryPrefix, row);
             pattern = new RealPattern(patternPrefix, row);
             patternToEntry = new RealPatternToEntry(entry, pattern, patternToEntryPrefix, row);
             choice = new RealPatternToEntryChoice(patternToEntry, choicePrefix, row);
@@ -85,10 +100,10 @@ public class RowCollectorForPatternToEntryChoice extends PooledReusable implemen
             Entry.Label label = new RealLabel(labelPrefix, row);
             entry.labels().add(label);
 
-            mustHaveUuid(entry, entryUuid);
-            mustHaveUuid(choice, choiceUuid);
-            mustHaveUuid(pattern, patternUuid);
-            mustHaveUuid(patternToEntry, patternToEntryUuid);
+            entry.mustHave(entryUuid);
+            choice.mustHave(choiceUuid);
+            pattern.mustHave(patternUuid);
+            patternToEntry.mustHave(patternToEntryUuid);
         }
 
     }
@@ -98,20 +113,7 @@ public class RowCollectorForPatternToEntryChoice extends PooledReusable implemen
     }
 
     @Override
-    protected void clearForReuse() {
-        firstRowProcessed = false;
-        entry = null;
-        choice = null;
-        pattern = null;
-        patternToEntry = null;
-    }
-
-    private static void mustHaveUuid(Unique unique, UUID uuid) {
-        if ( ! unique.uuid().equals(uuid) ) {
-            throw new IllegalStateException(format("%s has uuid %s but expected %s",
-                    unique.getClass().getSimpleName(),
-                    unique.uuid(),
-                    uuid));
-        }
+    public RowOperationContext context() {
+        return context;
     }
 }

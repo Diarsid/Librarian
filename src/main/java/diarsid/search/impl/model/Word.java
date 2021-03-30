@@ -10,11 +10,9 @@ import diarsid.jdbc.api.sqltable.rows.Row;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.support.model.Storable.State.STORED;
 
 public class Word extends AbstractIdentifiableUserScoped {
-
-    public final static String SEPARATOR = "_";
 
     public final static Comparator<Word> COMPARE_WORDS_BY_STRING = Comparator.comparing(word -> word.string);
 
@@ -43,6 +41,6 @@ public class Word extends AbstractIdentifiableUserScoped {
                 .stream()
                 .sorted(COMPARE_WORDS_BY_STRING)
                 .map(Word::string)
-                .collect(joining(SEPARATOR));
+                .collect(joining());
     }
 }

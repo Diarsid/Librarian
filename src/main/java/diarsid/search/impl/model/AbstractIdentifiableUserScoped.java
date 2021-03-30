@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import diarsid.search.api.model.meta.UserScoped;
 
-public abstract class AbstractIdentifiableUserScoped extends AbstractIdentifiable implements UserScoped {
+public abstract class AbstractIdentifiableUserScoped extends AbstractCreatedAt implements UserScoped {
 
     private final UUID userUuid;
 
@@ -34,7 +34,7 @@ public abstract class AbstractIdentifiableUserScoped extends AbstractIdentifiabl
         return this.getClass().getSimpleName() + "{" +
                 "uuid=" + super.uuid() +
                 ", state=" + super.state() +
-                ", time=" + super.time() +
+                ", time=" + super.createdAt() +
                 ", userUuid=" + userUuid +
                 '}';
     }

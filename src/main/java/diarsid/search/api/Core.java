@@ -2,6 +2,7 @@ package diarsid.search.api;
 
 import java.lang.reflect.Method;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.TransactionAware;
@@ -13,53 +14,45 @@ import diarsid.search.impl.StoreImpl;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.Patterns;
 import diarsid.search.impl.logic.api.PatternsToEntries;
-import diarsid.search.impl.logic.api.Phrases;
-import diarsid.search.impl.logic.api.PhrasesInEntries;
 import diarsid.search.impl.logic.api.UsersLocking;
 import diarsid.search.impl.logic.api.Words;
 import diarsid.search.impl.logic.api.WordsInEntries;
-import diarsid.search.impl.logic.api.WordsInPhrases;
-import diarsid.search.impl.logic.api.chars.CharsInEntries;
-import diarsid.search.impl.logic.api.chars.CharsInPhrases;
-import diarsid.search.impl.logic.api.chars.CharsInWords;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInEntries;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInPhrases;
-import diarsid.search.impl.logic.api.labels.LabelsToCharsInWords;
 import diarsid.search.impl.logic.api.search.SearchByChars;
 import diarsid.search.impl.logic.impl.BehaviorImpl;
 import diarsid.search.impl.logic.impl.ChoicesImpl;
 import diarsid.search.impl.logic.impl.CoreImpl;
 import diarsid.search.impl.logic.impl.EntriesImpl;
+import diarsid.search.impl.logic.impl.LabelsImpl;
 import diarsid.search.impl.logic.impl.PatternsImpl;
 import diarsid.search.impl.logic.impl.PatternsToEntriesImpl;
-import diarsid.search.impl.logic.impl.PhrasesImpl;
-import diarsid.search.impl.logic.impl.PhrasesInEntriesImpl;
 import diarsid.search.impl.logic.impl.PropertiesImpl;
 import diarsid.search.impl.logic.impl.UsersLockingImpl;
 import diarsid.search.impl.logic.impl.UsersTransactionalImpl;
 import diarsid.search.impl.logic.impl.WordsImpl;
 import diarsid.search.impl.logic.impl.WordsInEntriesImpl;
-import diarsid.search.impl.logic.impl.WordsInPhrasesImpl;
-import diarsid.search.impl.logic.impl.chars.CharsInEntriesImpl;
-import diarsid.search.impl.logic.impl.chars.CharsInPhrasesImpl;
-import diarsid.search.impl.logic.impl.chars.CharsInWordsImpl;
 import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryAndLabels;
 import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryChoice;
-import diarsid.search.impl.logic.impl.labels.LabelsImpl;
-import diarsid.search.impl.logic.impl.labels.LabelsToCharsInEntriesImpl;
-import diarsid.search.impl.logic.impl.labels.LabelsToCharsInPhrasesImpl;
-import diarsid.search.impl.logic.impl.labels.LabelsToCharsInWordsImpl;
-import diarsid.search.impl.logic.impl.search.SearchByCharsImpl;
-import diarsid.search.impl.logic.impl.search.SearchImpl;
+import diarsid.search.impl.logic.impl.jdbc.RowOperationContext;
+import diarsid.search.impl.logic.impl.search.v1.SearchImpl;
+import diarsid.search.impl.logic.impl.search.v2.SearchByCharsImpl;
 import diarsid.search.impl.validity.StringsComparisonAlgorithmValidation;
+import diarsid.support.objects.CommonEnum;
 import diarsid.support.objects.GuardedPool;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import static diarsid.jdbc.api.Jdbc.WhenNoTransactionThen.IF_NO_TRANSACTION_OPEN_NEW;
-
+import static diarsid.search.api.Core.Mode.DEVELOPMENT;
 
 public interface Core {
+
+    enum Mode implements CommonEnum<Mode> {
+        PRODUCTION,
+        DEVELOPMENT;
+
+        public static Mode DEFAULT = PRODUCTION;
+    }
 
     Behavior behavior();
 
@@ -71,6 +64,10 @@ public interface Core {
 
     Properties properties();
 
+    Core.Mode mode();
+
+    void setMode(Core.Mode mode);
+
     static Core buildWith(UserProvidedResources resources) {
         Jdbc jdbc = resources.jdbc();
         StringsComparisonAlgorithm algorithm = resources.algorithm();
@@ -78,10 +75,15 @@ public interface Core {
         StringsComparisonAlgorithmValidation algorithmValidation = new StringsComparisonAlgorithmValidation(() -> algorithm);
 //        algorithmValidation.validate();
 
+        RowOperationContext.Setter contextSetter = new RowOperationContext.Setter(() -> jdbc.threadBinding().currentTransaction());
+
         GuardedPool<RowCollectorForPatternToEntryAndLabels> rowCollectorsForPatternsAndEntries = new GuardedPool<>(
-                () -> new RowCollectorForPatternToEntryAndLabels("p.", "e.", "l.", "pe."));
+                () -> new RowCollectorForPatternToEntryAndLabels("p.", "e.", "l.", "pe."),
+                contextSetter::accept);
+
         GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectorsForChoice = new GuardedPool<>(
-                () -> new RowCollectorForPatternToEntryChoice("p.", "e.", "l.", "pe.", "c."));
+                () -> new RowCollectorForPatternToEntryChoice("p.", "e.", "l.", "pe.", "c."),
+                contextSetter::accept);
 
         Behavior behavior = new BehaviorImpl(jdbc);
 
@@ -92,31 +94,15 @@ public interface Core {
         PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(
                 jdbc, algorithm, rowCollectorsForPatternsAndEntries);
 
-        CharsInEntries charsInEntries = new CharsInEntriesImpl(jdbc);
-        CharsInPhrases charsInPhrases = new CharsInPhrasesImpl(jdbc);
-        CharsInWords charsInWords = new CharsInWordsImpl(jdbc);
-
-        Words words = new WordsImpl(jdbc, charsInWords);
-        WordsInPhrases wordsInPhrases = new WordsInPhrasesImpl(jdbc);
-        Phrases phrases = new PhrasesImpl(jdbc, wordsInPhrases, charsInPhrases);
+        Words words = new WordsImpl(jdbc);
 
         WordsInEntries wordsInEntries = new WordsInEntriesImpl(jdbc, words, behavior);
-        PhrasesInEntries phrasesInEntries = new PhrasesInEntriesImpl(jdbc, phrases);
-
-        LabelsToCharsInEntries labelsToCharsInEntries = new LabelsToCharsInEntriesImpl(jdbc);
-        LabelsToCharsInWords labelsToCharsInWords = new LabelsToCharsInWordsImpl(jdbc);
-        LabelsToCharsInPhrases labelsToCharsInPhrases = new LabelsToCharsInPhrasesImpl(jdbc);
 
         Entries entries = new EntriesImpl(
                 jdbc,
                 patternsToEntries,
                 choices,
-                charsInEntries,
-                labelsToCharsInEntries,
-                labelsToCharsInWords,
-                labelsToCharsInPhrases,
                 wordsInEntries,
-                phrasesInEntries,
                 behavior);
 
         Properties properties = new PropertiesImpl(jdbc);
@@ -125,6 +111,8 @@ public interface Core {
         SearchByChars searchByChars = new SearchByCharsImpl(jdbc);
 
         Search search = new SearchImpl(properties, searchByChars, patterns, patternsToEntries, choices, resources);
+
+        AtomicReference<Core.Mode> coreMode = new AtomicReference<>(Mode.DEFAULT);
 
         TransactionAware usersLockingOnOpenAndJoin = new TransactionAware() {
 
@@ -139,6 +127,12 @@ public interface Core {
             }
 
             private void tryLockOnUserUuidWhenFoundIn(Object[] args) {
+                Core.Mode mode = coreMode.get();
+
+                if ( isNull(mode) || mode.equalTo(DEVELOPMENT) ) {
+                    return;
+                }
+
                 UUID userUuid = null;
 
                 Object arg0 = args[0];
@@ -151,7 +145,7 @@ public interface Core {
                 }
 
                 if ( nonNull(userUuid) ) {
-//                    usersLocking.lock(userUuid);
+                    usersLocking.lock(userUuid);
                 }
             }
         };
@@ -172,7 +166,7 @@ public interface Core {
 
         Users users = new UsersTransactionalImpl(jdbc);
 
-        Core core = new CoreImpl(jdbc, users, store, txSearch, txBehavior, properties);
+        Core core = new CoreImpl(coreMode, jdbc, users, store, txSearch, txBehavior, properties);
 
         return core;
     }

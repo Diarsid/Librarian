@@ -9,9 +9,9 @@ import diarsid.search.api.model.PatternToEntryChoice;
 
 import static java.time.LocalDateTime.now;
 
-import static diarsid.search.api.model.meta.Storable.State.NON_STORED;
+import static diarsid.support.model.Storable.State.NON_STORED;
 
-public class RealPatternToEntryChoice extends AbstractIdentifiable implements PatternToEntryChoice {
+public class RealPatternToEntryChoice extends AbstractCreatedAt implements PatternToEntryChoice {
 
     private final PatternToEntry patternToEntry;
     private LocalDateTime actual;
@@ -19,11 +19,11 @@ public class RealPatternToEntryChoice extends AbstractIdentifiable implements Pa
     public RealPatternToEntryChoice(PatternToEntry patternToEntry) {
         super();
         this.patternToEntry = patternToEntry;
-        this.actual = super.time();
+        this.actual = super.createdAt();
     }
 
     private RealPatternToEntryChoice(PatternToEntryChoice oldChoice, PatternToEntry patternToEntry) {
-        super(oldChoice.uuid(), oldChoice.time());
+        super(oldChoice.uuid(), oldChoice.createdAt());
         this.patternToEntry = patternToEntry;
         this.actualize();
     }
@@ -31,13 +31,13 @@ public class RealPatternToEntryChoice extends AbstractIdentifiable implements Pa
     public RealPatternToEntryChoice(UUID uuid, LocalDateTime time, PatternToEntry patternToEntry) {
         super(uuid, time);
         this.patternToEntry = patternToEntry;
-        this.actual = super.time();
+        this.actual = super.createdAt();
     }
 
     public RealPatternToEntryChoice(UUID uuid, LocalDateTime time, State state, PatternToEntry patternToEntry) {
         super(uuid, time, state);
         this.patternToEntry = patternToEntry;
-        this.actual = super.time();
+        this.actual = super.createdAt();
     }
 
     public RealPatternToEntryChoice(PatternToEntry patternToEntry, Row row) {

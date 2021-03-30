@@ -1,5 +1,6 @@
 package diarsid.search.impl.logic.impl.jdbc;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,9 @@ import diarsid.support.objects.PooledReusable;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-public class RowCollectorForPatternToEntryAndLabels extends PooledReusable implements RowOperation {
+public class RowCollectorForPatternToEntryAndLabels extends PooledReusable implements RowOperation, ContextBoundRowOperation {
+
+    private final RowOperationContext context;
 
     private final Map<UUID, Pattern> patternsByUuids;
     private final Map<UUID, Entry> entriesByUuids;
@@ -42,6 +45,7 @@ public class RowCollectorForPatternToEntryAndLabels extends PooledReusable imple
             String entryPrefix,
             String labelPrefix,
             String patternToEntryPrefix) {
+        this.context = new RowOperationContext();
         this.patternPrefix = patternPrefix;
         this.entryPrefix = entryPrefix;
         this.labelPrefix = labelPrefix;
@@ -59,6 +63,7 @@ public class RowCollectorForPatternToEntryAndLabels extends PooledReusable imple
 
     @Override
     protected void clearForReuse() {
+        this.context.clear();
         this.patternToEntries.clear();
         this.patternsByUuids.clear();
         this.entriesByUuids.clear();
@@ -82,7 +87,7 @@ public class RowCollectorForPatternToEntryAndLabels extends PooledReusable imple
             Entry entry = entriesByUuids.get(entryUuid);
 
             if ( isNull(entry) ) {
-                entry = new RealEntry(entryPrefix, row);
+                entry = new RealEntry(context.get(LocalDateTime.class), context.get(UUID.class), entryPrefix, row);
                 entriesByUuids.put(entryUuid, entry);
             }
 
@@ -109,5 +114,10 @@ public class RowCollectorForPatternToEntryAndLabels extends PooledReusable imple
 
     public List<PatternToEntry> relations() {
         return new ArrayList<>(patternToEntries);
+    }
+
+    @Override
+    public RowOperationContext context() {
+        return context;
     }
 }

@@ -2,6 +2,7 @@ package diarsid.search.api;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
@@ -22,6 +23,16 @@ public interface Entries {
 
     Entry save(User user, String entry, List<Entry.Label> labels);
 
+    Entry reload(Entry entry);
+
+    boolean doesNotRequireReload(Entry entry);
+
+    List<Entry> reload(List<Entry> entries);
+
+    Entry getBy(User user, UUID entryUuid);
+
+    List<Entry> getBy(List<UUID> uuids);
+
     Optional<Entry> findBy(User user, String entry);
 
     List<Entry> findAllBy(User user, Entry.Label.Matching matching, List<Entry.Label> labels);
@@ -38,8 +49,34 @@ public interface Entries {
 
     boolean addLabels(Entry entry, List<Entry.Label> labels);
 
+    Entry removeLabels(User user, String entry, List<Entry.Label> labels);
+
+    boolean removeLabels(Entry entry, List<Entry.Label> labels);
+
+    long countEntriesOf(User user);
+
+    long countEntriesBy(User user, String label);
+
+    long countEntriesBy(Entry.Label label);
+
+    long countEntriesBy(User user, Entry.Label.Matching matching, List<String> labels);
+
+    long countEntriesBy(Entry.Label.Matching matching, List<Entry.Label> labels);
+
+    default Entry save(User user, String entry, Entry.Label label) {
+        return this.save(user, entry, List.of(label));
+    }
+
     default Entry save(User user, String entry, Entry.Label... labels) {
         return this.save(user, entry, asList(labels));
+    }
+
+    default boolean doesRequireReload(Entry entry) {
+        return this.doesNotRequireReload(entry);
+    }
+
+    default List<Entry> findAllBy(User user, Entry.Label label) {
+        return this.findAllBy(user, ANY_OF, List.of(label));
     }
 
     default List<Entry> findAllBy(User user, Entry.Label.Matching matching, Entry.Label... labels) {
@@ -54,12 +91,12 @@ public interface Entries {
         return this.addLabels(entry, asList(labels));
     }
 
-    default Entry save(User user, String entry, Entry.Label label) {
-        return this.save(user, entry, List.of(label));
+    default Entry removeLabels(User user, String entry, Entry.Label... labels) {
+        return this.removeLabels(user, entry, asList(labels));
     }
 
-    default List<Entry> findAllBy(User user, Entry.Label label) {
-        return this.findAllBy(user, ANY_OF, List.of(label));
+    default boolean removeLabels(Entry entry, Entry.Label... labels) {
+        return this.removeLabels(entry, asList(labels));
     }
 
     default Entry addLabel(User user, String entry, Entry.Label label) {
@@ -68,5 +105,13 @@ public interface Entries {
 
     default boolean addLabel(Entry entry, Entry.Label label) {
         return this.addLabels(entry, List.of(label));
+    }
+
+    default long countEntriesBy(User user, Entry.Label.Matching matching, String... labels) {
+        return this.countEntriesBy(user, matching, asList(labels));
+    }
+
+    default long countEntriesBy(Entry.Label.Matching matching, Entry.Label... labels) {
+        return this.countEntriesBy(matching, asList(labels));
     }
 }

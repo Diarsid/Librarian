@@ -2,52 +2,55 @@ package diarsid.search;
 
 import java.util.List;
 
+import diarsid.jdbc.api.Jdbc;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
-import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.User;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import static java.lang.Boolean.TRUE;
+import diarsid.search.impl.model.EntryJoinLabel;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static diarsid.search.api.model.Entry.Label.ConditionBindable.ENTRY_CONTAINS_LABEL_IGNORE_CASE;
 import static diarsid.search.api.model.Entry.Label.Matching.ALL_OF;
-import static diarsid.search.api.model.meta.Storable.State.STORED;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static diarsid.support.model.Storable.State.STORED;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Testx {
 
     static Core core;
     static User user;
+    static Jdbc jdbc;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         core = TestCoreSetup.INSTANCE.core;
         user = TestCoreSetup.INSTANCE.user;
+        jdbc = TestCoreSetup.INSTANCE.jdbc;
     }
 
     @Test
     public void save() {
-        List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-        core.store().entries().save(user, "Silmarillion by J.R.R Tolkien", labels);
-        core.store().entries().save(user, "Hobbit by J.R.R Tolkien", labels);
-        core.store().entries().save(user, "Lost Tales by J.R.R Tolkien", labels);
-        core.store().entries().save(user, "Sigurd and Gudrun by J.R.R Tolkien", labels);
-        core.store().entries().save(user, "Beren and Luthien by J.R.R Tolkien", labels);
-        core.store().entries().save(user, "Childrens of Hurin by J.R.R Tolkien", labels);
+        Entry.Label label = core.store().labels().getOrSave(user, "books");
+        Entry.Labeled labeledEntry = new EntryJoinLabel(null, null, null);
+
+        labeledEntry.entry();
     }
 
     @Test
     public void test_1() {
-        List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "subpath");
+        Entry entry = core.store().entries().findBy(user, "Lord of the Rings by J.R.R Tolkien").orElseThrow();
+        assertThat(entry.state()).isEqualTo(STORED);
 
-        Entry entry = core.store().entries().save(user, "Lord of the Rings by J.R.R Tolkien", labels);
-        assertThat(entry.state(), equalTo(STORED));
+        Entry reloadedEntry = core.store().entries().reload(entry);
 
-//        List<PatternToEntry> relations = core.search().findAllBy(user, "lortjrrtolk");
+        assertThat(entry == reloadedEntry).isFalse();
+
+        jdbc.doInTransaction(tx -> {
+            Entry entry1 = core.store().entries().findBy(user, "Lord of the Rings by J.R.R Tolkien").orElseThrow();
+            Entry entry1Reloaded = core.store().entries().reload(entry1);
+            assertThat(entry1 == entry1Reloaded).isTrue();
+        });
     }
 
     @Test
@@ -69,13 +72,13 @@ public class Testx {
     @Test
     public void test_2() {
         Entry.Label label = core.store().labels().getOrSave(user, "Darrell");
-        assertThat(label.state(), equalTo(STORED));
+        assertThat(label.state()).isEqualTo(STORED);
 
         Entry entry = core.store().entries().save(user, "Gerald Darrell - Three tickets to Adventure");
-        assertThat(entry.state(), equalTo(STORED));
+        assertThat(entry.state()).isEqualTo(STORED);
 
         boolean added = core.store().entries().addLabel(entry, label);
-        assertThat(added, equalTo(TRUE));
+        assertThat(added).isTrue();
     }
 
     @Test
@@ -83,7 +86,7 @@ public class Testx {
         List<Entry.Label> labels = core.store().labels().getOrSave(user, "tools", "servers", "dev");
 
         Entry entry = core.store().entries().save(user, "D:\\DEV\\3__Tools\\Servers\\Web_Servers\\Apache_Tomcat", labels);
-        assertThat(entry.state(), equalTo(STORED));
+        assertThat(entry.state()).isEqualTo(STORED);
 
         int a = 5;
     }
@@ -94,13 +97,13 @@ public class Testx {
         Entry.Label label2 = core.store().labels().getOrSave(user, "custom_path");
 
         Entry entry = core.store().entries().save(user, "My/Path/To/Target");
-        assertThat(entry.state(), equalTo(STORED));
+        assertThat(entry.state()).isEqualTo(STORED);
 
         core.store().entries().addLabel(entry, label1);
         core.store().entries().addLabel(entry, label2);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void test_4_api() {
         Entry.Label label1 = core.store().labels().getOrSave(user, "other_path");
@@ -109,7 +112,7 @@ public class Testx {
         Entry entry = core.store().entries().save(user, "My/Path/To/Target",
                 label1.bindableIf(ENTRY_CONTAINS_LABEL_IGNORE_CASE),
                 label2);
-        assertThat(entry.state(), equalTo(STORED));
+        assertThat(entry.state()).isEqualTo(STORED);
 
         core.store().entries().addLabel(entry, label1);
         core.store().entries().addLabel(entry, label2);
@@ -120,7 +123,7 @@ public class Testx {
         Entry.Label label1 = core.store().labels().getOrSave(user, "other_path");
 
         Entry entry = core.store().entries().save(user, "Path/To/My/Target");
-        assertThat(entry.state(), equalTo(STORED));
+        assertThat(entry.state()).isEqualTo(STORED);
 
         core.store().entries().addLabel(entry, label1);
     }

@@ -19,7 +19,7 @@ import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.search.api.model.meta.Storable.checkMustBeStored;
+import static diarsid.support.model.Storable.checkMustBeStored;
 
 public class PatternsToEntriesImpl extends ThreadBoundTransactional implements PatternsToEntries {
 
@@ -184,7 +184,7 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                 .stream()
                 .map(relation -> List.of(
                         relation.uuid(),
-                        relation.time(),
+                        relation.createdAt(),
                         relation.pattern().uuid(),
                         relation.entry().userUuid()))
                 .collect(toList());

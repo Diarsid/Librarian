@@ -1,17 +1,5 @@
 package diarsid.search;
 
-import java.util.List;
-import java.util.UUID;
-
-import diarsid.search.api.model.Entry;
-import diarsid.search.impl.model.RealEntry;
-import org.junit.Test;
-
-import static java.util.UUID.randomUUID;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-
 public class EntryFragmentsTest {
 
 //    @Test

@@ -26,7 +26,7 @@ public class ImportFromEntriesFile {
         Entry.Label devLabel = getLabel("dev");
         Entry.Label serversLabel = getLabel("servers");
         Entry.Label mavenLabel = getLabel("maven");
-        Entry.Label booksLabel = getLabel("books");
+        Entry.Label booksLabel = core.store().labels().getOrSave(user, "books");
         Entry.Label tolkienLabel = getLabel("tolkien");
 
         List<Entry.Label> labels = new ArrayList<>();

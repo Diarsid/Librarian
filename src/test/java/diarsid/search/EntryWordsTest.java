@@ -1,7 +1,5 @@
 package diarsid.search;
 
-import org.junit.Test;
-
 public class EntryWordsTest {
 
 //    @Test

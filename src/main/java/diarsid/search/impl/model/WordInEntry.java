@@ -2,7 +2,7 @@ package diarsid.search.impl.model;
 
 import diarsid.support.objects.CommonEnum;
 
-public class WordInEntry extends AbstractUnique {
+public class WordInEntry extends AbstractUniqueStorable {
 
     public enum Position implements CommonEnum<Position> {
         FIRST, MIDDLE, LAST, SINGLE

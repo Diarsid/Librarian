@@ -7,7 +7,7 @@ import java.util.function.BiPredicate;
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.Entry;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.support.model.Storable.State.STORED;
 
 public class RealLabel extends AbstractIdentifiableUserScoped implements Entry.Label {
 

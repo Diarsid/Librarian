@@ -3,20 +3,35 @@ package diarsid.search.api.model;
 import java.util.List;
 import java.util.function.BiPredicate;
 
-import diarsid.search.api.model.meta.Identifiable;
 import diarsid.search.api.model.meta.UserScoped;
+import diarsid.support.model.CreatedAt;
+import diarsid.support.model.Joined;
+import diarsid.support.model.Storable;
+import diarsid.support.model.Unique;
 import diarsid.support.objects.CommonEnum;
 
 import static diarsid.support.strings.StringUtils.containsPathSeparator;
 import static diarsid.support.strings.StringUtils.containsTextSeparator;
 
-public interface Entry extends Identifiable, UserScoped {
+public interface Entry extends Unique, Storable, CreatedAt, UserScoped {
 
-    interface Label extends Identifiable, UserScoped {
+    interface Labeled extends Unique, Storable, CreatedAt, Joined<Entry, Label> {
+
+        default Entry entry() {
+            return this.left();
+        }
+
+        default Label label() {
+            return this.right();
+        }
+    }
+
+    interface Label extends Unique, Storable, CreatedAt, UserScoped {
 
         enum Matching implements CommonEnum<Matching> {
             ANY_OF,
-            ALL_OF
+            ALL_OF,
+            NONE_OF
         }
 
         String name();

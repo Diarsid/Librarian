@@ -14,6 +14,7 @@ import diarsid.tests.db.embedded.h2.H2TestDataBase;
 import diarsid.tests.db.embedded.h2.SqlConnectionsSourceTestBase;
 
 import static diarsid.jdbc.api.JdbcOption.SQL_HISTORY_ENABLED;
+import static diarsid.search.api.Core.Mode.DEVELOPMENT;
 import static diarsid.support.configuration.Configuration.configure;
 
 public class TestCoreSetup {
@@ -63,6 +64,7 @@ public class TestCoreSetup {
         };
 
         core = (CoreImpl) Core.buildWith(impl);
+        core.setMode(DEVELOPMENT);
         user = (RealUser) core
                 .users()
                 .findBy(TEST_USER_NAME)

@@ -13,15 +13,17 @@ import diarsid.search.impl.model.RealEntry;
 import diarsid.search.impl.model.Word;
 import diarsid.search.impl.model.WordInEntry;
 
+import static java.util.stream.Collectors.toList;
+
 import static diarsid.search.api.Behavior.Feature.JOIN_SINGLE_CHARS_TO_NEXT_WORD;
 import static diarsid.search.api.Behavior.Feature.USE_CAMEL_CASE_WORDS_DECOMPOSITION;
 import static diarsid.search.api.model.Entry.Type.WORD;
-import static diarsid.search.api.model.meta.Storable.State.STORED;
 import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_ORIGINAL;
 import static diarsid.search.impl.model.WordInEntry.Position.FIRST;
 import static diarsid.search.impl.model.WordInEntry.Position.LAST;
 import static diarsid.search.impl.model.WordInEntry.Position.MIDDLE;
 import static diarsid.search.impl.model.WordInEntry.Position.SINGLE;
+import static diarsid.support.model.Storable.State.STORED;
 import static diarsid.support.strings.StringUtils.containsTextSeparator;
 import static diarsid.support.strings.StringUtils.splitByAnySeparators;
 import static diarsid.support.strings.StringUtils.splitCamelCase;
@@ -44,7 +46,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         Word word;
         WordInEntry wordInEntry;
         if ( entry.type().equalTo(WORD) ) {
-            word = this.words.getOrSave(entry.userUuid(), entry.stringLower(), entry.time());
+            word = this.words.getOrSave(entry.userUuid(), entry.stringLower(), entry.createdAt());
             wordInEntry = new WordInEntry(entry, word, SINGLE, 0);
             this.save(wordInEntry);
             wordInEntries.add(wordInEntry);
@@ -64,7 +66,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
                     continue;
                 }
 
-                word = this.words.getOrSave(entry.userUuid(), wordString, entry.time());
+                word = this.words.getOrSave(entry.userUuid(), wordString, entry.createdAt());
                 wordPosition = definePosition(i, last);
 
                 wordInEntry = new WordInEntry(entry, word, wordPosition, wordsActualCounter);
@@ -109,7 +111,11 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
                 wordStrings = joinSingleCharsToNextWord(wordStrings);
             }
         }
-        return wordStrings;
+
+        return wordStrings
+                .stream()
+                .distinct()
+                .collect(toList());
     }
 
     private void save(WordInEntry wordInEntry) {
@@ -173,6 +179,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
                 wordBuilder.append(word);
                 newWord = wordBuilder.toString();
                 wordBuilder.delete(0, wordBuilder.length());
+                result.add(word);
                 result.add(newWord);
             }
             else {
@@ -181,5 +188,12 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         }
 
         return result;
+    }
+
+    public static List<String> splitToWords(String string) {
+        return splitByAnySeparators(string)
+                .stream()
+                .distinct()
+                .collect(toList());
     }
 }

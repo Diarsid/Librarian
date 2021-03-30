@@ -6,9 +6,10 @@ import java.util.UUID;
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.User;
 
-import static diarsid.search.api.model.meta.Storable.State.STORED;
+import static diarsid.support.model.Storable.State.STORED;
 
-public class RealUser extends AbstractIdentifiable implements User {
+
+public class RealUser extends AbstractCreatedAt implements User {
 
     private final String name;
 
