@@ -1,7 +1,9 @@
 package diarsid.search.impl.logic.impl.search.v2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.rows.Row;
@@ -24,7 +26,10 @@ import static java.time.LocalDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.search.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.search.api.model.Entry.Label.Matching.ANY_OF;
@@ -48,28 +53,41 @@ public class SearchByCharsImplTest {
     static Timer timer;
     static StringCacheForRepeatedSeparated wildcards= new StringCacheForRepeatedSeparated("?", ", ");
 
-    static class ResultDescription {
+    static class ResultLine {
 
         final String entry;
-        final String word;
-        final long wordCode;
+        final ResultWord word;
 
-        public ResultDescription(Row row) {
+        public ResultLine(Row row) {
             this.entry = row.stringOf("string_origin");
-            this.word = row.stringOf("string");
-            this.wordCode = row.longOf("w_code");
+            this.word = new ResultWord(row);
         }
 
-        String string() {
-            return format("%s   %s    %s", entry, word, wordCode);
+        String entry() {
+            return entry;
+        }
+
+        ResultWord word() {
+            return word;
+        }
+    }
+
+    static class ResultWord {
+        final String string;
+        final long code;
+
+        public ResultWord(Row row) {
+            this.string = row.stringOf("string");
+            this.code = row.longOf("w_code");
         }
     }
 
     String pattern;
     List<Entry.Label> labels;
     Entry.Label.Matching matching;
-    List<Entry> results;
-    List<ResultDescription> resultDescriptions;
+    List<Entry> resultingEntries;
+    Map<String, List<ResultWord>> resultingEntriesAndWords;
+    List<ResultLine> resultLines;
 
     @BeforeAll
     public static void setUp() {
@@ -95,11 +113,14 @@ public class SearchByCharsImplTest {
         message.newLine().add("labels   : ").add(labels.stream().map(Entry.Label::name).collect(joining(", ")));
         }
         message.newLine().add("time     : ").add(timer.last().millis()).add(" ms");
-        message.newLine().add("count    : ").add(results.size());
-        if ( nonNull(resultDescriptions) && ! resultDescriptions.isEmpty() ) {
+        message.newLine().add("count    : ").add(resultingEntries.size());
+        if ( nonNull(resultLines) && ! resultLines.isEmpty() ) {
         int i = 0;
-        for ( ResultDescription description : resultDescriptions ) {
-        message.newLine().indent().add(i).add(" : ").add(description.string());
+        for ( Map.Entry<String, List<ResultWord>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
+        message.newLine().indent().add(i).add(" : ").add(entryAndWords.getKey());
+        for( ResultWord word : entryAndWords.getValue() ) {
+            message.newLine().indent(3).add(word.code).add(" : ").add(word.string);
+        }
         i++;
         }
         }
@@ -148,15 +169,15 @@ public class SearchByCharsImplTest {
     }
 
     void expectSomeEntries() {
-        assertThat(this.results.size()).isGreaterThan(0);
+        assertThat(this.resultingEntries.size()).isGreaterThan(0);
     }
 
     void expectEntriesCount(int count) {
-        assertThat(this.results.size()).isEqualTo(count);
+        assertThat(this.resultingEntries.size()).isEqualTo(count);
     }
 
     void expectEntriesCountNoLessThan(int count) {
-        assertThat(this.results.size()).isGreaterThanOrEqualTo(count);
+        assertThat(this.resultingEntries.size()).isGreaterThanOrEqualTo(count);
     }
 
     void expectContainingEntries(String... entries) {
@@ -172,7 +193,7 @@ public class SearchByCharsImplTest {
     void expectContainingString(String entry) {
         expectEntriesCountNoLessThan(1);
 
-        boolean contains = this.results
+        boolean contains = this.resultingEntries
                 .stream()
                 .map(Entry::string)
                 .anyMatch(string -> string.contains(entry));
@@ -189,23 +210,23 @@ public class SearchByCharsImplTest {
 
     private void executeSearch() {
         String testMethodName = methodName(2);
+
         jdbc.doInTransaction(transaction -> {
             timer.start(testMethodName);
             try {
-                results = searchByChars.findBy(user, pattern, matching, labels);
+                resultingEntries = searchByChars.findBy(user, pattern, matching, labels);
             }
             finally {
                 timer.stop();
             }
         });
 
-        if ( nonNull(results) && isNotEmpty(results) ) {
-            resultDescriptions = new ArrayList<>();
+        if ( nonNull(resultingEntries) && isNotEmpty(resultingEntries) ) {
+            resultLines = new ArrayList<>();
 
             jdbc.doInTransaction(transaction -> {
-                transaction.doQuery(row -> {
-                            resultDescriptions.add(new ResultDescription(row));
-                        },
+                transaction.doQuery(
+                        row -> resultLines.add(new ResultLine(row)),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
                         "    SELECT uuid, string, MY_MATCHING_18(?, string) AS w_code \n" +
@@ -225,17 +246,23 @@ public class SearchByCharsImplTest {
                         "        ON we.word_uuid = ws.uuid \n" +
                         "    JOIN entries e \n" +
                         "        ON e.uuid = we.entry_uuid \n" +
-                        "WHERE we.entry_uuid IN ( " + wildcards.getFor(results) + " ) \n" +
+                        "WHERE we.entry_uuid IN ( " + wildcards.getFor(resultingEntries) + " ) \n" +
                         "ORDER BY e.string_origin ",
-                        pattern, transform(pattern), user.uuid(), uuidsOf(results));
+                        pattern, transform(pattern), user.uuid(), uuidsOf(resultingEntries));
             });
+
+            resultingEntriesAndWords = resultLines
+                    .stream()
+                    .collect(
+                            groupingBy(line -> line.entry,
+                            mapping(line -> line.word, toList())));
         }
     }
 
     @Test
     public void test_short() {
         search(() -> {
-            results = searchByChars.findBy(user, "tolos");
+            resultingEntries = searchByChars.findBy(user, "tolos");
         });
     }
 
@@ -392,7 +419,7 @@ public class SearchByCharsImplTest {
     public void test_get() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lorofrng", ANY_OF, labels);
+            resultingEntries = searchByChars.findBy(user, "lorofrng", ANY_OF, labels);
             int a = 5;
         });
     }
@@ -401,7 +428,7 @@ public class SearchByCharsImplTest {
     public void test_short_allOf_2() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "dev", "servers");
-            results = searchByChars.findBy(user, "tolos", ALL_OF, labels);
+            resultingEntries = searchByChars.findBy(user, "tolos", ALL_OF, labels);
             int a = 5;
         });
     }
@@ -410,7 +437,7 @@ public class SearchByCharsImplTest {
     public void test_long_allOf_2() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ALL_OF, labels);
+            resultingEntries = searchByChars.findBy(user, "lordofng", ALL_OF, labels);
         });
     }
 
@@ -418,7 +445,7 @@ public class SearchByCharsImplTest {
     public void test_long_anyOf_2() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ANY_OF, labels);
+            resultingEntries = searchByChars.findBy(user, "lordofng", ANY_OF, labels);
         });
     }
 
@@ -426,7 +453,7 @@ public class SearchByCharsImplTest {
     public void test_long_allOf_2_beforeTime() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ALL_OF, labels, BEFORE, now());
+            resultingEntries = searchByChars.findBy(user, "lordofng", ALL_OF, labels, BEFORE, now());
         });
     }
 
@@ -434,7 +461,7 @@ public class SearchByCharsImplTest {
     public void test_long_allOf_2_afterTime() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ALL_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
+            resultingEntries = searchByChars.findBy(user, "lordofng", ALL_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
         });
     }
 
@@ -442,7 +469,7 @@ public class SearchByCharsImplTest {
     public void test_long_anyOf_2_beforeTime() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ANY_OF, labels, BEFORE, now());
+            resultingEntries = searchByChars.findBy(user, "lordofng", ANY_OF, labels, BEFORE, now());
         });
     }
 
@@ -450,21 +477,21 @@ public class SearchByCharsImplTest {
     public void test_long_anyOf_2_afterTime() {
         search(() -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "books", "tolkien");
-            results = searchByChars.findBy(user, "lordofng", ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
+            resultingEntries = searchByChars.findBy(user, "lordofng", ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
         });
     }
 
     @Test
     public void test_short_afterTime() {
         jdbc.doInTransaction(transaction -> {
-            results = searchByChars.findBy(user, "tolos", null, emptyList(), AFTER_OR_EQUAL, now().minusYears(1));
+            resultingEntries = searchByChars.findBy(user, "tolos", null, emptyList(), AFTER_OR_EQUAL, now().minusYears(1));
         });
     }
 
     @Test
     public void test_short_beforeTime() {
         jdbc.doInTransaction(transaction -> {
-            results = searchByChars.findBy(user, "tolos", null, emptyList(), BEFORE, now());
+            resultingEntries = searchByChars.findBy(user, "tolos", null, emptyList(), BEFORE, now());
         });
     }
 
@@ -472,7 +499,7 @@ public class SearchByCharsImplTest {
     public void test_short_allOf_2_afterTime() {
         jdbc.doInTransaction(transaction -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "dev", "servers");
-            results = searchByChars.findBy(user, "tolos", ALL_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
+            resultingEntries = searchByChars.findBy(user, "tolos", ALL_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
         });
     }
 
@@ -480,7 +507,7 @@ public class SearchByCharsImplTest {
     public void test_short_allOf_2_beforeTime() {
         jdbc.doInTransaction(transaction -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "dev", "servers");
-            results = searchByChars.findBy(user, "tolos", ALL_OF, labels, BEFORE, now());
+            resultingEntries = searchByChars.findBy(user, "tolos", ALL_OF, labels, BEFORE, now());
         });
     }
 
@@ -488,7 +515,7 @@ public class SearchByCharsImplTest {
     public void test_short_anyOf_2_afterTime() {
         jdbc.doInTransaction(transaction -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "dev", "servers");
-            results = searchByChars.findBy(user, "tolos", ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
+            resultingEntries = searchByChars.findBy(user, "tolos", ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1));
         });
     }
 
@@ -496,7 +523,7 @@ public class SearchByCharsImplTest {
     public void test_short_anyOf_2_beforeTime() {
         jdbc.doInTransaction(transaction -> {
             List<Entry.Label> labels = core.store().labels().getOrSave(user, "dev", "servers");
-            results = searchByChars.findBy(user, "tolos", ANY_OF, labels, BEFORE, now());
+            resultingEntries = searchByChars.findBy(user, "tolos", ANY_OF, labels, BEFORE, now());
         });
     }
 }
