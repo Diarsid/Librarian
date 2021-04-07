@@ -119,7 +119,7 @@ public class SearchByCharsImplTest {
         for ( Map.Entry<String, List<ResultWord>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
         message.newLine().indent().add(i).add(" : ").add(entryAndWords.getKey());
         for( ResultWord word : entryAndWords.getValue() ) {
-            message.newLine().indent(3).add(word.code).add(" : ").add(word.string);
+            message.newLine().indent(3).add(word.string).add(" : ").add(word.code).add(" - ").add(new PatternToWordMatchingCode.Description(word.code).toString());
         }
         i++;
         }

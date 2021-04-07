@@ -4,6 +4,47 @@ import static java.lang.String.format;
 
 public final class PatternToWordMatchingCode {
 
+    public static class Description {
+
+        public final int patternLength;
+        public final int matchIndex;
+        public final int wordLength;
+        public final int rate;
+        public final int matchLength;
+
+        public Description(long code) {
+            this.matchLength = (int) (code % 100);
+
+            code = code / 100;
+
+            this.matchIndex = (int) (code % 100);
+
+            code = code / 100;
+
+            this.wordLength = (int) (code % 100);
+
+            code = code / 100;
+
+            this.rate = (int) (code % 1000);
+
+            code = code / 1000;
+
+            this.patternLength = (int) (code % 100);
+        }
+
+        @Override
+        public String toString() {
+            return
+                    "pattern_L=" + patternLength +
+                    ", word_L=" + wordLength +
+                    ", match_L=" + matchLength +
+                    ", match_Ix=" + matchIndex +
+                    ", rate=" + rate;
+        }
+    }
+
+    public static final String CODE_MAP = "P-LEN_RATE_W-LEN_M-IX_M-LEN";
+
     private PatternToWordMatchingCode() {}
 
     public static void logln(String s) {
