@@ -47,9 +47,9 @@ public class RealPattern extends AbstractIdentifiableUserScoped implements Patte
 
     @Override
     public String toString() {
-        return "RealPattern{" +
-                "uuid='" + super.uuid() + '\'' +
-                ", string='" + string + '\'' +
+        return "Pattern{" +
+                "'" + super.uuid() + '\'' +
+                ", '" + string + '\'' +
                 '}';
     }
 }

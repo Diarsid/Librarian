@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 
@@ -22,4 +23,12 @@ public interface Labels {
     }
 
     Optional<Entry.Label> findBy(User user, String name);
+
+    void checkMustExist(Entry.Label label) throws NotFoundException;
+
+    void checkMustExist(List<Entry.Label> labels) throws NotFoundException;
+
+    default void checkMustExist(Entry.Label... labels) throws NotFoundException {
+        this.checkMustExist(asList(labels));
+    }
 }

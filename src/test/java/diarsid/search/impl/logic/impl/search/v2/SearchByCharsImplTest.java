@@ -2,17 +2,14 @@ package diarsid.search.impl.logic.impl.search.v2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.rows.Row;
-import diarsid.search.TestCoreSetup;
+import diarsid.search.tests.CoreTestSetup;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.search.SearchByChars;
-import diarsid.support.objects.Pair;
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
@@ -38,6 +35,7 @@ import static diarsid.search.impl.logic.impl.search.v2.CharSort.transform;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
 import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
+import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -75,9 +73,10 @@ public class SearchByCharsImplTest {
 
     @BeforeAll
     public static void setUp() {
-        core = TestCoreSetup.INSTANCE.core;
-        user = TestCoreSetup.INSTANCE.user;
-        jdbc = TestCoreSetup.INSTANCE.jdbc;
+        CoreTestSetup coreTestSetup = new CoreTestSetup(REMOTE);
+        core = coreTestSetup.core;
+        user = coreTestSetup.user;
+        jdbc = coreTestSetup.jdbc;
         searchByChars = new SearchByCharsImpl(jdbc);
         timer = new Timer();
     }
@@ -364,6 +363,11 @@ public class SearchByCharsImplTest {
     @Test
     public void test_search_virtlservs_withoutLabels() {
         search("virtlservs");
+    }
+
+    @Test
+    public void test_search_servs_withoutLabels() {
+        search("servs");
     }
 
     @Test

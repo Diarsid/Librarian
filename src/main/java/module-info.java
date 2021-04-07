@@ -9,6 +9,7 @@ module diarsid.search {
 
     exports diarsid.search.api;
     exports diarsid.search.api.annotations;
+    exports diarsid.search.api.exceptions;
     exports diarsid.search.api.model;
     exports diarsid.search.api.model.meta;
     exports diarsid.search.api.required;

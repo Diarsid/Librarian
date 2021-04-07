@@ -50,9 +50,12 @@ public class RealLabel extends AbstractIdentifiableUserScoped implements Entry.L
 
     @Override
     public String toString() {
-        return "RealLabel{" +
-                "uuid='" + super.uuid() + '\'' +
-                ", name='" + name + '\'' +
+        return "Label{" +
+                "'" + super.uuid() + '\'' +
+                ", '" + name + '\'' +
+                ", '" + super.createdAt() + '\'' +
                 '}';
     }
+
+
 }

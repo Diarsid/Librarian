@@ -1,12 +1,11 @@
-package diarsid.search;
+package diarsid.search.api;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.UsersLocking;
-import diarsid.search.impl.logic.impl.CoreImpl;
 import diarsid.search.impl.logic.impl.UsersLockingImpl;
+import diarsid.search.tests.EmbeddedTransactionalRollbackTest;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.System.currentTimeMillis;
@@ -15,11 +14,9 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static diarsid.support.concurrency.threads.ThreadsUtil.sleepSafely;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class UsersLockingTest {
+public class UsersLockingTest extends EmbeddedTransactionalRollbackTest {
 
-    CoreImpl core = TestCoreSetup.INSTANCE.core;
-    UsersLocking locking = new UsersLockingImpl(core.jdbc());
-    User user = TestCoreSetup.INSTANCE.user;
+    UsersLocking locking = new UsersLockingImpl(JDBC);
 
     @Test
     public void test() {
@@ -30,19 +27,19 @@ public class UsersLockingTest {
         AtomicReference<Long> transact2End = new AtomicReference<>();
 
         CompletableFuture asyncTransact1 = runAsync(() -> {
-            core.jdbc().doInTransaction(transaction -> {
+            JDBC.doInTransaction(transaction -> {
                 transact1Begin.set(currentTimeMillis());
-                locking.lock(user);
+                locking.lock(USER);
                 sleepSafely(500);
                 transact1BeforeUnlock.set(currentTimeMillis());
             });
         });
 
         CompletableFuture asyncTransact2 = runAsync(() -> {
-            core.jdbc().doInTransaction(transaction -> {
+            JDBC.doInTransaction(transaction -> {
                 sleepSafely(100);
                 transact2Begin.set(currentTimeMillis());
-                locking.lock(user);
+                locking.lock(USER);
                 transact2AfterLock.set(currentTimeMillis());
                 transact2End.set(currentTimeMillis());
             });

@@ -81,6 +81,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
+                <configuration>
+                    <argLine> --add-exports diarsid.search/diarsid.search.tests=ALL-UNNAMED </argLine>
+                </configuration>
             </plugin>
 
             <plugin>

@@ -1,5 +1,6 @@
 package diarsid.search.impl.logic.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,40 +13,42 @@ import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.required.StringsComparisonAlgorithm;
 import diarsid.search.impl.logic.api.PatternsToEntries;
-import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryAndLabels;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
-import diarsid.support.objects.GuardedPool;
+import diarsid.search.impl.model.RealPatternToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
+import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
 import static diarsid.support.model.Storable.checkMustBeStored;
 
 public class PatternsToEntriesImpl extends ThreadBoundTransactional implements PatternsToEntries {
 
     private final StringsComparisonAlgorithm algorithm;
-    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectPatternToEntryAndLabelsByEntries;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectPatternToEntryByEntries;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntries;
-    private final GuardedPool<RowCollectorForPatternToEntryAndLabels> rowCollectorsPool;
 
     public PatternsToEntriesImpl(
             Jdbc jdbc,
-            StringsComparisonAlgorithm algorithm,
-            GuardedPool<RowCollectorForPatternToEntryAndLabels> rowCollectorsPool) {
+            StringsComparisonAlgorithm algorithm) {
         super(jdbc);
         this.algorithm = algorithm;
-        this.rowCollectorsPool = rowCollectorsPool;
-        this.sqlSelectPatternToEntryAndLabelsByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
-                "SELECT p.*, e.*, l.*, pe.* \n" +
+        this.sqlSelectPatternToEntryByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT \n" +
+                "   p.uuid          AS p_uuid, \n" +
+                "   p.string        AS p_string, \n" +
+                "   p.time          AS p_time, \n" +
+                "   p.user_uuid     AS p_user_uuid, \n" +
+                "   pe.uuid         AS pe_uuid, \n" +
+                "   pe.time         AS pe_time, \n" +
+                "   pe.algorithm    AS pe_algorithm, \n" +
+                "   pe.weight       AS pe_weight \n" +
                 "FROM entries e \n" +
                 "   JOIN patterns_to_entries pe \n" +
                 "       ON pe.entry_uuid = e.uuid \n" +
                 "   JOIN patterns p \n" +
                 "       ON pe.pattern_uuid = p.uuid \n" +
-                "   LEFT JOIN labels_to_entries le \n" +
-                "       ON e.uuid = le.entry_uuid \n" +
-                "   LEFT JOIN label l \n" +
-                "       ON le.label_uuid = l.uuid \n" +
                 "WHERE \n" +
                 "   p.uuid = ? AND \n" +
                 "   e.uuid IN ( \n",
@@ -63,26 +66,31 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
     @Override
     public List<PatternToEntry> findBy(Pattern pattern) {
         checkMustBeStored(pattern);
+        LocalDateTime actualAt = now();
 
-        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
-            super.currentTransaction()
-                    .doQuery(
-                            relationsCollector,
-                            "SELECT p.*, e.*, l.*, pe.* \n" +
-                            "FROM entries e \n" +
-                            "   JOIN patterns_to_entries pe \n" +
-                            "       ON pe.entry_uuid = e.uuid \n" +
-                            "   JOIN patterns p \n" +
-                            "       ON pe.pattern_uuid = p.uuid \n" +
-                            "   LEFT JOIN labels_to_entries le \n" +
-                            "       ON e.uuid = le.entry_uuid \n" +
-                            "   LEFT JOIN label l \n" +
-                            "       ON le.label_uuid = l.uuid \n" +
-                            "WHERE patterns.uuid = ? \n",
-                            pattern.uuid());
+        List<PatternToEntry> patternsToEntries = super.currentTransaction()
+                .doQueryAndStream(
+                        row -> new RealPatternToEntry(pattern, row, "pe_", "e_", actualAt),
+                        "SELECT \n" +
+                        "   e.uuid          AS e_uuid, \n" +
+                        "   e.string_origin AS e_string_origin, \n" +
+                        "   e.string_lower  AS e_string_lower, \n" +
+                        "   e.time          AS e_time, \n" +
+                        "   e.user_uuid     AS e_user_uuid, \n" +
+                        "   pe.uuid         AS pe_uuid, \n" +
+                        "   pe.time         AS pe_time, \n" +
+                        "   pe.algorithm    AS pe_algorithm, \n" +
+                        "   pe.weight       AS pe_weight \n" +
+                        "FROM entries e \n" +
+                        "   JOIN patterns_to_entries pe \n" +
+                        "       ON pe.entry_uuid = e.uuid \n" +
+                        "   JOIN patterns p \n" +
+                        "       ON pe.pattern_uuid = p.uuid \n" +
+                        "WHERE p.uuid = ? ",
+                        pattern.uuid())
+                .collect(toList());
 
-            return relationsCollector.relations();
-        }
+        return patternsToEntries;
     }
 
     @Override
@@ -105,40 +113,44 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                 .map(Entry::uuid)
                 .collect(toList());
 
-        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
-            super.currentTransaction()
-                    .doQuery(
-                            relationsCollector,
-                            this.sqlSelectPatternToEntryAndLabelsByEntries.getFor(uuids),
-                            pattern.uuid(), uuids);
+        LocalDateTime entriesActualAt = now();
 
-            return relationsCollector.relations();
-        }
+        List<PatternToEntry> relations = super.currentTransaction()
+                .doQueryAndStream(
+                        row -> new RealPatternToEntry(pattern, row, "pe_", "e_", entriesActualAt),
+                        this.sqlSelectPatternToEntryByEntries.getFor(uuids),
+                        pattern.uuid(), uuids)
+                .collect(toList());
+
+        return relations;
     }
 
     @Override
     public List<PatternToEntry> findBy(Entry entry) {
         checkMustBeStored(entry);
 
-        try (RowCollectorForPatternToEntryAndLabels relationsCollector = this.rowCollectorsPool.give()) {
-            super.currentTransaction()
-                    .doQuery(
-                            relationsCollector,
-                            "SELECT * \n" +
-                            "FROM entries e \n" +
-                            "   JOIN patterns_to_entries pe \n" +
-                            "       ON pe.entry_uuid = e.uuid \n" +
-                            "   JOIN patterns p \n" +
-                            "       ON pe.pattern_uuid = p.uuid " +
-                            "   LEFT JOIN labels_to_entries le \n" +
-                            "       ON e.uuid = le.entry_uuid \n" +
-                            "   LEFT JOIN label l \n" +
-                            "       ON le.label_uuid = l.uuid \n" +
-                            "WHERE e.uuid = ? ",
-                            entry.uuid());
+        List<PatternToEntry> relations = super.currentTransaction()
+                .doQueryAndStream(
+                        row -> new RealPatternToEntry(entry, row, "pe_", "p_"),
+                        "SELECT \n" +
+                        "   p.uuid          AS p_uuid, \n" +
+                        "   p.string        AS p_string, \n" +
+                        "   p.time          AS p_time, \n" +
+                        "   p.user_uuid     AS p_user_uuid, \n" +
+                        "   pe.uuid         AS pe_uuid, \n" +
+                        "   pe.time         AS pe_time, \n" +
+                        "   pe.algorithm    AS pe_algorithm, \n" +
+                        "   pe.weight       AS pe_weight \n" +
+                        "FROM entries e \n" +
+                        "   JOIN patterns_to_entries pe \n" +
+                        "       ON pe.entry_uuid = e.uuid \n" +
+                        "   JOIN patterns p \n" +
+                        "       ON pe.pattern_uuid = p.uuid \n" +
+                        "WHERE e.uuid = ? ",
+                        entry.uuid())
+                .collect(toList());
 
-            return relationsCollector.relations();
-        }
+        return relations;
     }
 
     @Override
@@ -199,6 +211,7 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                         "VALUES (?, ?, ?, ?) ",
                         params);
 
+        mustAllBe(1, inserted);
         if ( inserted.length != relations.size() ) {
             throw new IllegalStateException();
         }

@@ -1,4 +1,4 @@
-package diarsid.search.imports;
+package diarsid.search.tests.imports;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import diarsid.search.TestCoreSetup;
+import diarsid.search.tests.CoreTestSetup;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
@@ -17,10 +17,13 @@ import diarsid.search.api.model.User;
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 
+import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
+
 public class ImportFromBooksFile {
 
-    private static Core core = TestCoreSetup.INSTANCE.core;
-    private static User user = TestCoreSetup.INSTANCE.user;
+    private static CoreTestSetup coreTestSetup = new CoreTestSetup(REMOTE);
+    private static Core core = coreTestSetup.core;
+    private static User user = coreTestSetup.user;
 
     public static void main(String[] args) throws Exception {
         Entry.Label booksLabel = core.store().labels().getOrSave(user, "books");

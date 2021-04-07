@@ -56,6 +56,24 @@ public class RealPatternToEntryChoice extends AbstractCreatedAt implements Patte
         this.actual = row.timeOf(prefix + "time_actual");
     }
 
+    public RealPatternToEntryChoice(
+            Row row,
+            String joinColumnPrefix,
+            String patternColumnPrefix,
+            String entryColumnPrefix,
+            String patternToEntryColumnPrefix,
+            LocalDateTime entryActualAt) {
+        super(
+                row.uuidOf(joinColumnPrefix + "uuid"),
+                row.timeOf(joinColumnPrefix + "time"));
+        this.patternToEntry = new RealPatternToEntry(
+                row, patternToEntryColumnPrefix,
+                entryColumnPrefix,
+                patternColumnPrefix,
+                entryActualAt);
+        this.actual = row.timeOf(joinColumnPrefix + "time_actual");
+    }
+
     @Override
     public PatternToEntry patternToEntry() {
         return patternToEntry;
@@ -79,8 +97,8 @@ public class RealPatternToEntryChoice extends AbstractCreatedAt implements Patte
 
     @Override
     public String toString() {
-        return "RealPatternToEntryChoice{" +
-                "uuid='" + super.uuid() + '\'' +
+        return "PatternToEntryChoice{" +
+                "'" + super.uuid() + '\'' +
                 ", patternToEntry=" + patternToEntry +
                 ", actual=" + actual +
                 '}';

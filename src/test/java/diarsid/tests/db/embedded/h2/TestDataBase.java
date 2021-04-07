@@ -5,6 +5,8 @@
  */
 package diarsid.tests.db.embedded.h2;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -15,6 +17,8 @@ import java.sql.SQLException;
 public interface TestDataBase {
     
     Connection getConnection() throws SQLException;
+
+    void executeScript(Path path) throws SQLException, FileNotFoundException;
     
     int getConnectionsQuantity();
     

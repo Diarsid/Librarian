@@ -32,11 +32,9 @@ public class StringsComparisonAlgorithmValidation {
 
         Pattern pattern = new RealPattern(patternString, userUuid);
 
-        UUID transactionUuid = randomUUID();
-
-        Entry betterEntry = new RealEntry(betterEntryString, userUuid, transactionUuid);
-        Entry worseEntry = new RealEntry(worseEntryString, userUuid, transactionUuid);
-        Entry badEntry = new RealEntry(badEntryString, userUuid, transactionUuid);
+        Entry betterEntry = new RealEntry(betterEntryString, userUuid);
+        Entry worseEntry = new RealEntry(worseEntryString, userUuid);
+        Entry badEntry = new RealEntry(badEntryString, userUuid);
 
         List<PatternToEntry> relations = algorithm.analyze(pattern, List.of(badEntry, worseEntry, betterEntry));
 

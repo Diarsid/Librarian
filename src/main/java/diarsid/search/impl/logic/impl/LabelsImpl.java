@@ -9,6 +9,7 @@ import java.util.UUID;
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.ThreadBoundJdbcTransaction;
 import diarsid.search.api.Labels;
+import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
@@ -20,28 +21,56 @@ import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.search.api.model.meta.UserScoped.checkMustBelongToOneUser;
 import static diarsid.support.model.Storable.State.STORED;
+import static diarsid.support.model.Storable.checkMustBeStored;
+import static diarsid.support.model.Unique.uuidsOf;
 
 public class LabelsImpl extends ThreadBoundTransactional implements Labels {
 
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectLabelsWhereNameIn;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectLabelsWhereUuidIn;
 
     public LabelsImpl(Jdbc jdbc) {
         super(jdbc);
+
         this.sqlSelectLabelsWhereNameIn = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT * \n" +
                 "FROM labels \n" +
                 "WHERE \n" +
                 "   name IN ( \n",
                 "      ? ", ", \n",
-                "       ) AND \n" +
+                "   ) AND \n" +
                 "   user_uuid = ? "
+        );
+
+        this.sqlSelectLabelsWhereUuidIn = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT * \n" +
+                "FROM labels \n" +
+                "WHERE \n" +
+                "   uuid IN ( \n",
+                "      ? ", ", \n",
+                "   ) "
         );
     }
 
     @Override
     public Entry.Label getBy(User user, UUID uuid) {
-        return null;
+        Optional<Entry.Label> label = super.currentTransaction()
+                .doQueryAndConvertFirstRow(
+                        RealLabel::new,
+                        "SELECT * \n" +
+                        "FROM labels \n" +
+                        "WHERE \n" +
+                        "   uuid = ? AND \n" +
+                        "   user_uuid = ? ",
+                        uuid, user.uuid());
+
+        if ( label.isEmpty() ) {
+            throw new NotFoundException();
+        }
+
+        return label.get();
     }
 
     @Override
@@ -164,6 +193,37 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
                         "   name = ? AND \n" +
                         "   user_uuid = ? ",
                         name, user.uuid());
+    }
+
+    @Override
+    public void checkMustExist(Entry.Label label) throws NotFoundException {
+        checkMustBeStored(label);
+
+        int count = super.currentTransaction()
+                .countQueryResults(
+                        "SELECT * " +
+                        "FROM labels " +
+                        "WHERE uuid = ?",
+                        label.uuid());
+
+        if ( count != 1 ) {
+            throw new NotFoundException();
+        }
+    }
+
+    @Override
+    public void checkMustExist(List<Entry.Label> labels) throws NotFoundException {
+        checkMustBeStored(labels);
+        checkMustBelongToOneUser(labels);
+
+        int count = super.currentTransaction()
+                .countQueryResults(
+                        this.sqlSelectLabelsWhereUuidIn.getFor(labels),
+                        uuidsOf(labels));
+
+        if ( count != labels.size() ) {
+            throw new NotFoundException();
+        }
     }
 
     private static void normalizeAll(List<String> names) {

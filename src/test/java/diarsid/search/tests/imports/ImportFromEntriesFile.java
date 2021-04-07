@@ -1,4 +1,4 @@
-package diarsid.search.imports;
+package diarsid.search.tests.imports;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import diarsid.search.TestCoreSetup;
+import diarsid.search.tests.CoreTestSetup;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
@@ -14,11 +14,14 @@ import diarsid.search.api.model.User;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.search.api.model.Entry.Label.ConditionBindable.ENTRY_CONTAINS_LABEL_IGNORE_CASE;
+import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
 
 public class ImportFromEntriesFile {
 
-    private static Core core = TestCoreSetup.INSTANCE.core;
-    private static User user = TestCoreSetup.INSTANCE.user;
+
+    private static CoreTestSetup coreTestSetup = new CoreTestSetup(REMOTE);
+    private static Core core = coreTestSetup.core;
+    private static User user = coreTestSetup.user;
 
     public static void main(String[] args) throws Exception {
         Entry.Label gameLabel = getLabel("games");
@@ -32,7 +35,8 @@ public class ImportFromEntriesFile {
         List<Entry.Label> labels = new ArrayList<>();
 
         Consumer<String> saveLineAsEntry = line -> {
-            core.store().entries().save(user, line, labels);
+            Entry entry = core.store().entries().save(user, line);
+            List<Entry.Labeled> labeled = core.store().labeledEntries().add(entry, labels);
         };
 
         Files.readAllLines(Paths.get("./src/test/resources/entries"))

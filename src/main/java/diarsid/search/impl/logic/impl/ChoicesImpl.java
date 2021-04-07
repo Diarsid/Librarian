@@ -1,5 +1,6 @@
 package diarsid.search.impl.logic.impl;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import diarsid.jdbc.api.Jdbc;
@@ -9,23 +10,18 @@ import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.PatternToEntryChoice;
 import diarsid.search.impl.logic.api.Choices;
-import diarsid.search.impl.logic.impl.jdbc.RowCollectorForPatternToEntryChoice;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealPatternToEntryChoice;
-import diarsid.support.objects.GuardedPool;
+
+import static java.time.LocalDateTime.now;
 
 import static diarsid.support.model.Storable.State.STORED;
 import static diarsid.support.model.Storable.checkMustBeStored;
 
 public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
-    private final GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors;
-
-    public ChoicesImpl(
-            Jdbc jdbc,
-            GuardedPool<RowCollectorForPatternToEntryChoice> rowCollectors) {
+    public ChoicesImpl(Jdbc jdbc) {
         super(jdbc);
-        this.rowCollectors = rowCollectors;
     }
 
     @Override
@@ -54,28 +50,36 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
     @Override
     public Optional<PatternToEntryChoice> findBy(Pattern pattern) {
         checkMustBeStored(pattern);
+        LocalDateTime entryActualAt = now();
 
-        try (RowCollectorForPatternToEntryChoice rowCollector = this.rowCollectors.give()) {
-            super.currentTransaction()
-                    .doQuery(
-                            rowCollector,
-                            "SELECT * \n" +
-                            "FROM choices c \n" +
-                            "   JOIN patterns_to_entries pe \n" +
-                            "       ON c.relation_uuid = pe.uuid \n" +
-                            "   JOIN entries e \n" +
-                            "       ON pe.entry_uuid = e.uuid \n" +
-                            "   JOIN patterns p \n" +
-                            "       ON pe.pattern_uuid = p.uuid \n" +
-                            "   LEFT JOIN labels_to_entries le \n" +
-                            "       ON le.entry_uuid = e.uuid \n" +
-                            "   LEFT JOIN labels l \n" +
-                            "       ON le.label_uuid = l.uuid \n" +
-                            "WHERE p.uuid = ? ",
-                            pattern.uuid());
+        Optional<PatternToEntryChoice> choice = super.currentTransaction()
+                .doQueryAndConvertFirstRow(
+                        row -> new RealPatternToEntryChoice(row, "c_", "p_", "e_", "pe_", entryActualAt),
+                        "SELECT \n" +
+                        "   p.uuid          AS p_uuid, \n" +
+                        "   p.string        AS p_string, \n" +
+                        "   p.time          AS p_time, \n" +
+                        "   p.user_uuid     AS p_user_uuid, \n" +
+                        "   e.uuid          AS e_uuid, \n" +
+                        "   e.time          AS e_time, \n" +
+                        "   e.user_uuid     AS e_user_uuid, \n" +
+                        "   e.string_origin AS e_string_origin \n" +
+                        "   e.string_lower  AS e_string_lower \n" +
+                        "   pe.uuid         AS pe_uuid, \n" +
+                        "   pe.time         AS pe_time, \n" +
+                        "   pe.algorithm    AS pe_algorithm, \n" +
+                        "   pe.weight       AS pe_weight \n" +
+                        "FROM choices c \n" +
+                        "   JOIN patterns_to_entries pe \n" +
+                        "       ON c.relation_uuid = pe.uuid \n" +
+                        "   JOIN entries e \n" +
+                        "       ON pe.entry_uuid = e.uuid \n" +
+                        "   JOIN patterns p \n" +
+                        "       ON pe.pattern_uuid = p.uuid \n" +
+                        "WHERE p.uuid = ? ",
+                        pattern.uuid());
 
-            return rowCollector.patternToEntryChoice();
-        }
+        return choice;
     }
 
     @Override

@@ -9,13 +9,12 @@ import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.search.SearchByChars;
-import diarsid.search.impl.logic.impl.jdbc.PooledRowCollectorForEntriesAndLabels;
-import diarsid.search.impl.logic.impl.jdbc.RowOperationContext;
 import diarsid.search.impl.logic.impl.search.TimeDirection;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
-import diarsid.support.objects.GuardedPool;
+import diarsid.search.impl.model.RealEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
+import static java.time.LocalDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -25,35 +24,17 @@ import static diarsid.support.model.Unique.uuidsOf;
 
 public class SearchByCharsImpl extends ThreadBoundTransactional implements SearchByChars {
 
-    private final GuardedPool<PooledRowCollectorForEntriesAndLabels> rowCollectorsPool;
-    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByUuid;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesByUuids;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAnyOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAllOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByNoneOfLabels;
 
     public SearchByCharsImpl(Jdbc jdbc) {
         super(jdbc);
-        RowOperationContext.Setter contextSetter = new RowOperationContext.Setter(super::currentTransaction);
-        this.rowCollectorsPool =  new GuardedPool<>(
-                () -> new PooledRowCollectorForEntriesAndLabels("e_", "l_"),
-                contextSetter::accept);
 
-        this.sqlSelectEntriesAndLabelsByUuid = new StringCacheForRepeatedSeparatedPrefixSuffix(
-                "SELECT DISTINCT \n" +
-                "   e.uuid          AS e_uuid, \n" +
-                "   e.string_origin AS e_string_origin, \n" +
-                "   e.string_lower  AS e_string_lower, \n" +
-                "   e.time          AS e_time, \n" +
-                "   e.user_uuid     AS e_user_uuid, \n" +
-                "   l.uuid          AS l_uuid, \n" +
-                "   l.user_uuid     AS l_user_uuid, \n" +
-                "   l.time          AS l_time, \n" +
-                "   l.name          AS l_name \n" +
+        this.sqlSelectEntriesByUuids = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT DISTINCT * \n" +
                 "FROM entries e \n" +
-                "   JOIN labels_to_entries le \n" +
-                "      ON le.entry_uuid = e.uuid \n" +
-                "   JOIN labels l \n" +
-                "      ON l.uuid = le.label_uuid \n" +
                 "WHERE e.uuid IN ( \n",
                 "    ?", ", \n", ")");
 
@@ -238,14 +219,15 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
             return emptyList();
         }
 
-        try (PooledRowCollectorForEntriesAndLabels rowCollector = this.rowCollectorsPool.give()) {
-            super.currentTransaction().doQuery(
-                    rowCollector,
-                    this.sqlSelectEntriesAndLabelsByUuid.getFor(entryUuids),
-                    entryUuids);
+        LocalDateTime actualAt = now();
+        List<Entry> entries = super.currentTransaction()
+                .doQueryAndStream(
+                        row -> new RealEntry(row, actualAt),
+                        this.sqlSelectEntriesByUuids.getFor(entryUuids),
+                        entryUuids)
+                .collect(toList());
 
-            return rowCollector.entries();
-        }
+        return entries;
     }
 
     private List<Entry> searchBy(User user, String pattern) {

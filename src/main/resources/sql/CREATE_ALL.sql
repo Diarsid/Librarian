@@ -1,12 +1,11 @@
 CREATE TABLE users(
     uuid UUID       PRIMARY KEY,
     name VARCHAR    NOT NULL,
-    time TIMESTAMP WITHOUT TIME ZONE NOT NULL);
-
+    time TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL);
 
 CREATE TABLE entries(
     uuid            UUID    PRIMARY KEY,
-    time            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    time            TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
     user_uuid       UUID    NOT NULL,
     string_origin   VARCHAR NOT NULL,
     string_lower    VARCHAR NOT NULL,
@@ -16,10 +15,9 @@ ALTER TABLE entries
 ADD CONSTRAINT FK_entries_to_users
 FOREIGN KEY (user_uuid) REFERENCES users(uuid);
 
-
 CREATE TABLE patterns(
     uuid        UUID        PRIMARY KEY,
-    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    time        TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
     user_uuid   UUID        NOT NULL,
     string      VARCHAR     NOT NULL);
 
@@ -27,14 +25,13 @@ ALTER TABLE patterns
 ADD CONSTRAINT FK_patterns_to_users
 FOREIGN KEY(user_uuid) REFERENCES users(uuid);
 
-
 CREATE TABLE patterns_to_entries(
     uuid            UUID    PRIMARY KEY,
     entry_uuid      UUID    NOT NULL,
     pattern_uuid    UUID    NOT NULL,
     algorithm       VARCHAR NOT NULL,
     weight          FLOAT4  NOT NULL,
-    time            TIMESTAMP WITHOUT TIME ZONE NOT NULL);
+    time            TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL);
 
 ALTER TABLE patterns_to_entries
 ADD CONSTRAINT FK_relations_to_entries
@@ -44,12 +41,11 @@ ALTER TABLE patterns_to_entries
 ADD CONSTRAINT FK_relations_to_patterns
 FOREIGN KEY(pattern_uuid) REFERENCES patterns(uuid);
 
-
 CREATE TABLE choices(
     uuid            UUID    PRIMARY KEY,
     relation_uuid   UUID    NOT NULL,
-    time            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    time_actual     TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    time            TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
+    time_actual     TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL
 );
 
 ALTER TABLE choices
@@ -58,7 +54,7 @@ FOREIGN KEY(relation_uuid) REFERENCES patterns_to_entries(uuid);
 
 CREATE TABLE labels(
     uuid        UUID    PRIMARY KEY,
-    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    time        TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
     name        VARCHAR NOT NULL,
     user_uuid   UUID    NOT NULL);
 
@@ -68,7 +64,7 @@ FOREIGN KEY(user_uuid) REFERENCES users(uuid);
 
 CREATE TABLE labels_to_entries(
     uuid        UUID    PRIMARY KEY,
-    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    time        TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
     label_uuid  UUID    NOT NULL,
     entry_uuid  UUID    NOT NULL);
 
@@ -88,7 +84,7 @@ CREATE TABLE words(
     string      VARCHAR NOT NULL,
     string_sort VARCHAR NOT NULL,
     word_size   INT     NOT NULL,
-    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL);
+    time        TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL);
 
 ALTER TABLE words
 ADD CONSTRAINT FK_words_to_users
@@ -113,7 +109,7 @@ CREATE TABLE behavior_features_by_users(
     user_uuid   UUID    NOT NULL,
     name        VARCHAR NOT NULL,
     enabled     BOOLEAN NOT NULL,
-    time        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    time        TIMESTAMP(9) WITHOUT TIME ZONE NOT NULL,
     PRIMARY KEY(user_uuid, name)
 );
 
@@ -126,19 +122,3 @@ ON entries(time);
 
 CREATE INDEX IX_STRING_AND_USER_IN_WORDS
 ON words(string, user_uuid);
-
-DROP TABLE words_in_entries;
-DROP TABLE words;
-DROP TABLE labels_to_entries;
-DROP TABLE labels;
-DROP TABLE choices;
-DROP TABLE patterns_to_entries;
-DROP TABLE patterns;
-DROP TABLE entries;
-DROP TABLE behavior_features_by_users;
-DROP TABLE users;
-
-DELETE FROM words_in_entries;
-DELETE FROM words;
-DELETE FROM entries;
-DELETE FROM labels;

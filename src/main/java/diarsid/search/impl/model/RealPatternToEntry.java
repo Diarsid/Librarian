@@ -16,14 +16,58 @@ public class RealPatternToEntry extends AbstractCreatedAt implements PatternToEn
     private final String algorithmName;
     private final float weight;
 
-    public RealPatternToEntry(Entry entry, Pattern pattern, String columnPrefix, Row row) {
+//    public RealPatternToEntry(Entry entry, Pattern pattern, String columnPrefix, Row row) {
+//        super(
+//                row.uuidOf(columnPrefix + "uuid"),
+//                row.timeOf(columnPrefix + "time"));
+//        this.entry = entry;
+//        this.pattern = pattern;
+//        this.algorithmName = row.stringOf(columnPrefix + "algorithm");
+//        this.weight = row.floatOf(columnPrefix + "weight");
+//    }
+
+    public RealPatternToEntry(
+            Pattern pattern,
+            Row row,
+            String joinColumnPrefix,
+            String entryColumnPrefix,
+            LocalDateTime entryActualAt) {
         super(
-                row.uuidOf(columnPrefix + "uuid"),
-                row.timeOf(columnPrefix + "time"));
-        this.entry = entry;
+                row.uuidOf(joinColumnPrefix + "uuid"),
+                row.timeOf(joinColumnPrefix + "time"));
+        this.entry = new RealEntry(entryColumnPrefix, row, entryActualAt);
         this.pattern = pattern;
-        this.algorithmName = row.stringOf(columnPrefix + "algorithm");
-        this.weight = row.floatOf(columnPrefix + "weight");
+        this.algorithmName = row.stringOf(joinColumnPrefix + "algorithm");
+        this.weight = row.floatOf(joinColumnPrefix + "weight");
+    }
+
+    public RealPatternToEntry(
+            Entry entry,
+            Row row,
+            String joinColumnPrefix,
+            String patternColumnPrefix) {
+        super(
+                row.uuidOf(joinColumnPrefix + "uuid"),
+                row.timeOf(joinColumnPrefix + "time"));
+        this.entry = entry;
+        this.pattern = new RealPattern(patternColumnPrefix, row);
+        this.algorithmName = row.stringOf(joinColumnPrefix + "algorithm");
+        this.weight = row.floatOf(joinColumnPrefix + "weight");
+    }
+
+    public RealPatternToEntry(
+            Row row,
+            String joinColumnPrefix,
+            String entryColumnPrefix,
+            String patternColumnPrefix,
+            LocalDateTime entryActualAt) {
+        super(
+                row.uuidOf(joinColumnPrefix + "uuid"),
+                row.timeOf(joinColumnPrefix + "time"));
+        this.entry = new RealEntry(entryColumnPrefix, row, entryActualAt);
+        this.pattern = new RealPattern(patternColumnPrefix, row);
+        this.algorithmName = row.stringOf(joinColumnPrefix + "algorithm");
+        this.weight = row.floatOf(joinColumnPrefix + "weight");
     }
 
     public RealPatternToEntry(
@@ -73,11 +117,11 @@ public class RealPatternToEntry extends AbstractCreatedAt implements PatternToEn
 
     @Override
     public String toString() {
-        return "RealPatternToEntry{" +
-                "uuid='" + super.uuid() + '\'' +
-                ", entry=" + entry +
-                ", pattern=" + pattern +
-                ", algorithmName='" + algorithmName + '\'' +
+        return "PatternToEntry{" +
+                "'" + super.uuid() + '\'' +
+                ", entry='" + entry.string() + '\'' +
+                ", pattern='" + pattern.string() + '\'' +
+                ", algorithm='" + algorithmName + '\'' +
                 ", weight=" + weight +
                 '}';
     }
