@@ -420,9 +420,20 @@ public class PatternToWordMatchingCodeTest {
         testMatching("tols", "trilogy", false);
     }
 
+    @Disabled
     @Test
     public void test_tolos_trilogy() {
         testMatching("tolos", "trilogy", false);
+    }
+
+    @Test
+    public void test_virtlservs_street() {
+        testMatching("virtlservs", "street", false);
+    }
+
+    @Test
+    public void test_virtlservs_variants() {
+        testMatching("virtlservs", "variants", false);
     }
 
     @Test

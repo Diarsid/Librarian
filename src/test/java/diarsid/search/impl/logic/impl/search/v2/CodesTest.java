@@ -3,6 +3,7 @@ package diarsid.search.impl.logic.impl.search.v2;
 import java.util.List;
 
 import diarsid.search.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV14;
+import diarsid.search.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
@@ -500,7 +501,10 @@ public class CodesTest {
     @Test
     public void test_1() throws Exception {
 
-        H2AggregateFunctionForAnalyzeV14 aggregator = new H2AggregateFunctionForAnalyzeV14();
-        aggregator.add(113106100906L);
+        H2AggregateFunctionForAnalyzeV17 aggregator = new H2AggregateFunctionForAnalyzeV17();
+        aggregator.add(110086070504L);
+        aggregator.add(110096140104L);
+
+        aggregator.getResult();
     }
 }

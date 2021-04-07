@@ -61,7 +61,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_15(word_code) > -1 ");
+                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -88,7 +88,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_15(word_code) > -1 ");
+                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -119,7 +119,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_15(word_code) > -1 ");
+                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
     }
 
     @Override
@@ -248,7 +248,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, CODE_ANALYZE_15(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, CODE_ANALYZE_17(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -287,7 +287,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_15(word_code) > -1 ",
+                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
                         pattern, label.uuid(), transform(pattern))
                 .collect(toList());
 
@@ -378,7 +378,7 @@ public class SearchByCharsImpl extends ThreadBoundTransactional implements Searc
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_15(word_code) > -1 ",
+                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
                         pattern, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
