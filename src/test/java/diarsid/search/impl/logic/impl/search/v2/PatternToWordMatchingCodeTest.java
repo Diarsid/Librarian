@@ -437,6 +437,11 @@ public class PatternToWordMatchingCodeTest {
     }
 
     @Test
+    public void test_servs_supremo() {
+        testMatching("servs", "supremo", false);
+    }
+
+    @Test
     public void test_maximums() {
         List.of(
                 "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg")
