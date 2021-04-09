@@ -1,6 +1,7 @@
 package diarsid.search.impl.logic.impl.search.v2;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -8,12 +9,20 @@ import org.junit.jupiter.api.Test;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.search.impl.logic.impl.search.v2.PatternToWordMatchingCode.evaluate;
-import static diarsid.search.impl.logic.impl.search.v2.PatternToWordMatchingCode.logln;
+import static diarsid.support.misc.Misc.methodName;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class PatternToWordMatchingCodeTest {
 
-    public void testMatching(String pattern, String word, boolean expectMatching) {
+    public void testMatching(boolean expectMatching) {
+        String testMethodName = methodName(1);
+        String[] methodDeclarationWords = testMethodName.split("_");
+        assertThat(methodDeclarationWords).hasSizeGreaterThanOrEqualTo(3);
+        String test = methodDeclarationWords[0];
+        assertThat(test).isEqualTo("test");
+        String pattern = methodDeclarationWords[1];
+        String word = methodDeclarationWords[2];
         long code = evaluate(pattern, word);
         System.out.println(code);
         if ( expectMatching ) {
@@ -28,417 +37,457 @@ public class PatternToWordMatchingCodeTest {
         }
     }
 
-    @Test
-    public void test_tolknebyjr() {
-        testMatching("tolknebyjr", "newborn", false);
+    public void testMatching() {
+        String testMethodName = methodName(1);
+        String[] methodDeclarationWords = testMethodName.split("_");
+        assertThat(methodDeclarationWords).hasSizeGreaterThanOrEqualTo(3);
+        String test = methodDeclarationWords[0];
+        assertThat(test).isEqualTo("test");
+        String pattern = methodDeclarationWords[1];
+        String word = methodDeclarationWords[2];
+        long code = evaluate(pattern, word);
+        System.out.println(code);
+        boolean expectMatching = findBoolIn(methodDeclarationWords).orElseThrow(
+                () -> new IllegalArgumentException("Method declaration does not contain any boolean matching!"));
+        if ( expectMatching ) {
+            if ( code < 0 ) {
+                fail();
+            }
+        }
+        else {
+            if ( code > -1 ) {
+                fail();
+            }
+        }
+    }
+
+    private static Optional<Boolean> findBoolIn(String[] methodDeclarationWords) {
+        String word;
+
+        for (int i = 2; i < methodDeclarationWords.length; i++) {
+            word = methodDeclarationWords[i].toLowerCase().trim().strip();
+            if ( word.equals("true") ) {
+                return Optional.of(true);
+            }
+            if ( word.equals("false") ) {
+                return Optional.of(false);
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Test
-    public void test_tolknebyjr_torah() {
-        testMatching("tolknebyjr", "torah", false);
+    public void test_tolknebyjr_newborn_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolknebyjr_tower() {
-        testMatching("tolknebyjr", "tower", false);
-    }
-
-    @Disabled
-    @Test
-    public void test_tolknebyjr_tokyo() {
-        testMatching("tolknebyjr", "tokyo", false);
+    public void test_tolknebyjr_torah_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolknebyjr_lnemerow() {
-        testMatching("tolknebyjr", "lnemerow", false);
-    }
-
-    @Test
-    public void test_tolknebyjr_jrr() {
-        testMatching("tolknebyjr", "jrr", true);
-    }
-
-    @Test
-    public void test_tolknebyjr_newton() {
-        testMatching("tolknebyjr", "newton", false);
-    }
-
-    @Test
-    public void test_tolknebyjr_knots() {
-        testMatching("tolknebyjr", "knots", false);
-    }
-
-    @Test
-    public void test_tolknebyjr_ebola() {
-        testMatching("tolknebyjr", "ebola", false);
-    }
-
-    @Test
-    public void test_tolknebyjr_knitter() {
-        testMatching("tolknebyjr", "knitter", false);
-    }
-
-    @Test
-    public void test_srvr_servers() {
-        testMatching("srvr", "servers", true);
-    }
-
-    @Test
-    public void test_srvrs_servers() {
-        testMatching("srvrs", "servers", true);
-    }
-
-    @Test
-    public void test_srv_servers() {
-        testMatching("srv", "servers", true);
-    }
-
-    @Test
-    public void test_srvcs_services() {
-        testMatching("srvcs", "services", true);
-    }
-
-    @Test
-    public void test_prj_projects() {
-        testMatching("prj", "projects", true);
-    }
-
-    @Test
-    public void test_porj_projects() {
-        testMatching("porj", "projects", true);
-    }
-
-    @Test
-    public void test_3toolsserv_colonels() {
-        testMatching("3toolsserv", "colonels", false);
-    }
-
-    @Test
-    public void test_3toolsserv_servers() {
-        testMatching("3toolsserv", "servers", true);
-    }
-
-    @Test
-    public void test_3toolsserv_sisemore() {
-        testMatching("3toolsserv", "sisemore", false);
-    }
-
-    @Test
-    public void test_3toolsserv_operator() {
-        testMatching("3toolsserv", "operator", false);
-    }
-
-    @Test
-    public void test_toolssevrirtl_tools() {
-        testMatching("toolssevrirtl", "tools", true);
-    }
-
-    @Test
-    public void test_toolssevrirtl_lovers() {
-        testMatching("toolssevrirtl", "lovers", false);
-    }
-
-    @Test
-    public void test_toolssevrirtl_tudor() {
-        testMatching("toolssevrirtl", "tudor", false);
-    }
-
-    @Test
-    public void test_toolssevrirtl_servers() {
-        testMatching("toolssevrirtl", "servers", true);
-    }
-
-    @Test
-    public void test_toolssevrirtl_virtualization() {
-        testMatching("toolssevrirtl", "virtualization", true);
-    }
-
-    @Test
-    public void test_3toolssevrirtl_virtualization() {
-        testMatching("3toolssevrirtl", "virtualization", true);
-    }
-
-    @Test
-    public void test_toolssevritrl_virtualization() {
-        testMatching("toolssevritrl", "virtualization", true);
-    }
-
-    @Test
-    public void test_3toolssevritrl_virtualization() {
-        testMatching("3toolssevritrl", "virtualization", true);
-    }
-
-    @Test
-    public void test_kroedc_docker() {
-        testMatching("kroedc", "docker", false);
-    }
-
-    @Test
-    public void test_roedck_docker() {
-        testMatching("roedck", "docker", true);
-    }
-
-    @Test
-    public void test_docekr_docker() {
-        testMatching("docekr", "docker", true);
-    }
-
-    @Test
-    public void test_roeck_docker() {
-        testMatching("roeck", "docker", false);
-    }
-
-    @Test
-    public void test_roeckd_docker() {
-        testMatching("roeckd", "docker", false);
-    }
-
-    @Test
-    public void test_dckre_docker() {
-        testMatching("dckre", "docker", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_lord() {
-        testMatching("lorofrngbyjrrtolk", "lord", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_of() {
-        testMatching("lorofrngbyjrrtolk", "of", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_rings() {
-        testMatching("lorofrngbyjrrtolk", "rings", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_by() {
-        testMatching("lorofrngbyjrrtolk", "by", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_jrr() {
-        testMatching("lorofrngbyjrrtolk", "jrr", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_tolkien() {
-        testMatching("lorofrngbyjrrtolk", "tolkien", true);
-    }
-
-    @Test
-    public void test_byjrrtolk_tolkien() {
-        testMatching("byjrrtolk", "tolkien", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_orthodoxy() {
-        testMatching("lorofrngbyjrrtolk", "orthodoxy", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_robertson() {
-        testMatching("lorofrngbyjrrtolk", "robertson", false);
-    }
-
-
-    @Test
-    public void test_lorofrngbyjrrtolk_loving() {
-        testMatching("lorofrngbyjrrtolk", "loving", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_frontal() {
-        testMatching("lorofrngbyjrrtolk", "frontal", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_tower() {
-        testMatching("lorofrngbyjrrtolk", "tower", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_torrey() {
-        testMatching("lorofrngbyjrrtolk", "torrey", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_long() {
-        testMatching("lorofrngbyjrrtolk", "long", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_lotions() {
-        testMatching("lorofrngbyjrrtolk", "lotions", false);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_tolkiens() {
-        testMatching("lorofrngbyjrrtolk", "tolkiens", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtolk_tolkien1s() {
-        testMatching("lorofrngbyjrrtolk", "tolkien1s", true);
-    }
-
-    @Test
-    public void test_lorofrngbyjrrtlok_tolkiens() {
-        testMatching("lorofrngbyjrrtlok", "tolkiens", true);
+    public void test_tolknebyjr_tower_false() {
+        testMatching();
     }
 
     @Disabled
     @Test
-    public void test_lorofrngbyjrrtlok_tolkien1s() {
-        testMatching("lorofrngbyjrrtlok", "tolkien1s", true);
+    public void test_tolknebyjr_tokyo_false() {
+        testMatching();
     }
 
     @Test
-    public void test_toolssevrirtl_3tools() {
-        testMatching("toolssevrirtl", "3tools", true);
+    public void test_tolknebyjr_lnemerow_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_tolknebyjr_jrr_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_tolknebyjr_newton_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_tolknebyjr_knots_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_tolknebyjr_ebola_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_tolknebyjr_knitter_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_srvr_servers_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_srvrs_servers_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_srv_servers_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_srvcs_services_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_prj_projects_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_porj_projects_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolsserv_colonels_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolsserv_servers_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolsserv_sisemore_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolsserv_operator_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_tools_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_lovers_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_tudor_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_servers_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_virtualization_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolssevrirtl_virtualization_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevritrl_virtualization_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_3toolssevritrl_virtualization_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_kroedc_docker_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_roedck_docker_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_docekr_docker_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_roeck_docker_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_roeckd_docker_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_dckre_docker_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_lord_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_of_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_rings_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_by_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_jrr_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_tolkien_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_byjrrtolk_tolkien_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_orthodoxy_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_robertson_false() {
+        testMatching();
+    }
+
+
+    @Test
+    public void test_lorofrngbyjrrtolk_loving_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_frontal_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_tower_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_torrey_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_long_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_lotions_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_tolkiens_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtolk_tolkien1s_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_lorofrngbyjrrtlok_tolkiens_true() {
+        testMatching();
+    }
+
+    @Disabled
+    @Test
+    public void test_lorofrngbyjrrtlok_tolkien1s_true() {
+        testMatching();
+    }
+
+    @Test
+    public void test_toolssevrirtl_3tools_true() {
+        testMatching();
     }
 
     @Disabled("how to distinguish mismatch from abbreviation?")
     @Test
-    public void test_wh_warhammer() {
-        testMatching("wh", "warhammer", true);
+    public void test_wh_warhammer_true() {
+        testMatching();
     }
 
     @Test
-    public void test_byjrrtlok_tolkien() {
-        testMatching("byjrrtlok", "tolkien", true);
+    public void test_byjrrtlok_tolkien_true() {
+        testMatching();
     }
 
     @Test
-    public void test_guide_guide() {
-        testMatching("guide", "guide", true);
+    public void test_guide_guide_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whltwhitmn_whalt() {
-        testMatching("whltwhitmn", "whalt", true);
+    public void test_whltwhitmn_whalt_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whaltwhitmn_whitman() {
-        testMatching("whaltwhitmn", "whitman", true);
+    public void test_whaltwhitmn_whitman_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whltwhtmn_whitman() {
-        testMatching("whltwhtmn", "whitman", true);
+    public void test_whltwhtmn_whitman_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whltwhtmn_whitmans() {
-        testMatching("whltwhtmn", "whitmans", true);
+    public void test_whltwhtmn_whitmans_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whltwhtmn_whitman1s() {
-        testMatching("whltwhtmn", "whitman's", true);
+    public void test_whltwhtmn_whitman1s_true() {
+        testMatching();
     }
 
     @Test
-    public void test_whltwhtmn_twelfth() {
-        testMatching("whltwhtmn", "twelfth", false);
+    public void test_whltwhtmn_twelfth_false() {
+        testMatching();
     }
 
     @Test
-    public void test_88abc123abcdf88_abcdxf_synthetic() {
-        testMatching("88abc123abcdf88", "abcdxf", true);
+    public void test_88abc123abcdf88_abcdxf_synthetic_true() {
+        testMatching();
     }
 
     @Test
-    public void test_88abc888abcde888abcdef88_abcdexf_synthetic() {
-        testMatching("88abc888abcde888abcdef88", "abcdexf", true);
+    public void test_88abc888abcde888abcdef88_abcdexf_synthetic_true() {
+        testMatching();
     }
 
     @Test
-    public void test_jeschrstpassn_jesus() {
-        testMatching("jeschrstpassn", "jesus", true);
+    public void test_jeschrstpassn_jesus_true() {
+        testMatching();
     }
 
     @Test
-    public void test_jeschrstpassn_assessment() {
-        testMatching("jeschrstpassn", "assessment", true);
+    public void test_jeschrstpassn_assessment_true() {
+        testMatching();
     }
 
     @Test
-    public void test_virtl_immortality() {
-        testMatching("virtl", "immortality", false);
+    public void test_virtl_immortality_false() {
+        testMatching();
     }
 
     @Test
-    public void test_virtl_victory() {
-        testMatching("virtl", "victory", false);
+    public void test_virtl_victory_false() {
+        testMatching();
     }
 
     @Disabled("cannot imaging criteria")
     @Test
-    public void test_tolos_llosa() {
-        testMatching("tolos", "llosa", false);
+    public void test_tolos_llosa_false() {
+        testMatching();
     }
 
     @Disabled
     @Test
-    public void test_tolos_tortoise() {
-        testMatching("tolos", "tortoise", false);
+    public void test_tolos_tortoise_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolos_textbooks() {
-        testMatching("tolos", "textbooks", false);
+    public void test_tolos_textbooks_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolos_tropicals() {
-        testMatching("tolos", "tropicals", false);
+    public void test_tolos_tropicals_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolos_totalitarianism() {
-        testMatching("tolos", "totalitarianism", false);
+    public void test_tolos_totalitarianism_false() {
+        testMatching();
     }
 
     @Test
-    public void test_tolos_tocquevilles() {
-        testMatching("tolos", "tocquevilles", false);
-    }
-
-    @Disabled
-    @Test
-    public void test_tolos_loves() {
-        testMatching("tolos", "loves", false);
-    }
-
-    @Test
-    public void test_tols_trilogy() {
-        testMatching("tols", "trilogy", false);
+    public void test_tolos_tocquevilles_false() {
+        testMatching();
     }
 
     @Disabled
     @Test
-    public void test_tolos_trilogy() {
-        testMatching("tolos", "trilogy", false);
+    public void test_tolos_loves_false() {
+        testMatching();
     }
 
     @Test
-    public void test_virtlservs_street() {
-        testMatching("virtlservs", "street", false);
+    public void test_tols_trilogy_false() {
+        testMatching();
+    }
+
+    @Disabled
+    @Test
+    public void test_tolos_trilogy_false() {
+        testMatching();
     }
 
     @Test
-    public void test_virtlservs_variants() {
-        testMatching("virtlservs", "variants", false);
+    public void test_virtlservs_street_false() {
+        testMatching();
     }
 
     @Test
-    public void test_servs_supremo() {
-        testMatching("servs", "supremo", false);
+    public void test_virtlservs_variants_false() {
+        testMatching();
+    }
+
+    @Test
+    public void test_servs_supremo_false() {
+        testMatching();
     }
 
     @Test

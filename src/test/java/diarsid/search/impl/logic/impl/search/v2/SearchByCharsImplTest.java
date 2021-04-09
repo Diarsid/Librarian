@@ -229,7 +229,7 @@ public class SearchByCharsImplTest {
                         row -> resultLines.add(new ResultLine(row)),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "    SELECT uuid, string, MY_MATCHING_18(?, string) AS w_code \n" +
+                        "    SELECT uuid, string, MY_MATCHING_19(?, string) AS w_code \n" +
                         "    FROM words \n" +
                         "    WHERE \n" +
                         "       MYLENGTH_4(?, string_sort, 60) > -1 AND \n" +

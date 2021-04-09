@@ -3,7 +3,6 @@ package diarsid.search.impl.logic.impl.search.v2;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.search.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV14;
 import diarsid.search.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV15;
 import org.junit.jupiter.api.Test;
 
