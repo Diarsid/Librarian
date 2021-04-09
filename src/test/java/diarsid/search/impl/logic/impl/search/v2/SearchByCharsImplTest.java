@@ -1,17 +1,16 @@
 package diarsid.search.impl.logic.impl.search.v2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.rows.Row;
-import diarsid.search.tests.CoreTestSetup;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.search.SearchByChars;
+import diarsid.search.tests.CoreTestSetup;
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -33,7 +31,6 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.search.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.search.api.model.Entry.Label.Matching.ANY_OF;
-import static diarsid.search.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.search.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.search.impl.logic.impl.search.TimeDirection.BEFORE;
 import static diarsid.search.impl.logic.impl.search.v2.CharSort.transform;
@@ -147,6 +144,34 @@ public class SearchByCharsImplTest {
         });
     }
 
+    void search() {
+        String testMethodName = methodName(1);
+        String[] methodDeclarationWords = testMethodName.split("_");
+        assertThat(methodDeclarationWords).hasSizeGreaterThanOrEqualTo(2);
+        String test = methodDeclarationWords[0];
+        assertThat(test).isEqualTo("test");
+        this.pattern = methodDeclarationWords[1];
+
+        if ( methodDeclarationWords.length == 2 ) {
+            this.labels = emptyList();
+            this.matching = ANY_OF;
+        }
+        else if ( methodDeclarationWords.length == 3 ) {
+            this.matching = ANY_OF;
+            this.labels = List.of(core.store().labels().getOrSave(user, methodDeclarationWords[2]));
+        }
+        else {
+            this.matching = Entry.Label.Matching.valueOf(
+                    methodDeclarationWords[2].toUpperCase() + "_" + methodDeclarationWords[3].toUpperCase());
+            this.labels = new ArrayList<>();
+            for (int i = 4; i < methodDeclarationWords.length; i++) {
+                this.labels.add(core.store().labels().getOrSave(user, methodDeclarationWords[i]));
+            }
+        }
+
+        executeSearch();
+    }
+
     void search(String pattern) {
         this.pattern = pattern;
         this.labels = emptyList();
@@ -190,13 +215,14 @@ public class SearchByCharsImplTest {
         List<String> strings = asList(entries);
     }
 
-    void expectContainingString(String entry) {
+    void expectContainingString(String string) {
+        String fragment = string.toLowerCase();
         expectEntriesCountNoLessThan(1);
 
         boolean contains = this.resultingEntries
                 .stream()
                 .map(Entry::string)
-                .anyMatch(string -> string.contains(entry));
+                .anyMatch(entry -> entry.toLowerCase().contains(fragment));
 
         if ( ! contains ) {
             fail();
@@ -260,157 +286,151 @@ public class SearchByCharsImplTest {
     }
 
     @Test
-    public void test_short() {
-        search(() -> {
-            resultingEntries = searchByChars.findBy(user, "tolos");
-        });
-    }
-
-    @Test
-    public void test_search_lorofrngbyjrrtolk_withoutLabels() {
-        search("lorofrngbyjrrtolk");
+    public void test_lorofrngbyjrrtolk() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtlok_withoutLabels() {
-        search("lorofrngbyjrrtlok");
+    public void test_lorofrngbyjrrtlok() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_label_books() {
-        search("lorofrngbyjrrtolk", ANY_OF, "books");
+    public void test_lorofrngbyjrrtolk_books() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_label_books_tolkien() {
-        search("lorofrngbyjrrtolk", ANY_OF, "books", "tolkien");
+    public void test_lorofrngbyjrrtolk_any_of_books_tolkien() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_single_label_tolkien() {
-        search("lorofrngbyjrrtolk", "tolkien");
+    public void test_lorofrngbyjrrtolk_tolkien() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_all_of_label_tolkien_books() {
-        search("lorofrngbyjrrtolk", ALL_OF, "tolkien", "books");
+    public void test_lorofrngbyjrrtolk_all_of_tolkien_books() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_none_of_label_tolkien() {
-        search("lorofrngbyjrrtolk", NONE_OF, "tolkien");
+    public void test_lorofrngbyjrrtolk_none_of_tolkien() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_lorofrngbyjrrtolk_with_none_of_label_books_tolkien() {
-        search("lorofrngbyjrrtolk", NONE_OF, "tolkien", "books");
+    public void test_lorofrngbyjrrtolk_none_of_books_tolkien() {
+        search();
     }
 
     @Test
-    public void test_search_lorofrng_withoutLabels() {
-        search("lorofrng");
+    public void test_lorofrng() {
+        search();
     }
 
     @Test
-    public void test_search_byjrrtolk_without_labels() {
-        search("byjrrtolk");
+    public void test_byjrrtolk() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_byjrrtlok_without_labels() {
-        search("byjrrtlok");
+    public void test_byjrrtlok() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_byjrtlok_without_labels() {
-        search("byjrtlok");
+    public void test_byjrtlok() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_bytlokjr_without_labels() {
-        search("bytlokjr");
+    public void test_bytlokjr() {
+        search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_search_jrtolkguide_withoutLabels() {
-        search("jrtolkguide");
+    public void test_jrtolkguide() {
+        search();
     }
 
     @Test
-    public void test_search_jrrtolkguide_withoutLabels() {
-        search("jrrtolkguide");
+    public void test_jrrtolkguide() {
+        search();
     }
 
     @Test
-    public void test_search_jeschrstpassn_withoutLabels() {
-        search("jeschrstpassn");
+    public void test_jeschrstpassn() {
+        search();
     }
 
     @Test
-    public void test_search_waltwitmn_withoutLabels() {
-        search("whaltwhitmn");
+    public void test_waltwitmn() {
+        search();
     }
 
     @Test
-    public void test_search_whltwhtmn_withoutLabels() {
-        search("whltwhtmn");
+    public void test_whltwhtmn() {
+        search();
     }
 
     @Test
-    public void test_search_harmurakm_withoutLabels() {
-        search("harmurakm");
+    public void test_harmurakm() {
+        search();
     }
 
     @Test
-    public void test_search_virtl_withoutLabels() {
-        search("virtl");
+    public void test_virtl() {
+        search();
     }
 
     @Test
-    public void test_search_virtlzt_withoutLabels() {
-        search("virtlzt");
+    public void test_virtlzt() {
+        search();
     }
 
     @Test
-    public void test_search_virtual_withoutLabels() {
-        search("virtual");
+    public void test_virtual() {
+        search();
     }
 
     @Test
-    public void test_search_virtlservs_withoutLabels() {
-        search("virtlservs");
+    public void test_virtlservs() {
+        search();
     }
 
     @Test
-    public void test_search_servs_withoutLabels() {
-        search("servs");
+    public void test_servs() {
+        search();
+        expectContainingString("Servers");
     }
 
     @Test
-    public void test_search_tolos_withoutLabels() {
-        search("tolos");
+    public void test_tolos() {
+        search();
         expectContainingString("Tools");
     }
 
     @Test
-    public void test_search_tols_withoutLabels() {
+    public void test_tols() {
         search("tols");
         expectContainingString("Tools");
     }
 
     @Test
-    public void test_search_tools_withoutLabels() {
+    public void test_tools() {
         search("tools");
         expectContainingString("Tools");
     }
