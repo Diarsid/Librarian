@@ -7,11 +7,11 @@ module diarsid.search {
     requires diarsid.strings.similarity;
     requires diarsid.support;
 
-    exports diarsid.search.api;
-    exports diarsid.search.api.annotations;
-    exports diarsid.search.api.exceptions;
-    exports diarsid.search.api.model;
-    exports diarsid.search.api.model.meta;
-    exports diarsid.search.api.required;
-    exports diarsid.search.api.interaction;
+    exports diarsid.librarian.api;
+    exports diarsid.librarian.api.annotations;
+    exports diarsid.librarian.api.exceptions;
+    exports diarsid.librarian.api.model;
+    exports diarsid.librarian.api.model.meta;
+    exports diarsid.librarian.api.required;
+    exports diarsid.librarian.api.interaction;
 }
