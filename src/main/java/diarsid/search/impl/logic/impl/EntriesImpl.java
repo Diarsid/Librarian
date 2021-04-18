@@ -7,11 +7,12 @@ import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcOperations;
-import diarsid.jdbc.api.sqltable.rows.RowGetter;
 import diarsid.search.api.Behavior;
 import diarsid.search.api.Entries;
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
+import diarsid.search.api.model.Pattern;
+import diarsid.search.api.model.PatternToEntry;
 import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.EntriesLabelsJoinTable;
@@ -19,9 +20,7 @@ import diarsid.search.impl.logic.api.PatternsToEntries;
 import diarsid.search.impl.logic.api.WordsInEntries;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.RealEntry;
-import diarsid.search.impl.model.RealLabel;
 import diarsid.search.impl.model.WordInEntry;
-import diarsid.support.exceptions.UnsupportedLogicException;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.time.LocalDateTime.now;
@@ -30,7 +29,9 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.search.api.Behavior.Feature.DECOMPOSE_ENTRY_PATH;
 import static diarsid.search.api.model.Entry.Type.PATH;
 import static diarsid.search.api.model.meta.UserScoped.checkMustBelongToOneUser;
-import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_TO_LOWER;
+import static diarsid.search.impl.logic.impl.StringTransformations.CaseConversion.CASE_TO_LOWER;
+import static diarsid.support.model.Joined.distinctLeftsOf;
+import static diarsid.support.model.Joined.distinctRightsOf;
 import static diarsid.support.model.Storable.State.NON_STORED;
 import static diarsid.support.model.Storable.State.STORED;
 import static diarsid.support.model.Storable.checkMustBeStored;
@@ -233,7 +234,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public Optional<Entry> findBy(User user, String entryString) {
-        entryString = RealEntry.unifyOriginalString(entryString, CASE_TO_LOWER);
+        entryString = StringTransformations.simplify(entryString, CASE_TO_LOWER);
 
         Optional<Entry> foundEntry = super.currentTransaction()
                 .doQueryAndConvertFirstRow(
@@ -250,26 +251,22 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public boolean doesExistBy(User user, String entry) {
-        return this.doesEntryExistBy(user.uuid(), RealEntry.unifyOriginalString(entry, CASE_TO_LOWER));
+        return this.doesEntryExistBy(user.uuid(), StringTransformations.simplify(entry, CASE_TO_LOWER));
     }
 
     @Override
-    public Entry replace(User user, String oldEntryString, String newEntryString, PatternsTodoOnEntryReplace action) {
-        Optional<Entry> foundEntry = this.findBy(user, oldEntryString);
+    public Entry update(
+            Entry entry,
+            String newEntryString,
+            OnUpdate.RemovingLabels removingLabels,
+            OnUpdate.RemovingPatterns removingPatterns) {
+        checkMustBeStored(entry);
+        this.checkMustExist(entry);
 
-        if ( foundEntry.isEmpty() ) {
-            throw new NotFoundException();
-        }
+        RealEntry oldEntry = (RealEntry) entry;
+        RealEntry newEntry = oldEntry.changeTo(now(), newEntryString);
 
-        RealEntry entry = (RealEntry) foundEntry.get();
-
-        return this.replaceInternally(entry, newEntryString, action);
-    }
-
-    private RealEntry replaceInternally(RealEntry entry, String newEntryString,  PatternsTodoOnEntryReplace action) {
-        RealEntry changed = entry.changeTo(now(), newEntryString);
-
-        boolean entryWithNewStringExists = this.doesEntryExistBy(changed.userUuid(), changed.stringLower());
+        boolean entryWithNewStringExists = this.doesEntryExistBy(newEntry.userUuid(), newEntry.stringLower());
 
         if ( entryWithNewStringExists ) {
             throw new IllegalArgumentException();
@@ -281,48 +278,36 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                         "SET \n" +
                         "   string_origin = ?, \n" +
                         "   string_lower = ?, \n" +
-                        "   time = ? \n" +
+                        "   time = ? \n" + // TODO introduce updateTime
                         "WHERE entries.uuid = ? ",
-                        changed.string(), changed.stringLower(), changed.createdAt(), changed.uuid());
+                        newEntry.string(), newEntry.stringLower(), newEntry.createdAt(), newEntry.uuid());
 
         if ( updated != 1 ) {
             throw new IllegalStateException();
         }
 
-        switch ( action ) {
-            case REMOVE_RELATED_PATTERN:
-                this.patternsToEntries.removeAllBy(changed);
-                break;
-            case ANALYZE_AGAIN_RELATED_PATTERN:
-                this.patternsToEntries.analyzeAgainAllRelationsOf(changed);
-                break;
-            default:
-                throw action.unsupported();
+        this.choices.removeAllBy(oldEntry);
+
+        List<Entry.Labeled> labelJoins = this.entriesLabelsJoinTable.getAllJoinedTo(oldEntry);
+        if ( isNotEmpty(labelJoins) ) {
+            List<Entry.Label> labelsToRemove = removingLabels.toRemoveFrom(distinctRightsOf(labelJoins));
+            if ( isNotEmpty(labelsToRemove) ) {
+                this.entriesLabelsJoinTable.removeBy(oldEntry, labelsToRemove);
+            }
         }
 
-        this.choices.removeAllBy(changed);
+        List<PatternToEntry> patternJoins = this.patternsToEntries.findBy(oldEntry);
+        if ( isNotEmpty(patternJoins) ) {
+            List<Pattern> patternsToRemove = removingPatterns.toRemoveFrom(distinctLeftsOf(patternJoins));
+            if ( isNotEmpty(patternsToRemove) ) {
+                this.patternsToEntries.removeBy(oldEntry, patternsToRemove);
+            }
+        }
 
-        entry.setState(NON_STORED);
+        oldEntry.setState(NON_STORED);
+        newEntry.setState(STORED);
 
-        return changed;
-    }
-
-    @Override
-    public Entry replace(Entry entry, String newEntryString, PatternsTodoOnEntryReplace action) {
-        checkMustBeStored(entry);
-        this.checkMustExist(entry);
-
-        return this.replaceInternally((RealEntry) entry, newEntryString, action);
-    }
-
-    @Override
-    public Entry replace(User user, String oldEntry, String newEntry, PatternsTodoOnEntryReplace action, LabelsTodoOnEntryReplace reassign) {
-        throw new UnsupportedLogicException();
-    }
-
-    @Override
-    public Entry replace(Entry entry, String newEntry, PatternsTodoOnEntryReplace action, LabelsTodoOnEntryReplace reassign) {
-        throw new UnsupportedLogicException();
+        return newEntry;
     }
 
     @Override
@@ -383,8 +368,8 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
     public long countEntriesOf(User user) {
         return super.currentTransaction()
                 .countQueryResults(
-                        "SELECT * " +
-                        "FROM entries " +
+                        "SELECT * \n" +
+                        "FROM entries \n" +
                         "WHERE user_uuid = ?",
                         user.uuid());
     }
@@ -395,8 +380,8 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
         int count = super.currentTransaction()
                 .countQueryResults(
-                        "SELECT * " +
-                        "FROM entries " +
+                        "SELECT * \n" +
+                        "FROM entries \n" +
                         "WHERE uuid = ?",
                         entry.uuid());
 

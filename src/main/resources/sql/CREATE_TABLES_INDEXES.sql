@@ -76,8 +76,6 @@ ALTER TABLE labels_to_entries
 ADD CONSTRAINT FK_assignedLabels_to_entries
 FOREIGN KEY(entry_uuid) REFERENCES entries(uuid);
 
---    === words ===
-
 CREATE TABLE words(
     uuid        UUID    PRIMARY KEY,
     user_uuid   UUID    NOT NULL,

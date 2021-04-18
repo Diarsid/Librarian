@@ -17,7 +17,6 @@ import diarsid.search.api.model.User;
 import diarsid.search.impl.logic.api.EntriesLabelsJoinTable;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.LabelToEntry;
-import diarsid.support.exceptions.UnsupportedLogicException;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.time.LocalDateTime.now;
@@ -41,10 +40,11 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     private final EntriesLabelsJoinTable entriesLabelsJoinTable;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAllOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAnyOfLabels;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByNoneOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAllEntries;
-    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesAndLabelsByAllOfLabels;
-    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesAndLabelsByAnyOfLabels;
-    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesAndLabelsByNoneOfLabels;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesByAllOfLabels;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesByAnyOfLabels;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlCountEntriesByNoneOfLabels;
 
     public LabeledEntriesImpl(
             Jdbc jdbc,
@@ -92,7 +92,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
         this.sqlSelectEntriesAndLabelsByAnyOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_entries \n" +
-                "AS (" +
+                "AS ( \n" +
                 "   SELECT DISTINCT le.entry_uuid \n" +
                 "   FROM labels_to_entries le \n" +
                 "   WHERE le.label_uuid IN ( \n",
@@ -118,6 +118,32 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
                 "   JOIN labels l \n" +
                 "       ON l.uuid = le.label_uuid ");
 
+        this.sqlSelectEntriesAndLabelsByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT \n" +
+                "   le.uuid         AS j_uuid, \n" +
+                "   le.time         AS j_time, \n" +
+                "   e.uuid          AS e_uuid, \n" +
+                "   e.time          AS e_time, \n" +
+                "   e.string_origin AS e_string_origin, \n" +
+                "   e.string_lower  AS e_string_lower, \n" +
+                "   e.user_uuid     AS e_user_uuid, \n" +
+                "   l.uuid          AS l_uuid, \n" +
+                "   l.time          AS l_time, \n" +
+                "   l.name          AS l_name, \n" +
+                "   l.user_uuid     AS l_user_uuid \n" +
+                "FROM entries e \n" +
+                "   JOIN labels_to_entries le \n" +
+                "       ON e.uuid = le.entry_uuid AND e.user_uuid = ? \n" +
+                "   JOIN labels l \n" +
+                "       ON l.uuid = le.label_uuid \n" +
+                "WHERE e.uuid NOT IN ( \n" +
+                "   SELECT DISTINCT le.entry_uuid \n" +
+                "   FROM labels_to_entries le \n" +
+                "   WHERE le.label_uuid IN ( \n",
+                "       ?", ", \n",
+                "   ) \n" +
+                ") " );
+
         this.sqlSelectEntriesAndLabelsByAllEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT \n" +
                 "   le.uuid         AS j_uuid, \n" +
@@ -135,31 +161,40 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
                 "   JOIN labels_to_entries le \n" +
                 "       ON e.uuid = le.entry_uuid \n" +
                 "   JOIN labels l \n" +
-                "       ON l.uuid = le.label_uuid " +
+                "       ON l.uuid = le.label_uuid \n" +
                 "WHERE e.uuid IN ( \n",
                 "   ?", ", \n",
                 " )");
 
-        this.sqlCountEntriesAndLabelsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
-                "SELECT DISTINCT le.entry_uuid \n" +
-                "FROM labels_to_entries le \n" +
-                "WHERE le.label_uuid IN ( \n",
-                "    ?", ", \n", " ) \n" +
-                "GROUP BY le.entry_uuid \n" +
-                "HAVING COUNT(label_uuid) = ? ");
+        this.sqlCountEntriesByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT COUNT(*) AS qty \n" +
+                "FROM ( \n" +
+                "   SELECT DISTINCT le.entry_uuid \n" +
+                "   FROM labels_to_entries le \n" +
+                "   WHERE le.label_uuid IN ( \n",
+                "       ?", ", \n", " ) \n" +
+                "   GROUP BY le.entry_uuid \n" +
+                "   HAVING COUNT(label_uuid) = ? \n" +
+                ") t");
 
-        this.sqlCountEntriesAndLabelsByAnyOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
-                "SELECT DISTINCT le.entry_uuid \n" +
+        this.sqlCountEntriesByAnyOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT COUNT(le.entry_uuid) AS qty \n" +
                 "FROM labels_to_entries le \n" +
                 "WHERE le.label_uuid IN ( \n",
-                "    ?", ", \n", " ) \n" +
+                "    ?", ", \n",
                 ") ");
 
-        this.sqlCountEntriesAndLabelsByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
-                "SELECT DISTINCT le.entry_uuid \n" +
-                        "FROM labels_to_entries le \n" +
-                        "WHERE le.label_uuid NOT IN ( \n",
-                "    ?", ", \n", " ) \n" +
+        this.sqlCountEntriesByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "SELECT COUNT(DISTINCT le.entry_uuid) AS qty \n" +
+                "FROM labels_to_entries le \n" +
+                "   JOIN entries e \n" +
+                "       ON e.uuid = le.entry_uuid AND e.user_uuid = ? \n" +
+                "WHERE le.entry_uuid NOT IN ( \n" +
+                "   SELECT DISTINCT le2.entry_uuid \n" +
+                "   FROM labels_to_entries le2 \n" +
+                "   WHERE le2.label_uuid IN ( \n",
+                "       ?", ", \n",
+                "   ) \n" +
                 ") ");
     }
 
@@ -246,7 +281,6 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
             }
         }
         else {
-
             switch ( matching ) {
                 case ANY_OF: {
                     labeled = super.currentTransaction()
@@ -267,7 +301,13 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
                     break;
                 }
                 case NONE_OF: {
-
+                    labeled = super.currentTransaction()
+                            .doQueryAndStream(
+                                    row -> new LabelToEntry(entryActualAt, row, "j_", "e_", "l_"),
+                                    this.sqlSelectEntriesAndLabelsByNoneOfLabels.getFor(labelUuids),
+                                    labels.get(0).userUuid(), labelUuids)
+                            .collect(toList());
+                    break;
                 }
                 default:
                     throw matching.unsupported();
@@ -281,7 +321,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     public List<Entry.Labeled> findAllBy(Entry entry) {
         checkMustBeStored(entry);
         this.entries.checkMustExist(entry);
-        List<Entry.Labeled> joinedLabels = this.getAllJoinedTo(entry);
+        List<Entry.Labeled> joinedLabels = this.entriesLabelsJoinTable.getAllJoinedTo(entry);
         return joinedLabels;
     }
 
@@ -293,33 +333,6 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
                         row -> new LabelToEntry(entriesAtualAt, row, "j_", "e_", "l_"),
                         this.sqlSelectEntriesAndLabelsByAllEntries.getFor(entries),
                         uuidsOf(entries))
-                .collect(toList());
-    }
-
-    private List<Entry.Labeled> getAllJoinedTo(Entry entry) {
-        LocalDateTime entriesAtualAt = now();
-        return super.currentTransaction()
-                .doQueryAndStream(
-                        row -> new LabelToEntry(entriesAtualAt, row, "j_", "e_", "l_"),
-                        "SELECT " +
-                        "   le.uuid         AS j_uuid, \n" +
-                        "   le.time         AS j_time, \n" +
-                        "   e.uuid          AS e_uuid, \n" +
-                        "   e.time          AS e_time, \n" +
-                        "   e.user_uuid     AS e_user_uuid, \n" +
-                        "   e.string_origin AS e_string_origin, \n" +
-                        "   e.string_lower  AS e_string_lower, \n" +
-                        "   l.uuid          AS l_uuid, \n" +
-                        "   l.time          AS l_time, \n" +
-                        "   l.user_uuid     AS l_user_uuid, \n" +
-                        "   l.name          AS l_name \n" +
-                        "FROM labels_to_entries le \n" +
-                        "   JOIN labels l \n" +
-                        "       ON le.label_uuid = l.uuid \n" +
-                        "   JOIN entries e \n" +
-                        "       ON le.entry_uuid = e.uuid \n" +
-                        "WHERE le.entry_uuid = ? ",
-                        entry.uuid())
                 .collect(toList());
     }
 
@@ -358,7 +371,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
             labelsToJoin.add(label);
         }
 
-        List<Entry.Labeled> alreadyLabeled = this.getAllJoinedTo(entry);
+        List<Entry.Labeled> alreadyLabeled = this.entriesLabelsJoinTable.getAllJoinedTo(entry);
         List<Entry.Label> alreadyJoinedLabels = distinctRightsOf(alreadyLabeled);
 
         labelsToJoin.removeAll(alreadyJoinedLabels);
@@ -452,7 +465,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
             }
         }
 
-        List<Entry.Labeled> alreadyJoinedRelations = this.getAllJoinedTo(entry);
+        List<Entry.Labeled> alreadyJoinedRelations = this.entriesLabelsJoinTable.getAllJoinedTo(entry);
 
         Optional<Entry.Labeled> joined = alreadyJoinedRelations
                 .stream()
@@ -497,8 +510,8 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     public long countEntriesBy(Entry.Label label) {
         return super.currentTransaction()
                 .doQueryAndConvertFirstRow(
-                        row -> row.intOf("qty"),
-                        "SELECT COUNT(le.uuid) AS qty \n" +
+                        row -> row.longOf("qty"),
+                        "SELECT COUNT(DISTINCT le.entry_uuid) AS qty \n" +
                         "FROM labels_to_entries le \n" +
                         "WHERE le.label_uuid = ? ",
                         label.uuid())
@@ -512,28 +525,54 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
         }
 
         if ( labels.size() == 1 ) {
-            return this.countEntriesBy(labels.get(0));
+            if ( matching.equalTo(NONE_OF) ) {
+                Entry.Label label = labels.get(0);
+                long count = super.currentTransaction()
+                        .doQueryAndConvertFirstRow(
+                                row -> row.longOf("qty"),
+                                "SELECT COUNT(DISTINCT le.entry_uuid) AS qty \n" +
+                                "FROM labels_to_entries le \n" +
+                                "   JOIN entries e \n" +
+                                "       ON e.uuid = le.entry_uuid AND e.user_uuid = ? \n" +
+                                "WHERE le.entry_uuid NOT IN ( \n" +
+                                "   SELECT DISTINCT le2.entry_uuid \n" +
+                                "   FROM labels_to_entries le2 \n" +
+                                "   WHERE le2.label_uuid = ? \n" +
+                                ") ",
+                                label.userUuid(), label.uuid())
+                        .orElseThrow();
+                return count;
+            }
+            else {
+                return this.countEntriesBy(labels.get(0));
+            }
         }
 
         long count;
         switch ( matching ) {
             case ANY_OF:
                 count = super.currentTransaction()
-                        .countQueryResults(
-                                this.sqlCountEntriesAndLabelsByAnyOfLabels.getFor(labels),
-                                uuidsOf(labels));
+                        .doQueryAndConvertFirstRow(
+                                row -> row.longOf("qty"),
+                                this.sqlCountEntriesByAnyOfLabels.getFor(labels),
+                                uuidsOf(labels))
+                        .orElseThrow();
                 break;
             case ALL_OF:
                 count = super.currentTransaction()
-                        .countQueryResults(
-                                this.sqlCountEntriesAndLabelsByAllOfLabels.getFor(labels),
-                                uuidsOf(labels), labels.size());
+                        .doQueryAndConvertFirstRow(
+                                row -> row.longOf("qty"),
+                                this.sqlCountEntriesByAllOfLabels.getFor(labels),
+                                uuidsOf(labels), labels.size())
+                        .orElseThrow();
                 break;
             case NONE_OF:
                 count = super.currentTransaction()
-                        .countQueryResults(
-                                this.sqlCountEntriesAndLabelsByNoneOfLabels.getFor(labels),
-                                uuidsOf(labels));
+                        .doQueryAndConvertFirstRow(
+                                row -> row.longOf("qty"),
+                                this.sqlCountEntriesByNoneOfLabels.getFor(labels),
+                                labels.get(0).userUuid(), uuidsOf(labels))
+                        .orElseThrow();
                 break;
             default:
                 throw matching.unsupported();

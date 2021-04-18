@@ -18,7 +18,8 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.search.api.Behavior.Feature.JOIN_SINGLE_CHARS_TO_NEXT_WORD;
 import static diarsid.search.api.Behavior.Feature.USE_CAMEL_CASE_WORDS_DECOMPOSITION;
 import static diarsid.search.api.model.Entry.Type.WORD;
-import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_ORIGINAL;
+import static diarsid.search.impl.logic.impl.StringTransformations.CaseConversion.CASE_TO_LOWER;
+import static diarsid.search.impl.logic.impl.StringTransformations.toSimplifiedWords;
 import static diarsid.search.impl.model.WordInEntry.Position.FIRST;
 import static diarsid.search.impl.model.WordInEntry.Position.LAST;
 import static diarsid.search.impl.model.WordInEntry.Position.MIDDLE;
@@ -26,7 +27,6 @@ import static diarsid.search.impl.model.WordInEntry.Position.SINGLE;
 import static diarsid.support.model.Storable.State.STORED;
 import static diarsid.support.strings.StringUtils.containsTextSeparator;
 import static diarsid.support.strings.StringUtils.splitByAnySeparators;
-import static diarsid.support.strings.StringUtils.splitCamelCase;
 
 public class WordsInEntriesImpl extends ThreadBoundTransactional implements WordsInEntries {
 
@@ -81,41 +81,10 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
     }
 
     private List<String> splitEntryToWords(User user, RealEntry entry) {
-        String unifiedEntryString;
-        List<String> wordStrings;
-
         boolean useCamelCase = this.behavior.isEnabled(user, USE_CAMEL_CASE_WORDS_DECOMPOSITION);
         boolean useSingleCharJoining = this.behavior.isEnabled(user, JOIN_SINGLE_CHARS_TO_NEXT_WORD);
 
-        if ( useCamelCase ) {
-            unifiedEntryString = RealEntry.unifyOriginalString(entry.string(), CASE_ORIGINAL);
-            wordStrings = splitByAnySeparators(unifiedEntryString);
-
-            if ( useSingleCharJoining ) {
-                wordStrings = joinSingleCharsToNextWord(wordStrings);
-            }
-
-            List<String> wordStringDecomposed = new ArrayList<>();
-            for ( String wordString : wordStrings ) {
-                for ( String splitCamelCaseWord : splitCamelCase(wordString, false) ) {
-                    wordStringDecomposed.add(splitCamelCaseWord.toLowerCase());
-                }
-            }
-            wordStrings = wordStringDecomposed;
-        }
-        else {
-            unifiedEntryString = entry.stringLower();
-            wordStrings = splitByAnySeparators(unifiedEntryString);
-
-            if ( useSingleCharJoining ) {
-                wordStrings = joinSingleCharsToNextWord(wordStrings);
-            }
-        }
-
-        return wordStrings
-                .stream()
-                .distinct()
-                .collect(toList());
+        return toSimplifiedWords(entry.string(), CASE_TO_LOWER, useCamelCase, useSingleCharJoining, false);
     }
 
     private void save(WordInEntry wordInEntry) {

@@ -5,23 +5,14 @@ import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.search.api.model.Entry;
-import diarsid.support.objects.CommonEnum;
-import diarsid.support.strings.PathUtils;
-import diarsid.support.strings.StringUtils;
+import diarsid.search.impl.logic.impl.StringTransformations;
 
 import static java.time.LocalDateTime.now;
 
-import static diarsid.search.api.model.Entry.Type.PATH;
-import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_ORIGINAL;
-import static diarsid.search.impl.model.RealEntry.CaseConversion.CASE_TO_LOWER;
+import static diarsid.search.impl.logic.impl.StringTransformations.CaseConversion.CASE_TO_LOWER;
 import static diarsid.support.model.Storable.State.STORED;
 
 public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
-
-    public enum CaseConversion implements CommonEnum<CaseConversion> {
-        CASE_TO_LOWER,
-        CASE_ORIGINAL
-    }
 
     private final String stringOrigin;
     private final String stringLower;
@@ -32,7 +23,7 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
         string = string.trim();
         this.stringOrigin = string;
         this.type = Entry.Type.defineTypeOf(this.stringOrigin);
-        this.stringLower = unifyOriginalString(this.stringOrigin, this.type);
+        this.stringLower = StringTransformations.simplify(this.stringOrigin, CASE_TO_LOWER, this.type);
     }
 
 //    public RealEntry(String string, List<Label> labels, UUID userUuid) {
@@ -48,7 +39,7 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
         super(previous.uuid(), time, now(), previous.userUuid(), previous.state());
         this.stringOrigin = newString.trim();
         this.type = Entry.Type.defineTypeOf(this.stringOrigin);
-        this.stringLower = unifyOriginalString(this.stringOrigin, this.type);
+        this.stringLower = StringTransformations.simplify(this.stringOrigin, CASE_TO_LOWER, this.type);
     }
 
     public RealEntry(Row row, LocalDateTime actualAt) {
@@ -96,45 +87,6 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
     @Override
     public Type type() {
         return type;
-    }
-
-    public static String unifyOriginalString(String original, CaseConversion caseConversion) {
-        String unified = original.trim().strip();;
-
-        if ( caseConversion.equalTo(CASE_TO_LOWER) ) {
-            unified = unified.toLowerCase();
-        }
-
-        unified = StringUtils.normalizeSpaces(unified);
-        unified = StringUtils.normalizeDashes(unified);
-
-        if ( StringUtils.containsPathSeparator(unified) ) {
-            unified = PathUtils.normalizeSeparators(unified);
-        }
-
-        unified = unified.replace('-', ' ');
-        unified = unified.replace('#', 'N');
-        unified = StringUtils.removeSpecialCharsFrom(unified, ' ', '/');
-
-        return unified;
-    }
-
-    public static String unifyOriginalString(String original, Entry.Type type) {
-        String unified;
-
-        unified = original.toLowerCase().trim().strip();
-        unified = StringUtils.normalizeSpaces(unified);
-        unified = StringUtils.normalizeDashes(unified);
-
-        if ( type.equalTo(PATH) ) {
-            unified = PathUtils.normalizeSeparators(unified);
-        }
-
-        unified = unified.replace('-', ' ');
-        unified = unified.replace('#', 'N');
-        unified = StringUtils.removeSpecialCharsFrom(unified, ' ', '/');
-
-        return unified;
     }
 
     @Override

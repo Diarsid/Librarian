@@ -32,6 +32,10 @@ public interface LabeledEntries {
 
     long countEntriesBy(Entry.Label.Matching matching, List<Entry.Label> labels);
 
+    default List<Entry.Labeled> findAllBy(Entry... entries) {
+        return this.findAllBy(List.of(entries));
+    }
+
     default List<Entry.Labeled> findAllBy(Entry.Label label) {
         return this.findAllBy(ANY_OF, List.of(label));
     }

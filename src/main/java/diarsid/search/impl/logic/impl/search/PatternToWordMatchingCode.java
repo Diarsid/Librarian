@@ -1,8 +1,14 @@
-package diarsid.search.impl.logic.impl.search.v2;
+package diarsid.search.impl.logic.impl.search;
+
+import diarsid.support.objects.references.Possible;
 
 import static java.lang.String.format;
 
+import static diarsid.support.objects.references.References.simplePossibleButEmpty;
+
 public final class PatternToWordMatchingCode {
+
+    public static final Possible<Boolean> logEnabled = simplePossibleButEmpty();
 
     public static class Description {
 
@@ -48,11 +54,15 @@ public final class PatternToWordMatchingCode {
     private PatternToWordMatchingCode() {}
 
     public static void logln(String s) {
-        System.out.println(s);
+        if ( logEnabled.isNotPresent() || logEnabled.get() ) {
+            System.out.println(s);
+        }
     }
 
     public static void logln(String s, Object... args) {
-        System.out.println(format(s, args));
+        if ( logEnabled.isNotPresent() || logEnabled.get() ) {
+            System.out.println(format(s, args));
+        }
     }
 
     public static long evaluate(String pattern, String word) {

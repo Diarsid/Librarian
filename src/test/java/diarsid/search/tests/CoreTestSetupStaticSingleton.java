@@ -1,26 +1,29 @@
 package diarsid.search.tests;
 
-import java.nio.file.Paths;
-
 import static java.util.Objects.isNull;
 
 import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.EMBEDDED;
-import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
+import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.SERVER;
 
 public class CoreTestSetupStaticSingleton {
 
-    private static final Object remoteLock = new Object();
+    private static final Object serverLock = new Object();
     private static final Object embeddedLock = new Object();
 
-    private static CoreTestSetup remote;
+    private static CoreTestSetup server;
     private static CoreTestSetup embedded;
 
-    public static CoreTestSetup remote() {
-        synchronized ( remoteLock ) {
-            if ( isNull(remote) ) {
-                remote = new CoreTestSetup(REMOTE);
+    public static CoreTestSetup server() {
+        synchronized (serverLock) {
+            if ( isNull(server) ) {
+                try {
+                    server = new CoreTestSetup(SERVER);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
-            return remote;
+            return server;
         }
     }
 
@@ -28,7 +31,7 @@ public class CoreTestSetupStaticSingleton {
         synchronized ( embeddedLock ) {
             if ( isNull(embedded) ) {
                 try {
-                    embedded = new CoreTestSetup(EMBEDDED, Paths.get("./src/main/resources/sql/CREATE_ALL.sql"));
+                    embedded = new CoreTestSetup(EMBEDDED);
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);

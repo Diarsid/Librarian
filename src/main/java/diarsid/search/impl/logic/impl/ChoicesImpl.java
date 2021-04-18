@@ -129,7 +129,7 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
         int removed = super.currentTransaction()
                 .doUpdate(
-                        "DELETE FROM choices " +
+                        "DELETE FROM choices \n" +
                         "WHERE uuid = ?",
                         oldChoice.uuid());
 
@@ -148,8 +148,8 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
         int removed = super.currentTransaction()
                 .doUpdate(
-                        "DELETE FROM choices " +
-                        "   JOIN patterns_to_entries relations " +
+                        "DELETE FROM choices \n" +
+                        "   JOIN patterns_to_entries relations \n" +
                         "       ON choices.relation_uuid = relations.uuid" +
                         "WHERE relations.entry_uuid = ? ",
                         entry.uuid());
@@ -163,8 +163,8 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
         int updated = super.currentTransaction()
                 .doUpdate(
-                        "UPDATE choices " +
-                        "SET time_actual = ? " +
+                        "UPDATE choices \n" +
+                        "SET time_actual = ? \n" +
                         "WHERE uuid = ?",
                         choice.actualTime(), choice.uuid());
 

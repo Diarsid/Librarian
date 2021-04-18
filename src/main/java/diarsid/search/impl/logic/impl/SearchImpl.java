@@ -1,4 +1,4 @@
-package diarsid.search.impl.logic.impl.search.v1;
+package diarsid.search.impl.logic.impl;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import diarsid.search.api.required.UserProvidedResources;
 import diarsid.search.impl.logic.api.Choices;
 import diarsid.search.impl.logic.api.Patterns;
 import diarsid.search.impl.logic.api.PatternsToEntries;
-import diarsid.search.impl.logic.api.search.SearchByChars;
+import diarsid.search.impl.logic.api.EntriesSearchByPattern;
 import diarsid.support.exceptions.TODOException;
 
 import static java.util.Collections.emptyList;
@@ -32,7 +32,7 @@ import static diarsid.search.impl.logic.impl.search.TimeDirection.BEFORE;
 public class SearchImpl implements Search {
 
     private final Properties properties;
-    private final SearchByChars searchByChars;
+    private final EntriesSearchByPattern entriesSearchByPattern;
     private final Patterns patterns;
     private final PatternsToEntries patternsToEntries;
     private final Choices choices;
@@ -41,13 +41,13 @@ public class SearchImpl implements Search {
 
     public SearchImpl(
             Properties properties,
-            SearchByChars searchByChars,
+            EntriesSearchByPattern entriesSearchByPattern,
             Patterns patterns,
             PatternsToEntries patternsToEntries,
             Choices choices,
             UserProvidedResources implementations) {
         this.properties = properties;
-        this.searchByChars = searchByChars;
+        this.entriesSearchByPattern = entriesSearchByPattern;
         this.patterns = patterns;
         this.patternsToEntries = patternsToEntries;
         this.choices = choices;
@@ -68,7 +68,7 @@ public class SearchImpl implements Search {
 
             List<PatternToEntry> entriesOldRelations = patternsToEntries.findBy(storedPattern);
 
-            List<Entry> matchingEntriesAfterPattern = searchByChars.findBy(
+            List<Entry> matchingEntriesAfterPattern = entriesSearchByPattern.findBy(
                     user, storedPattern.string(), matching, labels, AFTER_OR_EQUAL, storedPattern.createdAt());
 
             if ( matchingEntriesAfterPattern.isEmpty() ) {
@@ -86,7 +86,7 @@ public class SearchImpl implements Search {
         }
         else {
             Pattern newPattern = patterns.save(user, pattern);
-            List<Entry> matchingEntries = searchByChars.findBy(user, pattern, matching, labels);
+            List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels);
 
             if ( matchingEntries.isEmpty() ) {
                 foundRelations = emptyList();
@@ -123,7 +123,7 @@ public class SearchImpl implements Search {
                 LocalDateTime storedChoiceTime = storedChoice.createdAt();
 
                 if ( lastDomainModify.isAfter(storedChoiceTime) ) {
-                    List<Entry> freshEntries = searchByChars.findBy(user, pattern, matching, labels, AFTER_OR_EQUAL, storedChoiceTime);
+                    List<Entry> freshEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels, AFTER_OR_EQUAL, storedChoiceTime);
 
                     if ( freshEntries.isEmpty() ) {
                         return Optional.of(storedChoice.patternToEntry());
@@ -142,7 +142,7 @@ public class SearchImpl implements Search {
                                     .analyze(storedPattern, freshEntriesWithoutRelation);
                             patternsToEntries.save(freshEntriesNewRelations);
 
-                            List<Entry> oldEntries = searchByChars.findBy(user, pattern, matching, labels, BEFORE, storedChoiceTime);
+                            List<Entry> oldEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
                             List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
 
@@ -187,7 +187,7 @@ public class SearchImpl implements Search {
             else {
                 // pattern does not have associated choice
                 List<PatternToEntry> storedRelations = patternsToEntries.findBy(storedPattern);
-                List<Entry> entriesWithoutRelations = searchByChars
+                List<Entry> entriesWithoutRelations = entriesSearchByPattern
                         .findBy(user, pattern, matching, labels, AFTER_OR_EQUAL, storedPattern.createdAt());
 
                 List<PatternToEntry> allRelations;
@@ -231,7 +231,7 @@ public class SearchImpl implements Search {
         }
         else {
             Pattern newPattern = patterns.save(user, pattern);
-            List<Entry> matchingEntries = searchByChars.findBy(user, pattern, matching, labels);
+            List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels);
 
             List<PatternToEntry> entriesNewRelations = implementations
                     .algorithm()

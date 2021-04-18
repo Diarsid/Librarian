@@ -201,8 +201,8 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
 
         int count = super.currentTransaction()
                 .countQueryResults(
-                        "SELECT * " +
-                        "FROM labels " +
+                        "SELECT * \n" +
+                        "FROM labels \n" +
                         "WHERE uuid = ?",
                         label.uuid());
 

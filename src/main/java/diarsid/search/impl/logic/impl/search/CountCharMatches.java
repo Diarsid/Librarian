@@ -1,10 +1,14 @@
-package diarsid.search.impl.logic.impl.search.v2;
+package diarsid.search.impl.logic.impl.search;
 
 public final class CountCharMatches {
 
     private CountCharMatches() {}
 
     public static int evaluate(String string1, String string2, int requiredRatio /* 1 - 100 */) {
+        return evaluateV4(string1, string2, requiredRatio);
+    }
+
+    private static int evaluateV4(String string1, String string2, int requiredRatio /* 1 - 100 */) {
         if ( requiredRatio < 1 || requiredRatio > 100 ) {
             return -1;
         }

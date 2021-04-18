@@ -6,6 +6,8 @@ import diarsid.search.api.model.Entry;
 
 public interface EntriesLabelsJoinTable {
 
+    List<Entry.Labeled> getAllJoinedTo(Entry entry);
+
     int removeAllBy(Entry entry);
 
     boolean removeBy(Entry entry, Entry.Label label);

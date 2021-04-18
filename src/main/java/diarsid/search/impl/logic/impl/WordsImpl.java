@@ -9,7 +9,7 @@ import diarsid.search.impl.logic.api.Words;
 import diarsid.search.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.search.impl.model.Word;
 
-import static diarsid.search.impl.logic.impl.search.v2.CharSort.transform;
+import static diarsid.search.impl.logic.impl.search.CharSort.transform;
 import static diarsid.support.model.Storable.State.STORED;
 
 public class WordsImpl extends ThreadBoundTransactional implements Words {
@@ -32,7 +32,8 @@ public class WordsImpl extends ThreadBoundTransactional implements Words {
         }
     }
 
-    private Optional<Word> findBy(UUID userUuid, String string) {
+    @Override
+    public Optional<Word> findBy(UUID userUuid, String string) {
         return super.currentTransaction()
                 .doQueryAndConvertFirstRow(
                         Word::new,

@@ -14,7 +14,7 @@ import diarsid.search.impl.logic.api.PatternsToEntries;
 import diarsid.search.impl.logic.api.UsersLocking;
 import diarsid.search.impl.logic.api.Words;
 import diarsid.search.impl.logic.api.WordsInEntries;
-import diarsid.search.impl.logic.api.search.SearchByChars;
+import diarsid.search.impl.logic.api.EntriesSearchByPattern;
 import diarsid.search.impl.logic.impl.BehaviorImpl;
 import diarsid.search.impl.logic.impl.ChoicesImpl;
 import diarsid.search.impl.logic.impl.CoreImpl;
@@ -26,12 +26,12 @@ import diarsid.search.impl.logic.impl.PatternsImpl;
 import diarsid.search.impl.logic.impl.PatternsToEntriesImpl;
 import diarsid.search.impl.logic.impl.PropertiesImpl;
 import diarsid.search.impl.logic.impl.UsersLockingImpl;
-import diarsid.search.impl.logic.impl.UsersTransactionalImpl;
+import diarsid.search.impl.logic.impl.UsersImpl;
 import diarsid.search.impl.logic.impl.WordsImpl;
 import diarsid.search.impl.logic.impl.WordsInEntriesImpl;
 import diarsid.search.impl.logic.impl.jdbc.UsersTransactionalLocking;
-import diarsid.search.impl.logic.impl.search.v1.SearchImpl;
-import diarsid.search.impl.logic.impl.search.v2.SearchByCharsImpl;
+import diarsid.search.impl.logic.impl.SearchImpl;
+import diarsid.search.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.search.impl.validity.StringsComparisonAlgorithmValidation;
 import diarsid.support.objects.CommonEnum;
 
@@ -94,9 +94,9 @@ public interface Core {
         Properties properties = new PropertiesImpl(jdbc);
         Patterns patterns = new PatternsImpl(jdbc);
 
-        SearchByChars searchByChars = new SearchByCharsImpl(jdbc);
+        EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(jdbc);
 
-        Search search = new SearchImpl(properties, searchByChars, patterns, patternsToEntries, choices, resources);
+        Search search = new SearchImpl(properties, entriesSearchByPattern, patterns, patternsToEntries, choices, resources);
 
         AtomicReference<Core.Mode> coreMode = new AtomicReference<>(Mode.DEFAULT);
 
@@ -119,9 +119,10 @@ public interface Core {
 
         Store store = new StoreImpl(txLabels, txEntries, txLabeledEntries);
 
-        Users users = new UsersTransactionalImpl(jdbc);
+        Users txUsers = jdbc.createTransactionalProxyFor(
+                Users.class, new UsersImpl(jdbc), usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
 
-        Core core = new CoreImpl(coreMode, jdbc, users, store, txSearch, txBehavior, properties);
+        Core core = new CoreImpl(coreMode, jdbc, txUsers, store, txSearch, txBehavior, properties);
 
         return core;
     }

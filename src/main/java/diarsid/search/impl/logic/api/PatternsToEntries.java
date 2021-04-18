@@ -18,6 +18,8 @@ public interface PatternsToEntries {
 
     int remove(List<PatternToEntry> relations);
 
+    int removeBy(Entry entry, List<Pattern> patterns);
+
     void save(List<PatternToEntry> relations);
 
     void analyzeAgainAllRelationsOf(Entry entry);

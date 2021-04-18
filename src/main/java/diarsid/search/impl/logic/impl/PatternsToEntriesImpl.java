@@ -22,12 +22,14 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
 import static diarsid.support.model.Storable.checkMustBeStored;
+import static diarsid.support.model.Unique.uuidsOf;
 
 public class PatternsToEntriesImpl extends ThreadBoundTransactional implements PatternsToEntries {
 
     private final StringsComparisonAlgorithm algorithm;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectPatternToEntryByEntries;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntries;
+    private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntryAndPattern;
 
     public PatternsToEntriesImpl(
             Jdbc jdbc,
@@ -61,6 +63,13 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                 "   ?", ", \n",
                 ") ");
 
+        this.sqlDeleterPatternToEntryByEntryAndPattern = new StringCacheForRepeatedSeparatedPrefixSuffix(
+                "DELETE FROM patterns_to_entries pe \n" +
+                "WHERE \n" +
+                "   pe.entry_uuid = ? AND \n" +
+                "   pe.pattern_uuid IN ( \n",
+                "       ?", ", \n",
+                "   ) ");
     }
 
     @Override
@@ -191,6 +200,19 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
     }
 
     @Override
+    public int removeBy(Entry entry, List<Pattern> patterns) {
+        checkMustBeStored(entry);
+        checkMustBeStored(patterns);
+
+        int removed = super.currentTransaction()
+                .doUpdate(
+                        this.sqlDeleterPatternToEntryByEntryAndPattern.getFor(patterns),
+                        entry.uuid(), uuidsOf(patterns));
+
+        return removed;
+    }
+
+    @Override
     public void save(List<PatternToEntry> relations) {
         List<List> params = relations
                 .stream()
@@ -198,7 +220,7 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                         relation.uuid(),
                         relation.createdAt(),
                         relation.pattern().uuid(),
-                        relation.entry().userUuid()))
+                        relation.entry().uuid()))
                 .collect(toList());
 
         int[] inserted = super.currentTransaction()
@@ -222,8 +244,6 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
         checkMustBeStored(entry);
 
         List<PatternToEntry> relations = this.findBy(entry);
-        this.removeAllBy(entry);
-
         List<PatternToEntry> newRelations = new ArrayList<>();
 
         Pattern pattern;
@@ -234,6 +254,7 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
             newRelations.add(newRelation);
         }
 
+        this.removeAllBy(entry);
         this.save(newRelations);
     }
 }

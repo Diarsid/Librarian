@@ -1,4 +1,4 @@
-package diarsid.search.impl.logic.impl.search.v2;
+package diarsid.search.impl.logic.impl.search;
 
 import java.util.Arrays;
 

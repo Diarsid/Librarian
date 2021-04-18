@@ -6,20 +6,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import diarsid.search.tests.CoreTestSetup;
 import diarsid.search.api.Core;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
+import diarsid.search.tests.CoreTestSetup;
 
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.search.api.model.Entry.Label.ConditionBindable.ENTRY_CONTAINS_LABEL_IGNORE_CASE;
-import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
+import static diarsid.search.tests.CoreTestSetupStaticSingleton.server;
 
-public class ImportFromEntriesFile {
+public class ImportFromPaths {
 
-
-    private static CoreTestSetup coreTestSetup = new CoreTestSetup(REMOTE);
+    private static CoreTestSetup coreTestSetup = server();
     private static Core core = coreTestSetup.core;
     private static User user = coreTestSetup.user;
 
@@ -39,7 +38,7 @@ public class ImportFromEntriesFile {
             List<Entry.Labeled> labeled = core.store().labeledEntries().add(entry, labels);
         };
 
-        Files.readAllLines(Paths.get("./src/test/resources/entries"))
+        Files.readAllLines(Paths.get("./src/test/resources/datasets/paths"))
                 .forEach(line -> {
                     String lineLower = line.toLowerCase();
 

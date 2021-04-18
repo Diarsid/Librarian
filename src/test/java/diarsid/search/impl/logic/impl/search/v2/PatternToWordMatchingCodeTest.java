@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.search.impl.logic.impl.search.v2.PatternToWordMatchingCode.evaluate;
+import static diarsid.search.impl.logic.impl.search.PatternToWordMatchingCode.evaluate;
 import static diarsid.support.misc.Misc.methodName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -465,6 +465,11 @@ public class PatternToWordMatchingCodeTest {
 
     @Test
     public void test_servs_supremo_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_romerise_rising_true() {
         doTest();
     }
 

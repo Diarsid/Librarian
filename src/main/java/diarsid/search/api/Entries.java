@@ -3,28 +3,34 @@ package diarsid.search.api;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiPredicate;
 
 import diarsid.search.api.exceptions.NotFoundException;
 import diarsid.search.api.model.Entry;
+import diarsid.search.api.model.Pattern;
 import diarsid.search.api.model.User;
-import diarsid.support.objects.CommonEnum;
+import diarsid.support.model.Joined;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 public interface Entries {
 
-    enum PatternsTodoOnEntryReplace implements CommonEnum<PatternsTodoOnEntryReplace> {
-        REMOVE_RELATED_PATTERN,
-        ANALYZE_AGAIN_RELATED_PATTERN
-    }
+    interface OnUpdate {
 
-    interface LabelsTodoOnEntryReplace extends BiPredicate<Entry, Entry.Label> {
+        interface RemovingLabels {
 
-        boolean isToReassign(Entry entry, Entry.Label label);
+            RemovingLabels ALL = (assignedLabels) -> assignedLabels;
+            RemovingLabels NOTHING = (assignedLabels) -> emptyList();
 
-        default boolean test(Entry entry, Entry.Label label) {
-            return this.isToReassign(entry, label);
+            List<Entry.Label> toRemoveFrom(List<Entry.Label> entryLabelJoins);
+        }
+
+        interface RemovingPatterns {
+
+            RemovingPatterns ALL = (assignedPatterns) -> assignedPatterns;
+            RemovingPatterns NOTHING = (assignedPatterns) -> emptyList();
+
+            List<Pattern> toRemoveFrom(List<Pattern> patternEntryJoins);
         }
     }
 
@@ -46,13 +52,11 @@ public interface Entries {
         return ! this.doesExistBy(user, entry);
     }
 
-    Entry replace(User user, String oldEntry, String newEntry, PatternsTodoOnEntryReplace action);
-
-    Entry replace(Entry entry, String newEntry, PatternsTodoOnEntryReplace action);
-
-    Entry replace(User user, String oldEntry, String newEntry, PatternsTodoOnEntryReplace action, LabelsTodoOnEntryReplace reassign);
-
-    Entry replace(Entry entry, String newEntry, PatternsTodoOnEntryReplace action, LabelsTodoOnEntryReplace reassign);
+    Entry update(
+            Entry entry,
+            String newEntry,
+            OnUpdate.RemovingLabels removingLabels,
+            OnUpdate.RemovingPatterns removingPatterns);
 
     boolean remove(User user, String entry);
 

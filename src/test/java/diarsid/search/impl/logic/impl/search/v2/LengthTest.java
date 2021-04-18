@@ -1,9 +1,10 @@
 package diarsid.search.impl.logic.impl.search.v2;
 
 
+import diarsid.search.impl.logic.impl.search.CountCharMatches;
 import org.junit.jupiter.api.Test;
 
-import static diarsid.search.impl.logic.impl.search.v2.CharSort.transform;
+import static diarsid.search.impl.logic.impl.search.CharSort.transform;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class LengthTest {
@@ -146,5 +147,10 @@ public class LengthTest {
     @Test
     public void test_wh_warhammer() {
         testLength("wh", "warhammer", true);
+    }
+
+    @Test
+    public void test_romerise_rising() {
+        testLength("romerise", "rising", true);
     }
 }

@@ -4,31 +4,38 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import diarsid.search.tests.CoreTestSetup;
-import diarsid.search.api.Core;
+import diarsid.search.api.Store;
 import diarsid.search.api.model.Entry;
 import diarsid.search.api.model.User;
+import diarsid.search.tests.CoreTestSetup;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.joining;
 
-import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.REMOTE;
+import static diarsid.search.tests.CoreTestSetupStaticSingleton.server;
 
-public class ImportFromBooksFile {
-
-    private static CoreTestSetup coreTestSetup = new CoreTestSetup(REMOTE);
-    private static Core core = coreTestSetup.core;
-    private static User user = coreTestSetup.user;
+public class ImportFromBooks {
 
     public static void main(String[] args) throws Exception {
-        Entry.Label booksLabel = core.store().labels().getOrSave(user, "books");
+        executeUsing(server());
+    }
 
-        Map<String, List<String>> booksAndAuthors = new HashMap<>();
+    public static void executeUsing(CoreTestSetup coreTestSetup) throws Exception {
+        Store store = coreTestSetup.core.store();
+        User user = coreTestSetup.user;
+
+        Entry.Label booksLabel = store.labels().getOrSave(user, "books");
+
+        Map<String, Set<String>> booksAndAuthors = new HashMap<>();
         Map<String, List<String>> authorsAndBooks = new HashMap<>();
 
         Consumer<String> aggregateLineByAuthor = line -> {
@@ -41,10 +48,10 @@ public class ImportFromBooksFile {
                     .filter(author -> author.length() > 1)
                     .collect(Collectors.toList());
 
-            List<String> collectedAuthors = booksAndAuthors.get(book);
+            Set<String> collectedAuthors = booksAndAuthors.get(book);
 
             if ( isNull(collectedAuthors) ) {
-                collectedAuthors = new ArrayList<>();
+                collectedAuthors = new HashSet<>();
                 booksAndAuthors.put(book, collectedAuthors);
                 collectedAuthors.addAll(authors);
                 List<String> authorBooks;
@@ -79,31 +86,22 @@ public class ImportFromBooksFile {
             }
         };
 
-        Files.readAllLines(Paths.get("./src/test/resources/book-names-2"))
+        Files.readAllLines(Paths.get("./src/test/resources/datasets/books"))
                 .forEach(aggregateLineByAuthor);
 
-        int authorsCount = booksAndAuthors
-                .entrySet()
-                .stream()
-                .mapToInt(entry -> entry.getValue().size())
-                .sum();
+        AtomicInteger booksCounter = new AtomicInteger();
+        booksAndAuthors.forEach((book, bookAuthors) -> {
+            List<Entry.Label> bookLabels = new ArrayList<>(store.labels().getOrSave(user, new ArrayList<>(bookAuthors)));
+            bookLabels.add(booksLabel);
 
-        int a = 5;
+            Entry bookEntry = store.entries()
+                    .findBy(user, book)
+                    .orElseGet(() -> store.entries().save(user, book));
 
-//        booksByAuthor.forEach((author, books) -> {
-//            Entry.Label authorLabel = core.store().labels().getOrSave(user, author);
-//            books.forEach(book -> {
-//                try {
-//                    core.store().entries().save(user, book, booksLabel, authorLabel);
-//                    System.out.println("imported [" + counter.get() + "]" + book);
-//                }
-//                catch (IllegalArgumentException e) {
-//                    System.out.println("existing [" + counter.get() + "]" + book);
-//                }
-//                counter.incrementAndGet();
-//            });
-//        });
+            store.labeledEntries().add(bookEntry, bookLabels);
+
+            System.out.println("[IMPORT] " + booksCounter.getAndIncrement() + " " + book);
+            bookLabels.stream().map(Entry.Label::name).forEach(label -> System.out.println("              " + label));
+        });
     }
-
-
 }
