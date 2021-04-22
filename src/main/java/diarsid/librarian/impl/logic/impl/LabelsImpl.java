@@ -112,7 +112,9 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
             return List.of(this.getOrSave(user, names.get(0)));
         }
 
-        normalizeAll(names);
+        names = names.stream().distinct().collect(toList());
+
+        names = normalizeAll(names);
 
         List<Entry.Label> foundLabels = super.currentTransaction()
                 .doQueryAndStream(
@@ -213,8 +215,13 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
 
     @Override
     public void checkMustExist(List<Entry.Label> labels) throws NotFoundException {
+        if ( labels.isEmpty() ) {
+            return;
+        }
+
         checkMustBeStored(labels);
         checkMustBelongToOneUser(labels);
+        labels = labels.stream().distinct().collect(toList());
 
         int count = super.currentTransaction()
                 .countQueryResults(
@@ -226,11 +233,18 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
         }
     }
 
-    private static void normalizeAll(List<String> names) {
+    private static List<String> normalizeAll(List<String> names) {
+        if ( names.isEmpty() ) {
+            return emptyList();
+        }
+
+        names = names.stream().distinct().collect(toList());
         String name;
+        List<String> resultingNames = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             name = names.get(i).trim().strip().toLowerCase();
-            names.set(i, name);
+            resultingNames.add(name);
         }
+        return resultingNames;
     }
 }

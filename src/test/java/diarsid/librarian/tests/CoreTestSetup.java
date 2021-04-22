@@ -13,9 +13,10 @@ import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.api.required.UserProvidedResources;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.model.RealUser;
-import diarsid.tests.db.embedded.h2.H2TestDataBase;
-import diarsid.tests.db.embedded.h2.SqlConnectionsSourceTestBase;
-import diarsid.tests.db.embedded.h2.TestDataBase;
+import diarsid.librarian.tests.imports.DataImport;
+import diarsid.tests.db.h2.H2TestDataBase;
+import diarsid.tests.db.h2.SqlConnectionsSourceTestBase;
+import diarsid.tests.db.h2.TestDataBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public class CoreTestSetup {
     public final Jdbc jdbc;
     public final TestDataBase dataBase;
 
-    CoreTestSetup(H2TestDataBase.Type type) throws SQLException, IOException {
+    CoreTestSetup(H2TestDataBase.Type type, DataImport... dataImports) throws SQLException, IOException {
         H2TestDataBase dataBase = new H2TestDataBase(type, "search");
         this.dataBase = dataBase;
 
@@ -75,20 +76,32 @@ public class CoreTestSetup {
         core = (CoreImpl) Core.buildWith(impl);
         core.setMode(DEVELOPMENT);
         RealUser testUser;
+
+        boolean isInitialized = false;
         try {
             testUser = (RealUser) core
                     .users()
                     .findBy(TEST_USER_NAME)
                     .orElseGet(() -> core.users().create(TEST_USER_NAME));
+            isInitialized = true;
         }
         catch (Exception e) {
             String message = e.getMessage().toLowerCase();
-            if ( message.contains("table") && message.contains("not found")) {
-                dataBase.executeScript(Paths.get("./src/main/resources/sql/CREATE_TABLES_INDEXES.sql"));
+            if ( message.contains("table") && message.contains("not found") ) {
+                dataBase.executeScript(Paths.get("./src/main/resources/sql/h2/CREATE_TABLES_INDEXES.sql"));
+                dataBase.executeScript(Paths.get("./src/main/resources/sql/h2/CREATE_FUNCTION_EVAL_LENGTH.sql"));
+                dataBase.executeScript(Paths.get("./src/main/resources/sql/h2/CREATE_FUNCTION_EVAL_MATCHING.sql"));
+                dataBase.executeScript(Paths.get("./src/main/resources/sql/h2/CREATE_AGGREGATE_FUNCTION_EVAL_CODES.sql"));
             }
             testUser = (RealUser) core.users().create(TEST_USER_NAME);
         }
         user = testUser;
+
+        if ( ! isInitialized ) {
+            for ( DataImport dataImport : dataImports ) {
+                dataImport.executeUsing(this);
+            }
+        }
     }
 
 }

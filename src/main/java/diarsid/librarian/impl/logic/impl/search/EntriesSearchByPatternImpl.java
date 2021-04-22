@@ -48,7 +48,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -60,20 +60,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "                   ) \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -87,20 +87,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			    HAVING COUNT(label_uuid) = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1	\n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -118,20 +118,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "				user_uuid = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -151,20 +151,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "				user_uuid = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -184,20 +184,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "				user_uuid = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -213,20 +213,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			    HAVING COUNT(label_uuid) = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1	\n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -242,20 +242,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			    HAVING COUNT(label_uuid) = ? \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1	\n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -269,20 +269,20 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "                   ) \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
 
         this.sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		MY_MATCHING_19(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -296,13 +296,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "                   ) \n" +
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
-                "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                 ") \n" +
                 "SELECT entry_uuid \n" +
                 "FROM labeled_words_scan_raw \n" +
                 "WHERE word_code >-1 \n" +
                 "GROUP BY entry_uuid \n" +
-                "HAVING CODE_ANALYZE_17(word_code) > -1 ");
+                "HAVING EVAL_CODES_V17(word_code) > -1 ");
     }
 
     @Override
@@ -427,10 +427,10 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         ColumnGetter.uuidOf("uuid"),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, MY_MATCHING_19(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       MYLENGTH_4(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -439,7 +439,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, CODE_ANALYZE_17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -464,7 +464,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -472,13 +472,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			ON w.uuid = we.word_uuid \n" +
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
-                        "		MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, label.uuid(), transform(pattern))
                 .collect(toList());
 
@@ -513,10 +513,10 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         ColumnGetter.uuidOf("uuid"),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, MY_MATCHING_19(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       MYLENGTH_4(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -525,7 +525,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, CODE_ANALYZE_17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -550,10 +550,10 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         ColumnGetter.uuidOf("uuid"),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, MY_MATCHING_19(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       MYLENGTH_4(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -562,7 +562,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, CODE_ANALYZE_17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -589,7 +589,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -597,7 +597,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			ON w.uuid = we.word_uuid \n" +
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
-                        "		MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
@@ -605,7 +605,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "       ON e.uuid = entry_uuid AND e.time < ? \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
 
@@ -620,7 +620,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -628,7 +628,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			ON w.uuid = we.word_uuid \n" +
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
-                        "		MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
@@ -636,7 +636,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "       ON e.uuid = entry_uuid AND e.time >= ? \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
 
@@ -695,7 +695,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -711,13 +711,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "				user_uuid = ? \n" +
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
-                        "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
@@ -744,7 +744,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -762,13 +762,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "				user_uuid = ? \n" +
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
-                        "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
@@ -783,7 +783,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		MY_MATCHING_19(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V19(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -801,13 +801,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "				user_uuid = ? \n" +
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
-                        "	WHERE MYLENGTH_4(?, w.string_sort, 60) > -1 \n" +
+                        "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
                         ") \n" +
                         "SELECT entry_uuid \n" +
                         "FROM labeled_words_scan_raw \n" +
                         "WHERE word_code >-1 \n" +
                         "GROUP BY entry_uuid \n" +
-                        "HAVING CODE_ANALYZE_17(word_code) > -1 ",
+                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 

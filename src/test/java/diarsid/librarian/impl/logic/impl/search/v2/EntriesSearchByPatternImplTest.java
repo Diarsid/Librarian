@@ -5,16 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.rows.Row;
-import diarsid.librarian.api.Core;
 import diarsid.librarian.api.model.Entry;
-import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
-import diarsid.librarian.tests.CoreTestSetup;
+import diarsid.librarian.tests.TransactionalRollbackTestForServerSetup;
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
@@ -35,21 +32,17 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
-import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
-import static diarsid.librarian.tests.CoreTestSetupStaticSingleton.server;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
 import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class EntriesSearchByPatternImplTest {
+public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestForServerSetup {
 
-    static Core core;
-    static User user;
-    static Jdbc jdbc;
     static EntriesSearchByPattern entriesSearchByPattern;
     static Timer timer;
     static StringCacheForRepeatedSeparated wildcards= new StringCacheForRepeatedSeparated("?", ", ");
@@ -85,11 +78,7 @@ public class EntriesSearchByPatternImplTest {
     @BeforeAll
     public static void setUp() {
         timer = new Timer();
-        CoreTestSetup coreTestSetup = server();
-        core = coreTestSetup.core;
-        user = coreTestSetup.user;
-        jdbc = coreTestSetup.jdbc;
-        entriesSearchByPattern = new EntriesSearchByPatternImpl(jdbc);
+        entriesSearchByPattern = new EntriesSearchByPatternImpl(JDBC);
     }
 
     private boolean hasTime() {
@@ -140,7 +129,7 @@ public class EntriesSearchByPatternImplTest {
 
     void search(Runnable testAction) {
         String testMethodName = methodName(1);
-        jdbc.doInTransaction(transaction -> {
+        JDBC.doInTransaction(transaction -> {
             timer.start(testMethodName);
             try {
                 testAction.run();
@@ -187,12 +176,12 @@ public class EntriesSearchByPatternImplTest {
                 }
                 else {
                     expectManyLabels = false;
-                    this.labels.add(core.store().labels().getOrSave(user, word));
+                    this.labels.add(CORE.store().labels().getOrSave(USER, word));
                     this.matching = ANY_OF;
                 }
             }
             else if ( expectManyLabels ) {
-                this.labels.add(core.store().labels().getOrSave(user, word));
+                this.labels.add(CORE.store().labels().getOrSave(USER, word));
             }
         }
 
@@ -255,7 +244,9 @@ public class EntriesSearchByPatternImplTest {
                         .allMatch(string -> entry.toLowerCase().contains(string.toLowerCase())))
                 .collect(toList());
 
-        assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(this.resultingEntries.size() / 3);
+        if ( isNotEmpty(entriesNotContainingAllOfStrings) ) {
+            assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(this.resultingEntries.size() / 3);
+        }
     }
 
     void expectContainingAnyString(String... entries) {
@@ -307,60 +298,56 @@ public class EntriesSearchByPatternImplTest {
     private void executeSearch() {
         String testMethodName = methodName(2);
 
-        jdbc.doInTransaction(transaction -> {
-            timer.start(testMethodName);
-            try {
-                if ( this.hasLabels() ) {
-                    if ( this.hasTime() ) {
-                        resultingEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels, direction, time);
-                    }
-                    else {
-                        resultingEntries = entriesSearchByPattern.findBy(user, pattern, matching, labels);
-                    }
+        timer.start(testMethodName);
+        try {
+            if ( this.hasLabels() ) {
+                if ( this.hasTime() ) {
+                    resultingEntries = entriesSearchByPattern.findBy(USER, pattern, matching, labels, direction, time);
                 }
                 else {
-                    if ( this.hasTime() ) {
-                        resultingEntries = entriesSearchByPattern.findBy(user, pattern, direction, time);
-                    }
-                    else {
-                        resultingEntries = entriesSearchByPattern.findBy(user, pattern);
-                    }
+                    resultingEntries = entriesSearchByPattern.findBy(USER, pattern, matching, labels);
                 }
             }
-            finally {
-                timer.stop();
+            else {
+                if ( this.hasTime() ) {
+                    resultingEntries = entriesSearchByPattern.findBy(USER, pattern, direction, time);
+                }
+                else {
+                    resultingEntries = entriesSearchByPattern.findBy(USER, pattern);
+                }
             }
-        });
+        }
+        finally {
+            timer.stop();
+        }
 
         if ( nonNull(resultingEntries) && isNotEmpty(resultingEntries) ) {
             resultLines = new ArrayList<>();
 
-            jdbc.doInTransaction(transaction -> {
-                transaction.doQuery(
-                        row -> resultLines.add(new ResultLine(row)),
-                        "WITH \n" +
-                        "words_scan_raw AS ( \n" +
-                        "    SELECT uuid, string, MY_MATCHING_19(?, string) AS w_code \n" +
-                        "    FROM words \n" +
-                        "    WHERE \n" +
-                        "       MYLENGTH_4(?, string_sort, 60) > -1 AND \n" +
-                        "       user_uuid = ? \n" +
-                        "), \n" +
-                        "words_scan AS ( \n" +
-                        "    SELECT * \n" +
-                        "    FROM words_scan_raw \n" +
-                        "    WHERE w_code > -1 \n" +
-                        ") \n" +
-                        "SELECT e.string_origin, ws.string, ws.w_code \n" +
-                        "FROM words_scan ws\n" +
-                        "    JOIN words_in_entries we \n" +
-                        "        ON we.word_uuid = ws.uuid \n" +
-                        "    JOIN entries e \n" +
-                        "        ON e.uuid = we.entry_uuid \n" +
-                        "WHERE we.entry_uuid IN ( " + wildcards.getFor(resultingEntries) + " ) \n" +
-                        "ORDER BY e.string_origin ",
-                        pattern, transform(pattern), user.uuid(), uuidsOf(resultingEntries));
-            });
+            JDBC.threadBinding().currentTransaction().doQuery(
+                    row -> resultLines.add(new ResultLine(row)),
+                    "WITH \n" +
+                            "words_scan_raw AS ( \n" +
+                            "    SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
+                            "    FROM words \n" +
+                            "    WHERE \n" +
+                            "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
+                            "       USER_uuid = ? \n" +
+                            "), \n" +
+                            "words_scan AS ( \n" +
+                            "    SELECT * \n" +
+                            "    FROM words_scan_raw \n" +
+                            "    WHERE w_code > -1 \n" +
+                            ") \n" +
+                            "SELECT e.string_origin, ws.string, ws.w_code \n" +
+                            "FROM words_scan ws\n" +
+                            "    JOIN words_in_entries we \n" +
+                            "        ON we.word_uuid = ws.uuid \n" +
+                            "    JOIN entries e \n" +
+                            "        ON e.uuid = we.entry_uuid \n" +
+                            "WHERE we.entry_uuid IN ( " + wildcards.getFor(resultingEntries) + " ) \n" +
+                            "ORDER BY e.string_origin ",
+                    pattern, transform(pattern), USER.uuid(), uuidsOf(resultingEntries));
 
             resultingEntriesAndWords = resultLines
                     .stream()
@@ -496,6 +483,18 @@ public class EntriesSearchByPatternImplTest {
     }
 
     @Test
+    public void test_hobt() {
+        search();
+//        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
+    }
+
+    @Test
+    public void test_hbbt() {
+        search();
+//        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
+    }
+
+    @Test
     public void test_3toolssevrirtl() {
         search();
 //        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
@@ -614,7 +613,7 @@ public class EntriesSearchByPatternImplTest {
     @Test
     public void test_lorofrngbyjrrtolk_noneof_tolkien_books_before() {
         search(BEFORE, now());
-        expectSomeEntries();
+        expectNoEntries();
     }
 
     @Test
@@ -626,7 +625,7 @@ public class EntriesSearchByPatternImplTest {
     @Test
     public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now_minus_year() {
         search(AFTER_OR_EQUAL, now().minusYears(1));
-        expectSomeEntries();
+        expectNoEntries();
     }
 
     @Test

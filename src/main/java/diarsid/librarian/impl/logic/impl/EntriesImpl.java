@@ -164,6 +164,17 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
     }
 
     @Override
+    public Entry getOrSave(User user, String entry) {
+        Optional<Entry> foundEntry = this.findBy(user, entry);
+        if ( foundEntry.isPresent() ) {
+            return foundEntry.get();
+        }
+        else {
+            return this.save(user, entry);
+        }
+    }
+
+    @Override
     public Entry reload(Entry entry) {
         checkMustBeStored(entry);
         return this.getBy(entry.userUuid(), entry.uuid());

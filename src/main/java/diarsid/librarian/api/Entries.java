@@ -35,6 +35,8 @@ public interface Entries {
 
     Entry save(User user, String entry);
 
+    Entry getOrSave(User user, String entry);
+
     Entry reload(Entry entry);
 
     List<Entry> reload(List<Entry> entries);

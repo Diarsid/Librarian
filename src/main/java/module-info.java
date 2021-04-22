@@ -14,4 +14,6 @@ module diarsid.search {
     exports diarsid.librarian.api.model.meta;
     exports diarsid.librarian.api.required;
     exports diarsid.librarian.api.interaction;
+
+    opens diarsid.librarian.impl.logic.impl.jdbc.h2.extensions to com.h2database;
 }

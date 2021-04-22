@@ -75,6 +75,11 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
         return stringOrigin;
     }
 
+    @Override
+    public String searchString() {
+        return stringLower;
+    }
+
     public String stringLower() {
         return stringLower;
     }

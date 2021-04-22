@@ -87,6 +87,8 @@ public interface Entry extends Unique, Updatable, CreatedAt, UserScoped {
 
     String string();
 
+    String searchString();
+
     Entry.Type type();
 
 }

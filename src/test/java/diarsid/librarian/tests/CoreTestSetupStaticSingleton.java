@@ -1,9 +1,12 @@
 package diarsid.librarian.tests;
 
+import diarsid.librarian.tests.imports.DataImportFromBooks;
+import diarsid.librarian.tests.imports.DataImportFromPaths;
+
 import static java.util.Objects.isNull;
 
-import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.EMBEDDED;
-import static diarsid.tests.db.embedded.h2.H2TestDataBase.Type.SERVER;
+import static diarsid.tests.db.h2.H2TestDataBase.Type.INMEMORY;
+import static diarsid.tests.db.h2.H2TestDataBase.Type.SERVER_EMBEDDED;
 
 public class CoreTestSetupStaticSingleton {
 
@@ -17,7 +20,7 @@ public class CoreTestSetupStaticSingleton {
         synchronized (serverLock) {
             if ( isNull(server) ) {
                 try {
-                    server = new CoreTestSetup(SERVER);
+                    server = new CoreTestSetup(SERVER_EMBEDDED, new DataImportFromBooks(), new DataImportFromPaths());
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -31,7 +34,7 @@ public class CoreTestSetupStaticSingleton {
         synchronized ( embeddedLock ) {
             if ( isNull(embedded) ) {
                 try {
-                    embedded = new CoreTestSetup(EMBEDDED);
+                    embedded = new CoreTestSetup(INMEMORY);
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);

@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.impl.UsersLockingImpl;
-import diarsid.librarian.tests.EmbeddedTransactionalRollbackTest;
+import diarsid.librarian.tests.TransactionalRollbackTestForEmbeddedSetup;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.System.currentTimeMillis;
@@ -14,7 +14,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static diarsid.support.concurrency.threads.ThreadsUtil.sleepSafely;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class UsersLockingTest extends EmbeddedTransactionalRollbackTest {
+public class UsersLockingTest extends TransactionalRollbackTestForEmbeddedSetup {
 
     UsersLocking locking = new UsersLockingImpl(JDBC);
 
