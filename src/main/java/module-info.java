@@ -1,10 +1,9 @@
-module diarsid.search {
+module diarsid.librarian {
 
     requires java.sql;
     requires slf4j.api;
     requires com.h2database;
     requires diarsid.jdbc;
-    requires diarsid.strings.similarity;
     requires diarsid.support;
 
     exports diarsid.librarian.api;

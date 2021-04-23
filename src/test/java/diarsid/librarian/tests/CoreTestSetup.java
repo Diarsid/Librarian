@@ -38,7 +38,7 @@ public class CoreTestSetup {
                 "diarsid.strings.similarity.log.advanced = true");
     }
 
-    private static final boolean sqlHistoryEnabled = false;
+    private static final boolean sqlHistoryEnabled = true;
 
     private static final String TEST_USER_NAME = "JUNIT_TEST_USER";
 
@@ -98,9 +98,11 @@ public class CoreTestSetup {
         user = testUser;
 
         if ( ! isInitialized ) {
+            jdbc.change(SQL_HISTORY_ENABLED, false);
             for ( DataImport dataImport : dataImports ) {
                 dataImport.executeUsing(this);
             }
+            jdbc.change(SQL_HISTORY_ENABLED, sqlHistoryEnabled);
         }
     }
 

@@ -204,7 +204,7 @@ public class BooksEnrichment {
                 .map(entry -> entry.getKey() + ", authors: " + entry.getValue().stream().collect(joining(", ")))
                 .collect(Collectors.toList());
 
-        Files.write(Paths.get("./src/test/resources/datasets/books-enriched"), lines);
+        Files.write(Paths.get("./src/test/resources/datasets/books"), lines);
 
 //        booksAndAuthors.forEach((book, bookAuthors) -> {
 //            List<Entry.Label> authorLabels = store.labels().getOrSave(user, new ArrayList<>(bookAuthors));

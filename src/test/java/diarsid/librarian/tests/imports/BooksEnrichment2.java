@@ -82,6 +82,6 @@ public class BooksEnrichment2 {
         Files.readAllLines(Paths.get("./src/test/resources/datasets/books"))
                 .forEach(aggregateLineByAuthor);
 
-        Files.write(Paths.get("./src/test/resources/datasets/books-enriched"), resultingBooks);
+        Files.write(Paths.get("./src/test/resources/datasets/books"), resultingBooks);
     }
 }

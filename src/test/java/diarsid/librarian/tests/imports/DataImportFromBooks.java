@@ -99,7 +99,7 @@ public class DataImportFromBooks implements DataImport {
             }
         };
 
-        Files.readAllLines(Paths.get("./src/test/resources/datasets/books-enriched"))
+        Files.readAllLines(Paths.get("./src/test/resources/datasets/books"))
                 .forEach(aggregateLineByAuthor);
 
         AtomicInteger booksCounter = new AtomicInteger();
