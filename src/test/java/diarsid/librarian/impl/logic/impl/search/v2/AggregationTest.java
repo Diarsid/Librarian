@@ -4,23 +4,36 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
 import diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode;
+import diarsid.librarian.impl.logic.impl.search.UuidAndResultCode;
+import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static java.util.UUID.randomUUID;
+
+import static diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode.describe;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class AggregationTest {
 
-    H2AggregateFunctionForAnalyzeV17 aggregator = new H2AggregateFunctionForAnalyzeV17();
+    static Logger log = LoggerFactory.getLogger(AggregationTest.class);
+
+    H2AggregateFunctionForAnalyzeV19 aggregator = new H2AggregateFunctionForAnalyzeV19();
     String pattern;
     Boolean expectOk;
     List<String> words;
     List<WordCode> wordCodes = new ArrayList<>();
-    int resultCode;
+    long resultCode;
+    UuidAndResultCode uuidAndResultCode;
 
     void analyze() throws SQLException {
+        MultilineMessage report = new MultilineMessage("", "   ");
+        report.newLine().add("pattern : ").add(pattern);
         boolean isFailed = false;
         for ( String word : words ) {
             long code = PatternToWordMatchingCode.evaluate(pattern, word);
@@ -28,9 +41,11 @@ public class AggregationTest {
                 isFailed = true;
             }
             wordCodes.add(new WordCode(word, code));
+            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(describe(code));
         }
 
         if ( isFailed && expectOk ) {
+            log.info(report.compose());
             fail();
         }
 
@@ -39,8 +54,15 @@ public class AggregationTest {
         }
 
         resultCode = aggregator.getResult();
+        if ( resultCode > -1 ) {
+            uuidAndResultCode = new UuidAndResultCode(randomUUID(), resultCode);
+            assertThat(uuidAndResultCode.missed).isEqualTo(aggregator.missed());
+            assertThat(uuidAndResultCode.overlaps).isEqualTo(aggregator.overlaps());
+            assertThat(uuidAndResultCode.patternLength).isEqualTo(aggregator.patternLength());
+        }
 
-        System.out.println(aggregator.report());
+        report.newLine().add("result  : ").add(aggregator.report());
+        log.info(report.compose());
 
         boolean expectOkButFail = expectOk && resultCode < 0;
         boolean expectFailButOk = !expectOk && resultCode > 0;
@@ -179,6 +201,14 @@ public class AggregationTest {
     public void test_10() throws Exception {
         pattern = "tolos";
         words = List.of("to", "toddlers");
+        expectOk = false;
+        analyze();
+    }
+
+    @Test
+    public void test_11() throws Exception {
+        pattern = "lorofrng";
+        words = List.of("frog", "lorrie");
         expectOk = false;
         analyze();
     }

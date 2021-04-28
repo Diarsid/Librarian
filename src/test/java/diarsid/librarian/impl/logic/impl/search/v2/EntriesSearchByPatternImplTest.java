@@ -1,13 +1,16 @@
 package diarsid.librarian.impl.logic.impl.search.v2;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
@@ -33,6 +36,7 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode.describe;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
 import static diarsid.support.misc.Misc.methodName;
@@ -73,6 +77,7 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
     LocalDateTime time;
     List<Entry> resultingEntries;
     Map<String, List<WordCode>> resultingEntriesAndWords;
+    Map<String, H2AggregateFunctionForAnalyzeV17> entriesAggregates;
     List<ResultLine> resultLines;
 
     @BeforeAll
@@ -109,10 +114,18 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
         message.newLine().add("count     : ").add(resultingEntries.size());
         if ( nonNull(resultLines) && ! resultLines.isEmpty() ) {
         int i = 0;
+        String entry;
         for ( Map.Entry<String, List<WordCode>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
-        message.newLine().indent().add(i).add(" : ").add(entryAndWords.getKey());
+        entry = entryAndWords.getKey();
+        message.newLine().indent().add(i).add(" : ").add(entry);
+        message.newLine().indent().add("    ").add(entriesAggregates.get(entry).report());
         for( WordCode word : entryAndWords.getValue() ) {
-            message.newLine().indent(3).add(word.string).add(" : ").add(word.code).add(" - ").add(new PatternToWordMatchingCode.Description(word.code).toString());
+            message.newLine().indent(3)
+                    .add(word.string)
+                    .add(" : ")
+                    .add(word.code)
+                    .add(" : ")
+                    .add(describe(word.code));
         }
         i++;
         }
@@ -127,20 +140,7 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
         }
     }
 
-    void search(Runnable testAction) {
-        String testMethodName = methodName(1);
-        JDBC.doInTransaction(transaction -> {
-            timer.start(testMethodName);
-            try {
-                testAction.run();
-            }
-            finally {
-                timer.stop();
-            }
-        });
-    }
-
-    void search() {
+    void search() throws SQLException {
         String testMethodName = methodName(1);
         if ( ! testMethodName.startsWith("test_") ) {
             testMethodName = methodName(2);
@@ -188,7 +188,7 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
         executeSearch();
     }
 
-    void search(TimeDirection direction, LocalDateTime time) {
+    void search(TimeDirection direction, LocalDateTime time) throws Exception {
         this.direction = direction;
         this.time = time;
         this.search();
@@ -295,7 +295,7 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
         expectEntriesCount(entries.length);
     }
 
-    private void executeSearch() {
+    private void executeSearch() throws SQLException  {
         String testMethodName = methodName(2);
 
         timer.start(testMethodName);
@@ -327,26 +327,26 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
             JDBC.threadBinding().currentTransaction().doQuery(
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
-                            "words_scan_raw AS ( \n" +
-                            "    SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
-                            "    FROM words \n" +
-                            "    WHERE \n" +
-                            "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
-                            "       USER_uuid = ? \n" +
-                            "), \n" +
-                            "words_scan AS ( \n" +
-                            "    SELECT * \n" +
-                            "    FROM words_scan_raw \n" +
-                            "    WHERE w_code > -1 \n" +
-                            ") \n" +
-                            "SELECT e.string_origin, ws.string, ws.w_code \n" +
-                            "FROM words_scan ws\n" +
-                            "    JOIN words_in_entries we \n" +
-                            "        ON we.word_uuid = ws.uuid \n" +
-                            "    JOIN entries e \n" +
-                            "        ON e.uuid = we.entry_uuid \n" +
-                            "WHERE we.entry_uuid IN ( " + wildcards.getFor(resultingEntries) + " ) \n" +
-                            "ORDER BY e.string_origin ",
+                    "words_scan_raw AS ( \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
+                    "    FROM words \n" +
+                    "    WHERE \n" +
+                    "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
+                    "       USER_uuid = ? \n" +
+                    "), \n" +
+                    "words_scan AS ( \n" +
+                    "    SELECT * \n" +
+                    "    FROM words_scan_raw \n" +
+                    "    WHERE w_code > -1 \n" +
+                    ") \n" +
+                    "SELECT e.string_origin, ws.string, ws.w_code \n" +
+                    "FROM words_scan ws\n" +
+                    "    JOIN words_in_entries we \n" +
+                    "        ON we.word_uuid = ws.uuid \n" +
+                    "    JOIN entries e \n" +
+                    "        ON e.uuid = we.entry_uuid \n" +
+                    "WHERE we.entry_uuid IN ( " + wildcards.getFor(resultingEntries) + " ) \n" +
+                    "ORDER BY e.string_origin ",
                     pattern, transform(pattern), USER.uuid(), uuidsOf(resultingEntries));
 
             resultingEntriesAndWords = resultLines
@@ -354,306 +354,321 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
                     .collect(
                             groupingBy(line -> line.entry,
                             mapping(line -> line.word, toList())));
+
+            resultingEntriesAndWords.forEach((entry, wordCodes) -> {
+
+            });
+
+            entriesAggregates = new HashMap<>();
+            for ( Map.Entry<String, List<WordCode>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
+                H2AggregateFunctionForAnalyzeV17 aggregate = new H2AggregateFunctionForAnalyzeV17();
+                for ( WordCode wordCode : entryAndWords.getValue() ) {
+                    aggregate.add(wordCode.code);
+                }
+                entriesAggregates.put(entryAndWords.getKey(), aggregate);
+                aggregate.getResult();
+            }
+
         }
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk() {
+    public void test_lorofrngbyjrrtolk() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_before_now() {
+    public void test_lorofrngbyjrrtolk_before_now() throws Exception {
         search(BEFORE, now());
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_after_now() {
+    public void test_lorofrngbyjrrtolk_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_before_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_before_now_minus_year() throws Exception {
         search(BEFORE, now().minusYears(1));
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtlok() {
+    public void test_lorofrngbyjrrtlok() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_books() {
+    public void test_lorofrngbyjrrtolk_books() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_anyof_books_tolkien() {
+    public void test_lorofrngbyjrrtolk_anyof_books_tolkien() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_tolkien() {
+    public void test_lorofrngbyjrrtolk_tolkien() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_tolkien_before_now() {
+    public void test_lorofrngbyjrrtolk_tolkien_before_now() throws Exception {
         search(BEFORE, now());
         expectContainingAllStringsInEveryEntry("lord", "of", "rings", "by", "tolkien");
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_tolkien_before_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_tolkien_before_now_minus_year() throws Exception {
         search(BEFORE, now().minusYears(1));
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_tolkien_after_now() {
+    public void test_lorofrngbyjrrtolk_tolkien_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_tolkien_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_tolkien_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectContainingAllStringsInEveryEntry("lord", "of", "rings", "by", "tolkien");
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_allof_tolkien_books() {
+    public void test_lorofrngbyjrrtolk_allof_tolkien_books() throws Exception {
         search();
         expectContainingAllStringsInEveryEntry("lord", "of", "rings", "by", "tolkien");
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien() throws Exception {
         search();
         expectContainingAllStringsInEveryEntry("lord", "of", "rings", "tolkien");
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_books_tolkien() {
+    public void test_lorofrngbyjrrtolk_noneof_books_tolkien() throws Exception {
         search();
     }
 
     @Test
-    public void test_lorofrng() {
+    public void test_lorofrng() throws Exception {
         search();
         expectContainingAllStringsInEveryEntry("lord", "of", "rings");
     }
 
     @Test
-    public void test_byjrrtolk() {
+    public void test_byjrrtolk() throws Exception {
         search();
         expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_byjrrtlok() {
+    public void test_byjrrtlok() throws Exception {
         search();
         expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_byjrtlok() {
+    public void test_byjrtlok() throws Exception {
         search();
         expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_bytlokjr() {
+    public void test_bytlokjr() throws Exception {
         search();
         expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_hobt() {
+    public void test_hobt() throws Exception {
         search();
 //        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_hbbt() {
+    public void test_hbbt() throws Exception {
         search();
 //        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_3toolssevrirtl() {
+    public void test_3toolssevrirtl() throws Exception {
         search();
 //        expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
     }
 
     @Test
-    public void test_jrtolkguide() {
+    public void test_jrtolkguide() throws Exception {
         search();
     }
 
     @Test
-    public void test_jrrtolkguide() {
+    public void test_jrrtolkguide() throws Exception {
         search();
     }
 
     @Test
-    public void test_jeschrstpassn() {
+    public void test_jeschrstpassn() throws Exception {
         search();
     }
 
     @Test
-    public void test_waltwitmn() {
+    public void test_waltwitmn() throws Exception {
         search();
     }
 
     @Test
-    public void test_whltwhtmn() {
+    public void test_whltwhtmn() throws Exception {
         search();
     }
 
     @Test
-    public void test_harmurakm() {
+    public void test_harmurakm() throws Exception {
         search();
     }
 
     @Test
-    public void test_virtl() {
+    public void test_virtl() throws Exception {
         search();
     }
 
     @Test
-    public void test_virtlzt() {
+    public void test_virtlzt() throws Exception {
         search();
     }
 
     @Test
-    public void test_virtual() {
+    public void test_virtual() throws Exception {
         search();
     }
 
     @Test
-    public void test_virtlservs() {
+    public void test_virtlservs() throws Exception {
         search();
     }
 
     @Test
-    public void test_servs() {
+    public void test_servs() throws Exception {
         search();
         expectContainingString("Servers");
     }
 
     @Test
-    public void test_tolos() {
+    public void test_tolos() throws Exception {
         search();
         expectContainingString("Tools");
     }
 
     @Test
-    public void test_tols() {
+    public void test_tols() throws Exception {
         search();
         expectContainingString("Tools");
     }
 
     @Test
-    public void test_tools() {
+    public void test_tools() throws Exception {
         search();
         expectContainingString("Tools");
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_allof_tolkien_books_before() {
+    public void test_lorofrngbyjrrtolk_allof_tolkien_books_before() throws Exception {
         search(BEFORE, now());
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_allof_tolkien_books_after_now() {
+    public void test_lorofrngbyjrrtolk_allof_tolkien_books_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_allof_tolkien_books_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_allof_tolkien_books_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_before() {
+    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_before() throws Exception {
         search(BEFORE, now());
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_after_now() {
+    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_anyof_tolkien_books_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_before() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_before() throws Exception {
         search(BEFORE, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_before() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_before() throws Exception {
         search(BEFORE, now());
         expectSomeEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_after_now() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_after_now() throws Exception {
         search(AFTER_OR_EQUAL, now());
         expectNoEntries();
     }
 
     @Test
-    public void test_lorofrngbyjrrtolk_noneof_tolkien_after_now_minus_year() {
+    public void test_lorofrngbyjrrtolk_noneof_tolkien_after_now_minus_year() throws Exception {
         search(AFTER_OR_EQUAL, now().minusYears(1));
         expectSomeEntries();
     }
 
     @Test
-    public void test_romerise() {
+    public void test_romerise() throws Exception {
         search();
         expectSomeEntries();
     }
 
     @Test
-    public void test_romeries() {
+    public void test_romeries() throws Exception {
         search();
         expectSomeEntries();
     }

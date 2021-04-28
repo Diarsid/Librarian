@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
-import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
@@ -61,12 +60,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -88,12 +91,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -119,12 +126,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -152,12 +163,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByNoneOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -185,12 +200,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -214,12 +233,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByAllOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -243,12 +266,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1	\n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -270,12 +297,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
 
         this.sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -297,12 +328,16 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                 "			) le \n" +
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                "), \n" +
+                "entries_scan AS ( \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                "   FROM labeled_words_scan_raw \n" +
+                "   WHERE word_code >-1 \n" +
+                "   GROUP BY entry_uuid \n" +
                 ") \n" +
-                "SELECT entry_uuid \n" +
-                "FROM labeled_words_scan_raw \n" +
-                "WHERE word_code >-1 \n" +
-                "GROUP BY entry_uuid \n" +
-                "HAVING EVAL_CODES_V17(word_code) > -1 ");
+                "SELECT uuid, r_code \n" +
+                "FROM entries_scan \n" +
+                "WHERE r_code > -1 ");
     }
 
     @Override
@@ -422,9 +457,9 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
     }
 
     private List<Entry> searchBy(User user, String pattern) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
                         "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
@@ -439,13 +474,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V19(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
                         "	GROUP BY we.entry_uuid \n" +
                         ") \n" +
-                        "SELECT e.uuid \n" +
+                        "SELECT e.uuid, r_code \n" +
                         "FROM entries_scan es \n" +
                         "	JOIN entries e \n" +
                         "		ON e.uuid = es.entry_uuid \n" +
@@ -453,13 +488,15 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid())
                 .collect(toList());
 
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByLabel(String pattern, Entry.Label label) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -473,44 +510,54 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS ( \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, label.uuid(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAnyOfLabels(String pattern, List<Entry.Label> labels) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAllOfLabels(String pattern, List<Entry.Label> labels) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByBefore(User user, String pattern, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
                         "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
@@ -525,13 +572,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V19(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
                         "	GROUP BY we.entry_uuid \n" +
                         ") \n" +
-                        "SELECT e.uuid \n" +
+                        "SELECT e.uuid, r_code \n" +
                         "FROM entries_scan es \n" +
                         "	JOIN entries e \n" +
                         "		ON e.uuid = es.entry_uuid \n" +
@@ -541,13 +588,15 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAfterOrEqual(User user, String pattern, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
                         "	SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
@@ -562,13 +611,13 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V17(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V19(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
                         "	GROUP BY we.entry_uuid \n" +
                         ") \n" +
-                        "SELECT e.uuid \n" +
+                        "SELECT e.uuid, r_code \n" +
                         "FROM entries_scan es \n" +
                         "	JOIN entries e \n" +
                         "		ON e.uuid = es.entry_uuid \n" +
@@ -578,13 +627,15 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByLabelBefore(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -598,24 +649,30 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS (" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "      JOIN entries e \n" +
+                        "          ON e.uuid = entry_uuid AND e.time < ? \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "   JOIN entries e \n" +
-                        "       ON e.uuid = entry_uuid AND e.time < ? \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByLabelAfterOrEqual(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -629,68 +686,82 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "		EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS (" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "      JOIN entries e \n" +
+                        "          ON e.uuid = entry_uuid AND e.time >= ? \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "   JOIN entries e \n" +
-                        "       ON e.uuid = entry_uuid AND e.time >= ? \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAnyOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAnyOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAllOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByAllOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNotLabel(String pattern, Entry.Label label) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -712,34 +783,42 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS ( \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNoneOfLabels(String pattern, List<Entry.Label> labels) {
         UUID userUuid = labels.get(0).userUuid();
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNotLabelBefore(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -763,22 +842,28 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS ( \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNotLabelAfterOrEqual(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
@@ -802,38 +887,48 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         "			) le \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE EVAL_LENGTH_V4(?, w.string_sort, 60) > -1 \n" +
+                        "), \n" +
+                        "entries_scan AS ( \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V19(word_code) AS r_code \n" +
+                        "   FROM labeled_words_scan_raw \n" +
+                        "   WHERE word_code >-1 \n" +
+                        "   GROUP BY entry_uuid \n" +
                         ") \n" +
-                        "SELECT entry_uuid \n" +
-                        "FROM labeled_words_scan_raw \n" +
-                        "WHERE word_code >-1 \n" +
-                        "GROUP BY entry_uuid \n" +
-                        "HAVING EVAL_CODES_V17(word_code) > -1 ",
+                        "SELECT uuid, r_code \n" +
+                        "FROM entries_scan \n" +
+                        "WHERE r_code > -1 ",
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNoneOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
         UUID userUuid = labels.get(0).userUuid();
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
 
     private List<Entry> searchByNoneOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
         UUID userUuid = labels.get(0).userUuid();
-        List<UUID> entryUuids = super.currentTransaction()
+        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        ColumnGetter.uuidOf("entry_uuid"),
+                        UuidAndResultCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
+
+        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }

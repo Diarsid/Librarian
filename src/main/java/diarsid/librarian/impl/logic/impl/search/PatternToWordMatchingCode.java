@@ -53,6 +53,33 @@ public final class PatternToWordMatchingCode {
 
     private PatternToWordMatchingCode() {}
 
+    public static String describe(long code) {
+        long matchLength = (int) (code % 100);
+
+        code = code / 100;
+
+        long matchIndex = (int) (code % 100);
+
+        code = code / 100;
+
+        long wordLength = (int) (code % 100);
+
+        code = code / 100;
+
+        long rate = (int) (code % 1000);
+
+        code = code / 1000;
+
+        long patternLength = (int) (code % 100);
+
+        return
+                "patternL:" + patternLength +
+                ", wordL:" + wordLength +
+                ", matchL:" + matchLength +
+                ", matchIx:" + matchIndex +
+                ", rate:" + rate;
+    }
+
     public static void logln(String s) {
         if ( logEnabled.isNotPresent() || logEnabled.get() ) {
             System.out.println(s);
