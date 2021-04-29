@@ -1,6 +1,7 @@
 package diarsid.librarian.impl.logic.impl.search;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static diarsid.support.model.Unique.uuidsOf;
+import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
 
 public class EntriesSearchByPatternImpl extends ThreadBoundTransactional implements EntriesSearchByPattern {
 
@@ -440,6 +442,35 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
         }
     }
 
+    private List<UUID> filterAll(List<UuidAndResultCode> uuidAndResultCodes) {
+        List<UUID> withoutMissed = new ArrayList<>();
+        List<UUID> withMissed = new ArrayList<>();
+
+        for ( UuidAndResultCode uuidAndResultCode : uuidAndResultCodes) {
+            if ( uuidAndResultCode.hasMissed() ) {
+                withMissed.add(uuidAndResultCode.uuid);
+            }
+            else {
+                withoutMissed.add(uuidAndResultCode.uuid);
+            }
+        }
+
+        if ( withoutMissed.isEmpty() ) {
+            return withMissed;
+        }
+        else {
+            if ( isNotEmpty(withMissed) ) {
+                List<String> ignoreWithMissed = withMissed
+                        .stream()
+                        .map(uuidCode -> "ignore entry '" + uuidCode + "' due to missed")
+                        .collect(toList());
+                super.currentTransaction().sqlHistory().comment(ignoreWithMissed);
+            }
+
+            return withoutMissed;
+        }
+    }
+
     private List<Entry> getEntriesBy(List<UUID> entryUuids) {
         if ( entryUuids.isEmpty() ) {
             return emptyList();
@@ -488,7 +519,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid())
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -523,7 +554,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, label.uuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -536,7 +567,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, uuidsOf(labels), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -549,7 +580,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -588,7 +619,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -627,7 +658,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -664,7 +695,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -701,7 +732,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, label.uuid(), transform(pattern), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -714,7 +745,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -727,7 +758,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -740,7 +771,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -753,7 +784,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), labels.size(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -796,7 +827,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -810,7 +841,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -855,7 +886,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -900,7 +931,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -914,7 +945,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }
@@ -928,7 +959,7 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
                         pattern, time, uuidsOf(labels), userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = UuidAndResultCode.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
 
         return this.getEntriesBy(entryUuids);
     }

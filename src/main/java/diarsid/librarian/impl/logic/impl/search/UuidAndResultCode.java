@@ -67,25 +67,4 @@ public final class UuidAndResultCode {
         return missed > 0;
     }
 
-    public static List<UUID> filterAll(List<UuidAndResultCode> uuidAndResultCodes) {
-        List<UUID> withoutMissed = new ArrayList<>();
-        List<UUID> withMissed = new ArrayList<>();
-
-        for ( UuidAndResultCode uuidAndResultCode : uuidAndResultCodes) {
-            if ( uuidAndResultCode.hasMissed() ) {
-                withMissed.add(uuidAndResultCode.uuid);
-            }
-            else {
-                withoutMissed.add(uuidAndResultCode.uuid);
-            }
-        }
-
-        if ( withoutMissed.isEmpty() ) {
-            return withMissed;
-        }
-        else {
-            return withoutMissed;
-        }
-    }
-
 }
