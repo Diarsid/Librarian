@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
 
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.support.model.Storable.State.STORED;
@@ -18,8 +17,8 @@ public class Word extends AbstractIdentifiableUserScoped {
 
     private final String string;
 
-    public Word(String string, LocalDateTime time, UUID userUuid) {
-        super(randomUUID(), time, userUuid);
+    public Word(UUID uuid, String string, LocalDateTime time, UUID userUuid) {
+        super(uuid, time, userUuid);
         this.string = string;
     }
 

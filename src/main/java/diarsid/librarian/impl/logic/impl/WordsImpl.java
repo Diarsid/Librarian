@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.Word;
@@ -14,8 +15,8 @@ import static diarsid.support.model.Storable.State.STORED;
 
 public class WordsImpl extends ThreadBoundTransactional implements Words {
 
-    public WordsImpl(Jdbc jdbc) {
-        super(jdbc);
+    public WordsImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
     }
 
     @Override
@@ -23,7 +24,7 @@ public class WordsImpl extends ThreadBoundTransactional implements Words {
         Optional<Word> existingWord = this.findBy(userUuid, string);
 
         if ( existingWord.isEmpty() ) {
-            Word word = new Word(string, time, userUuid);
+            Word word = new Word(super.nextRandomUuid(), string, time, userUuid);
             this.save(word);
             return word;
         }

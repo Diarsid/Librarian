@@ -8,8 +8,6 @@ import diarsid.support.model.Unique;
 import diarsid.support.objects.references.Present;
 import diarsid.support.objects.references.References;
 
-import static java.util.UUID.randomUUID;
-
 import static diarsid.support.model.Storable.State.NON_STORED;
 
 
@@ -17,11 +15,6 @@ public abstract class AbstractUniqueStorable implements Unique, Storable {
 
     private final UUID uuid;
     private final Present<State> state;
-
-    public AbstractUniqueStorable() {
-        this.uuid = randomUUID();
-        this.state = References.simplePresentOf(NON_STORED);
-    }
 
     public AbstractUniqueStorable(UUID uuid) {
         this.uuid = uuid;

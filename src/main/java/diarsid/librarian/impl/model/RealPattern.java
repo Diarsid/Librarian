@@ -12,8 +12,8 @@ public class RealPattern extends AbstractIdentifiableUserScoped implements Patte
 
     private final String string;
 
-    public RealPattern(String string, UUID userUuid) {
-        super(userUuid);
+    public RealPattern(UUID uuid, String string, UUID userUuid) {
+        super(uuid, userUuid);
         this.string = string;
     }
 

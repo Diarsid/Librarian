@@ -8,14 +8,15 @@ import diarsid.jdbc.api.sqltable.rows.RowGetter;
 import diarsid.librarian.api.Properties;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 
 public class PropertiesImpl extends ThreadBoundTransactional implements Properties {
 
     private static final RowGetter<LocalDateTime> GET_TIME = ColumnGetter.timeOf("time");
 
-    public PropertiesImpl(Jdbc jdbc) {
-        super(jdbc);
+    public PropertiesImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
     }
 
     @Override

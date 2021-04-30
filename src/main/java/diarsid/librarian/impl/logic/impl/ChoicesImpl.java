@@ -10,6 +10,7 @@ import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.PatternToEntryChoice;
 import diarsid.librarian.impl.logic.api.Choices;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealPatternToEntryChoice;
 
@@ -20,15 +21,15 @@ import static diarsid.support.model.Storable.checkMustBeStored;
 
 public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
 
-    public ChoicesImpl(Jdbc jdbc) {
-        super(jdbc);
+    public ChoicesImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
     }
 
     @Override
     public PatternToEntryChoice save(PatternToEntry newRelation) {
         checkMustBeStored(newRelation);
 
-        RealPatternToEntryChoice choice = new RealPatternToEntryChoice(newRelation);
+        RealPatternToEntryChoice choice = new RealPatternToEntryChoice(super.nextRandomUuid(), newRelation);
 
         int inserted = super.currentTransaction()
                 .doUpdate(

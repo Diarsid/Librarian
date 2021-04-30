@@ -9,8 +9,8 @@ public abstract class AbstractIdentifiableUserScoped extends AbstractCreatedAt i
 
     private final UUID userUuid;
 
-    public AbstractIdentifiableUserScoped(UUID userUuid) {
-        super();
+    public AbstractIdentifiableUserScoped(UUID uuid, UUID userUuid) {
+        super(uuid);
         this.userUuid = userUuid;
     }
 

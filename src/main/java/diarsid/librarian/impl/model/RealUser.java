@@ -13,8 +13,8 @@ public class RealUser extends AbstractCreatedAt implements User {
 
     private final String name;
 
-    public RealUser(String name) {
-        super();
+    public RealUser(UUID uuid, String name) {
+        super(uuid);
         this.name = name;
     }
 

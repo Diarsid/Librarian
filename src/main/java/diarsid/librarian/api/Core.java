@@ -13,6 +13,7 @@ import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 import diarsid.librarian.impl.logic.api.Patterns;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
 import diarsid.librarian.impl.logic.api.UsersLocking;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
 import diarsid.librarian.impl.logic.impl.BehaviorImpl;
@@ -26,6 +27,7 @@ import diarsid.librarian.impl.logic.impl.PatternsImpl;
 import diarsid.librarian.impl.logic.impl.PatternsToEntriesImpl;
 import diarsid.librarian.impl.logic.impl.PropertiesImpl;
 import diarsid.librarian.impl.logic.impl.SearchImpl;
+import diarsid.librarian.impl.logic.impl.SequentialUuidTimeBasedMACSupplierImpl;
 import diarsid.librarian.impl.logic.impl.UsersImpl;
 import diarsid.librarian.impl.logic.impl.UsersLockingImpl;
 import diarsid.librarian.impl.logic.impl.WordsImpl;
@@ -61,44 +63,46 @@ public interface Core {
     void setMode(Core.Mode mode);
 
     static Core buildWith(UserProvidedResources resources) {
+        AtomicReference<Core.Mode> coreMode = new AtomicReference<>(Mode.DEFAULT);
+        UuidSupplier uuidSupplier = new SequentialUuidTimeBasedMACSupplierImpl(coreMode);
         Jdbc jdbc = resources.jdbc();
         StringsComparisonAlgorithm algorithm = resources.algorithm();
 
         StringsComparisonAlgorithmValidation algorithmValidation = new StringsComparisonAlgorithmValidation(() -> algorithm);
 //        algorithmValidation.validate();
 
-        Behavior behavior = new BehaviorImpl(jdbc);
+        Behavior behavior = new BehaviorImpl(jdbc, uuidSupplier);
 
-        UsersLocking usersLocking = new UsersLockingImpl(jdbc);
-        Labels labels = new LabelsImpl(jdbc);
-        Choices choices = new ChoicesImpl(jdbc);
+        UsersLocking usersLocking = new UsersLockingImpl(jdbc, uuidSupplier);
+        Labels labels = new LabelsImpl(jdbc, uuidSupplier);
+        Choices choices = new ChoicesImpl(jdbc, uuidSupplier);
 
-        PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(jdbc, algorithm);
+        PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(jdbc, uuidSupplier, algorithm);
 
-        Words words = new WordsImpl(jdbc);
+        Words words = new WordsImpl(jdbc, uuidSupplier);
 
-        WordsInEntries wordsInEntries = new WordsInEntriesImpl(jdbc, words, behavior);
+        WordsInEntries wordsInEntries = new WordsInEntriesImpl(jdbc, uuidSupplier, words, behavior);
 
-        EntriesLabelsJoinTable entriesLabelsJoinTable = new EntriesLabelsJoinTableImpl(jdbc);
+        EntriesLabelsJoinTable entriesLabelsJoinTable = new EntriesLabelsJoinTableImpl(jdbc, uuidSupplier);
 
         Entries entries = new EntriesImpl(
                 jdbc,
+                uuidSupplier,
                 patternsToEntries,
                 entriesLabelsJoinTable,
                 choices,
                 wordsInEntries,
                 behavior);
 
-        LabeledEntries labeledEntries = new LabeledEntriesImpl(jdbc, entries, labels, behavior, entriesLabelsJoinTable);
+        LabeledEntries labeledEntries = new LabeledEntriesImpl(jdbc, uuidSupplier, entries, labels, behavior, entriesLabelsJoinTable);
 
-        Properties properties = new PropertiesImpl(jdbc);
-        Patterns patterns = new PatternsImpl(jdbc);
+        Properties properties = new PropertiesImpl(jdbc, uuidSupplier);
+        Patterns patterns = new PatternsImpl(jdbc, uuidSupplier);
 
-        EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(jdbc);
+        EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(jdbc, uuidSupplier);
 
         Search search = new SearchImpl(properties, entriesSearchByPattern, patterns, patternsToEntries, choices, resources);
 
-        AtomicReference<Core.Mode> coreMode = new AtomicReference<>(Mode.DEFAULT);
 
         TransactionAware usersLockingOnOpenAndJoin = new UsersTransactionalLocking(coreMode, usersLocking);
 
@@ -120,7 +124,7 @@ public interface Core {
         Store store = new StoreImpl(txLabels, txEntries, txLabeledEntries);
 
         Users txUsers = jdbc.createTransactionalProxyFor(
-                Users.class, new UsersImpl(jdbc), usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
+                Users.class, new UsersImpl(jdbc, uuidSupplier), usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
 
         Core core = new CoreImpl(coreMode, jdbc, txUsers, store, txSearch, txBehavior, properties);
 

@@ -1,6 +1,7 @@
 package diarsid.librarian.impl.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
@@ -15,8 +16,8 @@ public class LabelToEntry extends UniqueCreatedAtJoined<Entry, Entry.Label> impl
 
     private final Present<State> state;
 
-    public LabelToEntry(Entry left, Entry.Label right) {
-        super(left, right);
+    public LabelToEntry(UUID uuid, Entry left, Entry.Label right) {
+        super(uuid, left, right);
         this.state = simplePresentOf(NON_STORED);
     }
 

@@ -18,7 +18,7 @@ public class RealEntryTest {
     @Test
     public void createEntry() {
         String origin = "The Ice-Shirt (Seven Dreams #1), authors: William T. Vollmann";
-        RealEntry entry = new RealEntry(origin, userUuid);
+        RealEntry entry = new RealEntry(randomUUID(), origin, userUuid);
 
         assertThat(entry.stringLower()).isEqualTo("the ice shirt seven dreams n1 authors william t vollmann");
     }

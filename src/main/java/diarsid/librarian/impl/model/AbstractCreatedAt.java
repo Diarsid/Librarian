@@ -11,8 +11,8 @@ public abstract class AbstractCreatedAt extends AbstractUniqueStorable implement
 
     private final LocalDateTime time;
 
-    public AbstractCreatedAt() {
-        super();
+    public AbstractCreatedAt(UUID uuid) {
+        super(uuid);
         this.time = now();
     }
 

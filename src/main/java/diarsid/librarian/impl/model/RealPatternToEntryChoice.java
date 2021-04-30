@@ -16,8 +16,8 @@ public class RealPatternToEntryChoice extends AbstractCreatedAt implements Patte
     private final PatternToEntry patternToEntry;
     private LocalDateTime actual;
 
-    public RealPatternToEntryChoice(PatternToEntry patternToEntry) {
-        super();
+    public RealPatternToEntryChoice(UUID uuid, PatternToEntry patternToEntry) {
+        super(uuid);
         this.patternToEntry = patternToEntry;
         this.actual = super.createdAt();
     }

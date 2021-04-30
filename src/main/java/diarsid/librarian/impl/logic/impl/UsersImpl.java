@@ -7,6 +7,7 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.Users;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealUser;
 
@@ -14,13 +15,13 @@ import static diarsid.support.model.Storable.State.STORED;
 
 public class UsersImpl extends ThreadBoundTransactional implements Users {
 
-    public UsersImpl(Jdbc jdbc) {
-        super(jdbc);
+    public UsersImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
     }
 
     @Override
     public User create(String name) {
-        User user = new RealUser(name);
+        User user = new RealUser(super.nextRandomUuid(), name);
 
         int updated = super.currentTransaction()
                 .doUpdate(

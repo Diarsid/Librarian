@@ -12,13 +12,13 @@ import diarsid.librarian.api.Labels;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealLabel;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Collections.emptyList;
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.librarian.api.model.meta.UserScoped.checkMustBelongToOneUser;
@@ -31,8 +31,8 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectLabelsWhereNameIn;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectLabelsWhereUuidIn;
 
-    public LabelsImpl(Jdbc jdbc) {
-        super(jdbc);
+    public LabelsImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
 
         this.sqlSelectLabelsWhereNameIn = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT * \n" +
@@ -85,7 +85,7 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
             return storedLabel.get();
         }
 
-        RealLabel label = new RealLabel(randomUUID(), now(), user.uuid(), name);
+        RealLabel label = new RealLabel(super.nextRandomUuid(), now(), user.uuid(), name);
 
         int inserted = transaction
                 .doUpdate(
@@ -162,7 +162,7 @@ public class LabelsImpl extends ThreadBoundTransactional implements Labels {
 
         List<Entry.Label> labels = names
                 .stream()
-                .map(labelName -> new RealLabel(randomUUID(), time, userUuid, labelName))
+                .map(labelName -> new RealLabel(super.nextRandomUuid(), time, userUuid, labelName))
                 .collect(toList());
 
         List<List> labelsArgs = labels

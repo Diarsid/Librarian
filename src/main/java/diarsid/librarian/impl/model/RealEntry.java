@@ -18,8 +18,8 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
     private final String stringLower;
     private final Entry.Type type;
 
-    public RealEntry(String string, UUID userUuid) {
-        super(userUuid);
+    public RealEntry(UUID uuid, String string, UUID userUuid) {
+        super(uuid, userUuid);
         string = string.trim();
         this.stringOrigin = string;
         this.type = Entry.Type.defineTypeOf(this.stringOrigin);
@@ -66,8 +66,8 @@ public class RealEntry extends AbstractUpdatableUserScoped implements Entry {
         this.type = Entry.Type.defineTypeOf(this.stringLower);
     }
 
-    public RealEntry newEntryWith(String otherString) {
-        return new RealEntry(otherString, super.userUuid());
+    public RealEntry newEntryWith(UUID uuid, String otherString) {
+        return new RealEntry(uuid, otherString, super.userUuid());
     }
 
     @Override

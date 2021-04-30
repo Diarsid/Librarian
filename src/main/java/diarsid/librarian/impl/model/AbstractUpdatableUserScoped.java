@@ -9,8 +9,8 @@ public abstract class AbstractUpdatableUserScoped extends AbstractIdentifiableUs
 
     private final LocalDateTime actualAt;
 
-    public AbstractUpdatableUserScoped(UUID userUuid) {
-        super(userUuid);
+    public AbstractUpdatableUserScoped(UUID uuid, UUID userUuid) {
+        super(uuid, userUuid);
         this.actualAt = super.createdAt();
     }
 

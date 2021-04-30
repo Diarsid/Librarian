@@ -1,5 +1,7 @@
 package diarsid.librarian.impl.model;
 
+import java.util.UUID;
+
 import diarsid.support.objects.CommonEnum;
 
 public class WordInEntry extends AbstractUniqueStorable {
@@ -13,8 +15,8 @@ public class WordInEntry extends AbstractUniqueStorable {
     private final Position position;
     private final int index;
 
-    public WordInEntry(RealEntry entry, Word word, Position position, int index) {
-        super();
+    public WordInEntry(UUID uuid, RealEntry entry, Word word, Position position, int index) {
+        super(uuid);
         this.entry = entry;
         this.word = word;
         this.position = position;

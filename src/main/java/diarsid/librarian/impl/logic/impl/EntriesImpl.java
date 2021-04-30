@@ -17,6 +17,7 @@ import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.Choices;
 import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealEntry;
@@ -53,12 +54,13 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     public EntriesImpl(
             Jdbc jdbc,
+            UuidSupplier uuidSupplier,
             PatternsToEntries patternsToEntries,
             EntriesLabelsJoinTable entriesLabelsJoinTable,
             Choices choices,
             WordsInEntries wordsInEntries,
             Behavior behavior) {
-        super(jdbc);
+        super(jdbc, uuidSupplier);
         this.patternsToEntries = patternsToEntries;
         this.entriesLabelsJoinTable = entriesLabelsJoinTable;
         this.choices = choices;
@@ -82,7 +84,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public Entry save(User user, String entryString) {
-        RealEntry entry = new RealEntry(entryString, user.uuid());
+        RealEntry entry = new RealEntry(super.nextRandomUuid(), entryString, user.uuid());
 
         boolean exists = doesEntryExistBy(user.uuid(), entry.stringLower());
 
@@ -126,7 +128,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                 derivedEntryNotExists = ! this.doesEntryExistBy(user.uuid(), path);
 
                 if ( derivedEntryNotExists ) {
-                    newDerivedEntry = entry.newEntryWith(path);
+                    newDerivedEntry = entry.newEntryWith(super.nextRandomUuid(), path);
                     newDerivedEntries.add(newDerivedEntry);
                 }
             }

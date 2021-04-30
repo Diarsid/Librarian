@@ -1,13 +1,18 @@
 package diarsid.librarian.impl.logic.impl.support;
 
+import java.util.UUID;
+
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.ThreadBoundJdbcTransaction;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 
 public abstract class ThreadBoundTransactional {
 
+    private final UuidSupplier uuidSupplier;
     protected final Jdbc jdbc;
 
-    public ThreadBoundTransactional(Jdbc jdbc) {
+    public ThreadBoundTransactional(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        this.uuidSupplier = uuidSupplier;
         this.jdbc = jdbc;
     }
 
@@ -21,5 +26,9 @@ public abstract class ThreadBoundTransactional {
 
     public final boolean isNotBoundToCurrentTransaction(TransactionalScoped transactionalScoped) {
         return ! this.isBoundToCurrentTransaction(transactionalScoped);
+    }
+
+    public UUID nextRandomUuid() {
+        return this.uuidSupplier.nextRandomUuid();
     }
 }

@@ -1,5 +1,6 @@
 package diarsid.librarian.api;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class UsersLockingTest extends TransactionalRollbackTestForEmbeddedSetup {
 
-    UsersLocking locking = new UsersLockingImpl(JDBC);
+    UsersLocking locking = new UsersLockingImpl(JDBC, UUID::randomUUID);
 
     @Test
     public void test() {

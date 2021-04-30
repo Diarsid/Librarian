@@ -6,6 +6,7 @@ import java.util.List;
 import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.LabelToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
@@ -19,8 +20,8 @@ public class EntriesLabelsJoinTableImpl extends ThreadBoundTransactional impleme
 
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleteWhereEntryAndLabels;
 
-    public EntriesLabelsJoinTableImpl(Jdbc jdbc) {
-        super(jdbc);
+    public EntriesLabelsJoinTableImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
 
         this.sqlDeleteWhereEntryAndLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "DELETE \n" +

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.Behavior;
@@ -15,6 +16,7 @@ import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.LabelToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
@@ -38,6 +40,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     private final Labels labels;
     private final Behavior behavior;
     private final EntriesLabelsJoinTable entriesLabelsJoinTable;
+    private final BiFunction<Entry, Entry.Label, Entry.Labeled> entryLabelJoin;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAllOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByAnyOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesAndLabelsByNoneOfLabels;
@@ -48,15 +51,17 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
 
     public LabeledEntriesImpl(
             Jdbc jdbc,
+            UuidSupplier uuidSupplier,
             Entries entries,
             Labels labels,
             Behavior behavior,
             EntriesLabelsJoinTable entriesLabelsJoinTable) {
-        super(jdbc);
+        super(jdbc, uuidSupplier);
         this.entries = entries;
         this.labels = labels;
         this.behavior = behavior;
         this.entriesLabelsJoinTable = entriesLabelsJoinTable;
+        this.entryLabelJoin = (entry, label) -> new LabelToEntry(super.nextRandomUuid(), entry, label);
 
         this.sqlSelectEntriesAndLabelsByAllOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -381,7 +386,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
             return emptyList();
         }
 
-        List<Entry.Labeled> labeledEntries = makeJoined(entry, labelsToJoin, LabelToEntry::new);
+        List<Entry.Labeled> labeledEntries = makeJoined(entry, labelsToJoin, this.entryLabelJoin);
 
         int[] changes = super.currentTransaction()
                 .doBatchUpdate(
@@ -476,7 +481,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
             return joined.get();
         }
 
-        Entry.Labeled newJoined = new LabelToEntry(entry, label);
+        Entry.Labeled newJoined = new LabelToEntry(super.nextRandomUuid(), entry, label);
 
         int changes = super.currentTransaction()
                 .doUpdate(

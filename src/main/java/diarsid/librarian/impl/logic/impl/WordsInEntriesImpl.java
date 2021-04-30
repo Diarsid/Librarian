@@ -6,6 +6,7 @@ import java.util.List;
 import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.Behavior;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
@@ -33,8 +34,8 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
     private final Words words;
     private final Behavior behavior;
 
-    public WordsInEntriesImpl(Jdbc jdbc, Words words, Behavior behavior) {
-        super(jdbc);
+    public WordsInEntriesImpl(Jdbc jdbc, UuidSupplier uuidSupplier, Words words, Behavior behavior) {
+        super(jdbc, uuidSupplier);
         this.words = words;
         this.behavior = behavior;
     }
@@ -47,7 +48,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         WordInEntry wordInEntry;
         if ( entry.type().equalTo(WORD) ) {
             word = this.words.getOrSave(entry.userUuid(), entry.stringLower(), entry.createdAt());
-            wordInEntry = new WordInEntry(entry, word, SINGLE, 0);
+            wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, SINGLE, 0);
             this.save(wordInEntry);
             wordInEntries.add(wordInEntry);
         }
@@ -69,7 +70,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
                 word = this.words.getOrSave(entry.userUuid(), wordString, entry.createdAt());
                 wordPosition = definePosition(i, last);
 
-                wordInEntry = new WordInEntry(entry, word, wordPosition, wordsActualCounter);
+                wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, wordPosition, wordsActualCounter);
                 this.save(wordInEntry);
                 wordInEntries.add(wordInEntry);
 

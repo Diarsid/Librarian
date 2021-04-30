@@ -7,6 +7,7 @@ import diarsid.jdbc.api.sqltable.rows.RowGetter;
 import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.Patterns;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealPattern;
 
@@ -16,8 +17,8 @@ public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
 
     private final RowGetter<Pattern> rowToPattern;
 
-    public PatternsImpl(Jdbc jdbc) {
-        super(jdbc);
+    public PatternsImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
         this.rowToPattern = RealPattern::new;
     }
 
@@ -37,7 +38,7 @@ public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
 
     @Override
     public Pattern save(User user, String patternString) {
-        RealPattern pattern = new RealPattern(patternString, user.uuid());
+        RealPattern pattern = new RealPattern(super.nextRandomUuid(), patternString, user.uuid());
 
         int inserted = super.currentTransaction()
                 .doUpdate(

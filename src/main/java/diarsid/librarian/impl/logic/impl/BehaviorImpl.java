@@ -4,14 +4,15 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.librarian.api.Behavior;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 
 import static java.time.LocalDateTime.now;
 
 public class BehaviorImpl extends ThreadBoundTransactional implements Behavior {
 
-    public BehaviorImpl(Jdbc jdbc) {
-        super(jdbc);
+    public BehaviorImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
     }
 
     @Override

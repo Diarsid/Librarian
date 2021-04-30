@@ -1,8 +1,9 @@
 module diarsid.librarian {
 
     requires java.sql;
-    requires slf4j.api;
+    requires org.slf4j;
     requires com.h2database;
+    requires com.fasterxml.uuid;
     requires diarsid.jdbc;
     requires diarsid.support;
 

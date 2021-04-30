@@ -13,6 +13,7 @@ import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealPatternToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
@@ -33,8 +34,9 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
 
     public PatternsToEntriesImpl(
             Jdbc jdbc,
+            UuidSupplier uuidSupplier,
             StringsComparisonAlgorithm algorithm) {
-        super(jdbc);
+        super(jdbc, uuidSupplier);
         this.algorithm = algorithm;
         this.sqlSelectPatternToEntryByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT \n" +

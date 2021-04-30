@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
-import diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
 import diarsid.librarian.tests.TransactionalRollbackTestForServerSetup;
 import diarsid.support.strings.MultilineMessage;
@@ -83,7 +83,7 @@ public class EntriesSearchByPatternImplTest extends TransactionalRollbackTestFor
     @BeforeAll
     public static void setUp() {
         timer = new Timer();
-        entriesSearchByPattern = new EntriesSearchByPatternImpl(JDBC);
+        entriesSearchByPattern = new EntriesSearchByPatternImpl(JDBC, UUID::randomUUID);
     }
 
     private boolean hasTime() {

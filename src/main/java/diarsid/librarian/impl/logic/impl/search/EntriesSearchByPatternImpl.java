@@ -9,6 +9,7 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
+import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
@@ -35,8 +36,8 @@ public class EntriesSearchByPatternImpl extends ThreadBoundTransactional impleme
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime;
 
-    public EntriesSearchByPatternImpl(Jdbc jdbc) {
-        super(jdbc);
+    public EntriesSearchByPatternImpl(Jdbc jdbc, UuidSupplier uuidSupplier) {
+        super(jdbc, uuidSupplier);
 
         this.sqlSelectEntriesByUuids = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT DISTINCT * \n" +
