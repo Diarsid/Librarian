@@ -1,10 +1,10 @@
 package diarsid.librarian.impl.logic.impl.search.v2;
 
 
-import diarsid.librarian.impl.logic.impl.search.CountCharMatches;
+import diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatches;
 import org.junit.jupiter.api.Test;
 
-import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class LengthTest {

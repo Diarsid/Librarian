@@ -21,6 +21,7 @@ import diarsid.librarian.impl.logic.impl.ChoicesImpl;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.logic.impl.EntriesImpl;
 import diarsid.librarian.impl.logic.impl.EntriesLabelsJoinTableImpl;
+import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.LabeledEntriesImpl;
 import diarsid.librarian.impl.logic.impl.LabelsImpl;
 import diarsid.librarian.impl.logic.impl.PatternsImpl;
@@ -33,7 +34,8 @@ import diarsid.librarian.impl.logic.impl.UsersLockingImpl;
 import diarsid.librarian.impl.logic.impl.WordsImpl;
 import diarsid.librarian.impl.logic.impl.WordsInEntriesImpl;
 import diarsid.librarian.impl.logic.impl.jdbc.UsersTransactionalLocking;
-import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
+import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
+import diarsid.librarian.impl.logic.impl.search.EntriesSearchByWord;
 import diarsid.librarian.impl.validity.StringsComparisonAlgorithmValidation;
 import diarsid.support.objects.CommonEnum;
 
@@ -99,10 +101,12 @@ public interface Core {
         Properties properties = new PropertiesImpl(jdbc, uuidSupplier);
         Patterns patterns = new PatternsImpl(jdbc, uuidSupplier);
 
-        EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(jdbc, uuidSupplier);
+        EntriesSearchByCharScan searchByCharScan = new EntriesSearchByCharScan(jdbc, uuidSupplier);
+        EntriesSearchByWord searchByWord = new EntriesSearchByWord(jdbc, uuidSupplier);
+
+        EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(words, searchByCharScan, searchByWord);
 
         Search search = new SearchImpl(properties, entriesSearchByPattern, patterns, patternsToEntries, choices, resources);
-
 
         TransactionAware usersLockingOnOpenAndJoin = new UsersTransactionalLocking(coreMode, usersLocking);
 

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.model.Word;
 
 public interface Words {
@@ -11,4 +12,8 @@ public interface Words {
     Word getOrSave(UUID userUuid, String string, LocalDateTime time);
 
     Optional<Word> findBy(UUID userUuid, String string);
+
+    default Optional<Word> findBy(User user, String string) {
+        return this.findBy(user.uuid(), string);
+    }
 }

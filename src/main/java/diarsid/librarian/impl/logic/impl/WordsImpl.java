@@ -10,7 +10,7 @@ import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.Word;
 
-import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
 import static diarsid.support.model.Storable.State.STORED;
 
 public class WordsImpl extends ThreadBoundTransactional implements Words {

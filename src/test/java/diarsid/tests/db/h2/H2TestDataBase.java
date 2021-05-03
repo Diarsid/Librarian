@@ -56,7 +56,7 @@ public class H2TestDataBase implements TestDataBase {
             public static void main(String... args) throws SQLException {
                 Server server = Server.createTcpServer("-tcpPort", PORT, "-tcpPassword", "admin", "-tcpAllowOthers", "-ifNotExists");
                 server.start();
-                logger.info("H2 server started.");
+                logger.info("H2 server started at " + PORT);
             }
         }
 
@@ -70,7 +70,7 @@ public class H2TestDataBase implements TestDataBase {
 
         public static void tryStart() throws SQLException {
             try {
-                Start.main();
+                TcpServer.Start.main();
             }
             catch (SQLException e) {
                 Throwable t = e.getCause();

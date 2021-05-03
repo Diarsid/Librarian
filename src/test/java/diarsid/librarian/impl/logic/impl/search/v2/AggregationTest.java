@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
-import diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode;
-import diarsid.librarian.impl.logic.impl.search.UuidAndResultCode;
+import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingCode;
+import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
 import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.UUID.randomUUID;
 
-import static diarsid.librarian.impl.logic.impl.search.PatternToWordMatchingCode.describe;
+import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingCode.describe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 

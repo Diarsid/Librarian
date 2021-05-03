@@ -18,16 +18,16 @@ public interface Entries {
 
         interface RemovingLabels {
 
-            RemovingLabels ALL = (assignedLabels) -> assignedLabels;
-            RemovingLabels NOTHING = (assignedLabels) -> emptyList();
+            RemovingLabels REMOVE_ALL = (assignedLabels) -> assignedLabels;
+            RemovingLabels REMOVE_NOTHING = (assignedLabels) -> emptyList();
 
             List<Entry.Label> toRemoveFrom(List<Entry.Label> entryLabelJoins);
         }
 
         interface RemovingPatterns {
 
-            RemovingPatterns ALL = (assignedPatterns) -> assignedPatterns;
-            RemovingPatterns NOTHING = (assignedPatterns) -> emptyList();
+            RemovingPatterns REMOVE_ALL = (assignedPatterns) -> assignedPatterns;
+            RemovingPatterns REMOVE_NOTHING = (assignedPatterns) -> emptyList();
 
             List<Pattern> toRemoveFrom(List<Pattern> patternEntryJoins);
         }
