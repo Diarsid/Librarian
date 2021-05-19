@@ -1,5 +1,12 @@
-CREATE ALIAS EVAL_LENGTH_V4 AS $$
-int evaluateV4(String string1, String string2, int requiredRatio /* 1 - 100 */) {
+-- generated 
+--   by diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatchesV5
+--   at 2021-05-19T22:29:36.952602200
+CREATE ALIAS EVAL_LENGTH_V5 AS $$
+    int evaluate(
+            String string1 /* longer */ ,
+            String string2 /* shorter */ ,
+            int requiredRatio /* 1 - 100 */ ) {
+
         if ( requiredRatio < 1 || requiredRatio > 100 ) {
             return -1;
         }
@@ -17,8 +24,8 @@ int evaluateV4(String string1, String string2, int requiredRatio /* 1 - 100 */) 
 
         int len1 = string1.length();
         int len2 = string2.length();
-        int len1m = len1 - 1;
-        int len2m = len2 - 1;
+        int s1Last = len1 - 1;
+        int s2Last = len2 - 1;
 
         int match = 0;
 
@@ -26,36 +33,69 @@ int evaluateV4(String string1, String string2, int requiredRatio /* 1 - 100 */) 
         int i2 = 0;
         char c1;
         char c2;
+        char c1Prev = '_';
+        char c2Prev = '_';
+        int c1Duplicates = 0;
+        int c2Duplicates = 0;
 
         while ( (i1 < len1) && (i2 < len2) ) {
             c1 = string1.charAt(i1);
             c2 = string2.charAt(i2);
+            if ( c1Prev == c1 ) {
+                c1Duplicates++;
+            }
+            if ( c2Prev == c2 ) {
+                c2Duplicates++;
+            }
 
             if ( c1 == c2 ) {
                 match++;
                 i1++;
                 i2++;
+                c1Prev = c1;
+                c2Prev = c2;
             }
             else {
 
                 if ( c1 > c2 ) {
-                    while ( c1 > c2 && i2 < len2m ) {
+                    while ( c1 > c2 && i2 < s2Last ) {
                         i2++;
+                        c2Prev = c2;
                         c2 = string2.charAt(i2);
+                        if ( c2Prev == c2 ) {
+                            c2Duplicates++;
+                        }
                     }
-                    if ( i2 == len2m ) {
+                    if ( i2 == s2Last ) {
                         if ( c1 == c2 ) {
                             match++;
+                        }
+                        else {
+                            while ( c1 < c2 && i1 < s1Last ) {
+                                i1++;
+                                c1Prev = c1;
+                                c1 = string1.charAt(i1);
+                                if ( c1Prev == c1 ) {
+                                    c1Duplicates++;
+                                }
+                                if ( c1 == c2 ) {
+                                    match++;
+                                }
+                            }
                         }
                         break;
                     }
                 }
                 else /* c1 < c2 */ {
-                    while ( c1 < c2 && i1 < len1m) {
+                    while ( c1 < c2 && i1 < s1Last ) {
                         i1++;
+                        c1Prev = c1;
                         c1 = string1.charAt(i1);
+                        if ( c1Prev == c1 ) {
+                            c1Duplicates++;
+                        }
                     }
-                    if ( i1 == len1m ) {
+                    if ( i1 == s1Last ) {
                         if ( c1 == c2 ) {
                             match++;
                         }
@@ -64,6 +104,8 @@ int evaluateV4(String string1, String string2, int requiredRatio /* 1 - 100 */) 
                 }
             }
         }
+
+        matchLength = matchLength - c2Duplicates;
 
         if ( match > 4 ) {
             return match;

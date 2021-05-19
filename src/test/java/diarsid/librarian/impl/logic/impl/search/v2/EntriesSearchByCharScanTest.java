@@ -12,6 +12,7 @@ import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
 import diarsid.librarian.tests.EntriesResult;
@@ -23,10 +24,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static java.time.LocalDateTime.now;
-import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -37,12 +38,11 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingCode.describe;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
+import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.describe;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
-import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForServerSetup {
@@ -77,7 +77,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     LocalDateTime time;
     EntriesResult entriesResult;
     Map<String, List<WordCode>> resultingEntriesAndWords;
-    Map<String, H2AggregateFunctionForAnalyzeV17> entriesAggregates;
+    Map<String, H2AggregateFunctionForAnalyzeV19> entriesAggregates;
     List<ResultLine> resultLines;
 
     @BeforeAll
@@ -227,10 +227,10 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V19(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V26(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
-                    "       EVAL_LENGTH_V4(?, string_sort, 60) > -1 AND \n" +
+                    "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
                     "       USER_uuid = ? \n" +
                     "), \n" +
                     "words_scan AS ( \n" +
@@ -260,7 +260,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
             entriesAggregates = new HashMap<>();
             for ( Map.Entry<String, List<WordCode>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
-                H2AggregateFunctionForAnalyzeV17 aggregate = new H2AggregateFunctionForAnalyzeV17();
+                H2AggregateFunctionForAnalyzeV19 aggregate = new H2AggregateFunctionForAnalyzeV19();
                 for ( WordCode wordCode : entryAndWords.getValue() ) {
                     aggregate.add(wordCode.code);
                 }
@@ -370,12 +370,13 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_lorofrngbyjrrtolk_noneof_books_tolkien() throws Exception {
         search();
+        entriesResult.expectNoEntries();
     }
 
     @Test
     public void test_lorofrng() throws Exception {
         search();
-        entriesResult.expectContainingAllStringsInEveryEntry("lord", "of", "rings");
+        entriesResult.expectContainingAllStringsInMostOfEntries("lord", "of", "rings");
     }
 
     @Test
@@ -405,19 +406,37 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_hobt() throws Exception {
         search();
-//        entriesResult.expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
+        entriesResult.expectContainingStringInMostOfEntries("hobbit");
+    }
+
+    @Test
+    public void test_yasnrkawbata() throws Exception {
+        search();
+        entriesResult.expectContainingAllStringsInEveryEntry("yasunari", "kawabata");
+    }
+
+    @Test
+    public void test_yasnrkwabta() throws Exception {
+        search();
+        entriesResult.expectContainingAllStringsInEveryEntry("yasunari", "kawabata");
+    }
+
+    @Test
+    public void test_yasnkawbata() throws Exception {
+        search();
+        entriesResult.expectContainingAllStringsInEveryEntry("yasunari", "kawabata");
     }
 
     @Test
     public void test_hbbt() throws Exception {
         search();
-//        entriesResult.expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
+        entriesResult.expectContainingStringInMostOfEntries("hobbit", 0.5f);
     }
 
     @Test
     public void test_3toolssevrirtl() throws Exception {
         search();
-//        entriesResult.expectContainingAllStringsInMostOfEntries("by", "j.r.r", "tolkien");
+        entriesResult.expectContainingAllStringsInEveryEntry("3", "tools", "servers", "virtualization");
     }
 
     @Test
@@ -433,26 +452,37 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_jeschrstpassn() throws Exception {
         search();
+        entriesResult.expectContainingAllStringsInEveryEntry("passion", "jesus", "christ");
     }
 
     @Test
     public void test_waltwitmn() throws Exception {
         search();
+        entriesResult.expectContainingAllStringsInEveryEntry("walt", "whitman");
     }
 
     @Test
     public void test_whltwhtmn() throws Exception {
         search();
+        entriesResult.expectContainingAllStringsInEveryEntry("walt", "whitman");
+    }
+
+    @Test
+    public void test_waltwthmn() throws Exception {
+        search();
+        entriesResult.expectContainingAllStringsInEveryEntry("walt", "whitman");
     }
 
     @Test
     public void test_harmurakm() throws Exception {
         search();
+        entriesResult.expectContainingAllStringsInEveryEntry("haruki", "murakami");
     }
 
     @Test
     public void test_virtl() throws Exception {
         search();
+        entriesResult.expectContainingStringInMostOfEntries("virtual");
     }
 
     @Test
@@ -574,6 +604,25 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_romeries() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_immnlknt() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Disabled("incorrect behavior of single-char-word 'i' ")
+    @Test
+    public void test_ilovyo() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_iloveyo() throws Exception {
         search();
         entriesResult.expectSomeEntries();
     }

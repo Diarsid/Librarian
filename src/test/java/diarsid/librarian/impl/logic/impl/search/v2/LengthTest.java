@@ -11,7 +11,7 @@ public class LengthTest {
 
 
     public void testLength(String pattern, String word, boolean expectMatching) {
-        int rate = CountCharMatches.evaluate(transform(pattern), transform(word), 60);
+        int rate = CountCharMatches.CURRENT_VERSION.evaluate(transform(pattern), transform(word), 60);
         if ( expectMatching ) {
             if ( rate < 0 ) {
                 fail();
@@ -152,5 +152,30 @@ public class LengthTest {
     @Test
     public void test_romerise_rising() {
         testLength("romerise", "rising", true);
+    }
+
+    @Test
+    public void test_yasnrkawbata_yasunari() {
+        testLength("yasnrkawbata", "yasunari", true);
+    }
+
+    @Test
+    public void test_yasnrkawbata_kawabata() {
+        testLength("yasnrkawbata", "kawabata", true);
+    }
+
+    @Test
+    public void test_yasnkawbata_yasunari() {
+        testLength("yasnkawbata", "yasunari", true);
+    }
+
+    @Test
+    public void test_yasnrkwabta_kawabata() {
+        testLength("yasnrkwabta", "kawabata", true);
+    }
+
+    @Test
+    public void test_yasnrkwabta_yasunari() {
+        testLength("yasnrkwabta", "yasunari", true);
     }
 }

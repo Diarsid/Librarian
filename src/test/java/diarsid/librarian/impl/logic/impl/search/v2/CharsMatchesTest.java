@@ -3,7 +3,7 @@ package diarsid.librarian.impl.logic.impl.search.v2;
 import org.junit.jupiter.api.Test;
 
 import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
-import static diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatches.evaluate;
+import static diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatches.CURRENT_VERSION;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class CharsMatchesTest {
@@ -13,7 +13,7 @@ public class CharsMatchesTest {
         String s1 = transform("abcefg");
         String s2 = transform("xabc");
 
-        int matches = evaluate(s1, s2, 60);
+        int matches = CURRENT_VERSION.evaluate(s1, s2, 60);
 
         if ( matches != 3 ) {
             fail();

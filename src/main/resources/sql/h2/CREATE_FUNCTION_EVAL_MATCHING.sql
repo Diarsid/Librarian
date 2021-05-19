@@ -1,6 +1,9 @@
-CREATE ALIAS EVAL_MATCHING_V19 AS $$
-long evaluateV19(String pattern, String word) {
-        //logln("p:%s --- w:%s", pattern, word);
+-- generated 
+--   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV26
+--   at 2021-05-19T22:22:46.671960100
+CREATE ALIAS EVAL_MATCHING_V26 AS $$
+    long evaluate(String pattern, String word) {
+        //logln("P:%s --- W:%s", pattern, word);
 
         int wordLength = word.length();
         int patternLength = pattern.length();
@@ -67,16 +70,21 @@ long evaluateV19(String pattern, String word) {
             }
         }
 
+        final boolean STRICT = wordLength < 6;
+
         diffLength = rangeLength - matchLength;
 
         if ( diffLength < matchLength / 2 ) {
             lengthRatioType = LENGTHS_APPROX_EQUAL;
+            //logln("length diff: LENGTHS_APPROX_EQUAL");
         }
         else if ( diffLength >= matchLength / 2 && diffLength < matchLength - 1 ) {
             lengthRatioType = LENGTHS_DIFF_INSIGNIFICANT;
+            //logln("length diff: LENGTHS_DIFF_INSIGNIFICANT");
         }
         else {
             lengthRatioType = LENGTHS_DIFF_SUBSTANTIAL;
+            //logln("length diff: LENGTHS_DIFF_SUBSTANTIAL");
         }
 
         int mismatchesMajor = 0;
@@ -84,9 +92,12 @@ long evaluateV19(String pattern, String word) {
         int mismatchesOnlyWord = 0;
         int mismatches = 0;
         int found = 0;
-        int fullMatch = 0;
-        int backwardMatches = 0;
+        int matchFull = 0;
         int matchInPattern = 0;
+        int matchInPatternWeak = 0;
+        int matchInPatternStrong = 0;
+        int matchInPatternStrengthBonus = 0;
+        int backwardMatches = 0;
         int typoMatches = 0;
         int order = 0;
         int gaps = 0;
@@ -107,7 +118,16 @@ long evaluateV19(String pattern, String word) {
         int diffInPattern = -1;
         int diffInWord = -1;
 
-        for (int i = 0; i < wordLength; i++) {
+        final int PREV_CHAR_UNINITIALIZED = -1;
+        final int PREV_CHAR_UNKNOWN = 0;
+        final int PREV_CHAR_NOT_FOUND = 1;
+        final int PREV_CHAR_FOUND = 2;
+        final int PREV_CHAR_MATCH_PATTERN = 3;
+        final int PREV_CHAR_MATCH_FULL = 4;
+
+        int prevCharResult = PREV_CHAR_UNINITIALIZED;
+
+        wordCharsIterating: for (int i = 0; i < wordLength; i++) {
             wc = word.charAt(i);
             wcInPattern = pattern.indexOf(wc, wcPrevInPattern + 1);
             diffInPattern = -1;
@@ -115,13 +135,13 @@ long evaluateV19(String pattern, String word) {
 
             if ( wcInPattern < 0 ) {
                 if ( i == 0 ) {
-                    //logln("   w:%s not found! ", wc, wcPrev);
+                    //logln("   W:%s not found! ", wc, wcPrev);
                     mismatchesMajor++;
                     mismatches++;
                 }
                 else if ( i == 1 ) {
-                    //logln("   w:%s not found! ", wc, wcPrev);
-//                    mismatchesMinor++;
+                    //logln("   W:%s not found! ", wc, wcPrev);
+                    mismatchesMinor++;
 //                    mismatches++;
                     if ( mismatchesMajor > 0 ) {
                         //logln("      mismatches major!");
@@ -129,44 +149,67 @@ long evaluateV19(String pattern, String word) {
                     }
                 }
                 else {
-                    //logln("   w:%s not found after w:%s[p:%s]", wc, wcPrev, wcPrevInPattern);
+                    //logln("   W:%s not found after W:%s[P:%s]", wc, wcPrev, wcPrevInPattern);
                     int wcInPatternWeak = pattern.indexOf(wc, firstWcInPattern);
                     if ( wcInPatternWeak < 0 ) {
-                        //logln("      w:%s not found from word-in-pattern beginning", wc);
+                        //logln("      W:%s not found from word-in-pattern beginning [P:%s]", wc, firstWcInPattern);
                     }
                     else {
                         if ( wcPrevInPattern > -1 ) {
                             int distanceFromItoWordEnd = lastInWord - i;
                             int distanceFromCPrevToC = wcPrevInPattern - wcInPatternWeak;
                             if ( distanceFromCPrevToC > distanceFromItoWordEnd ) {
-                                //logln("      w:%s[p:%s] too far [1]!", wc, wcInPatternWeak);
-                                break;
+                                //logln("      W:%s[P:%s] too far [1]!", wc, wcInPatternWeak);
+                                break wordCharsIterating;
                             }
                             else {
                                 if ( i != lastInWord ) {
                                     if ( wcInPatternWeak != firstWcInPattern ) {
                                         if ( wcInPatternWeak == wcPrevInPattern - 1 ) {
                                             if ( i == iPrev + 1 ) {
-                                                if ( gaps > 0 ) {
-                                                    //logln("      w:%s[p:%s] backward match from word-in-pattern beginning before w:%s[p:%s]",  wc, wcInPatternWeak, wcPrev, wcPrevInPattern);
-                                                    backwardMatches++;
-                                                    found++;
-                                                    gaps--;
+                                                boolean backwardMatchProhibited =
+                                                        (i+1)/2 > matchInPattern+1 ||
+                                                        mismatchesMinor > 0;
+                                                if ( ! backwardMatchProhibited ) {
+                                                    if ( gaps > 0 ) {
+                                                        //logln("      W:%s[P:%s] backward match [+1] from word-in-pattern beginning [P:%s] before W:%s[P:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
+                                                        /* V21 > */ wcPrevInPattern = wcInPatternWeak;
+                                                        backwardMatches++;
+                                                        found++;
+                                                        gaps--;
+                                                    }
+                                                }
+                                                else {
+                                                    //logln("         W:%s[P:%s] backward match [+1] prohibited!",  wc, wcInPatternWeak);
                                                 }
                                             }
+                                            /* V21.2 V */
+                                            else if ( i == iPrev + 2 ) {
+                                                boolean backwardMatch2Prohibited =
+                                                        (i+1)/2 > matchInPattern+1 ||
+                                                        matchFull > 0 ||
+                                                        mismatchesMinor > 0;
+                                                if ( ! backwardMatch2Prohibited ) {
+                                                    if ( gaps > 0 ) {
+                                                        //logln("      W:%s[P:%s] backward match [+2] from word-in-pattern beginning [P:%s] before W:%s[P:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
+                                                        wcPrevInPattern = wcInPatternWeak;
+                                                        backwardMatches++;
+                                                        found++;
+                                                        gaps--;
+                                                    }
+                                                }
+                                                else {
+                                                    mismatchesOnlyWord++;
+                                                }
+                                            }
+                                            /* V21.2 ^ */
                                             else {
                                                 mismatchesOnlyWord++;
                                             }
-//                                            if ( gaps > 0 ) {
-//                                                //logln("      w:%s[p:%s] backward match from word-in-pattern beginning before w:%s[p:%s]",  wc, wcInPatternWeak, wcPrev, wcPrevInPattern);
-//                                                backwardMatches++;
-//                                                found++;
-//                                                gaps--;
-//                                            }
                                         }
                                         else {
                                             typoMatches++;
-                                            //logln("      w:%s[p:%s] typo match from word-in-pattern beginning", wc, wcInPatternWeak);
+                                            //logln("      W:%s[P:%s] typo match from word-in-pattern beginning", wc, wcInPatternWeak);
                                         }
                                     }
                                 }
@@ -190,7 +233,7 @@ long evaluateV19(String pattern, String word) {
                         int distanceFromItoWordEnd = wordLength - i;
                         if ( distanceFromCPrevToC > 2 && distanceFromCPrevToC >= matchInPattern) {
 
-                            if ( fullMatch < 1 ) {
+                            if ( matchFull < 1 ) {
                                 int wcPrevInPatternN = wcPrevInPattern;
                                 int wcPrevInPatternNprev = -1;
                                 boolean goFurther = true;
@@ -202,7 +245,7 @@ long evaluateV19(String pattern, String word) {
                                 if ( wcPrevInPatternNprev != wcPrevInPattern ) {
                                     if ( firstWcInPattern == wcPrevInPattern ) {
                                         if ( wcPrevInPatternNprev > wcPrevInPattern && wcPrevInPatternNprev < wcInPattern ) {
-                                            //logln("      w:%s[p:%s] -> w:%s[p:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                            //logln("      W:%s[P:%s] -> W:%s[P:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
                                             firstWcInPattern = wcPrevInPatternNprev;
                                             wcPrevInPattern = wcPrevInPatternNprev;
                                         }
@@ -210,26 +253,28 @@ long evaluateV19(String pattern, String word) {
                                     else {
                                         int distanceChange = wcPrevInPatternNprev - wcPrevInPattern;
                                         if ( distanceChange > 0 && distanceChange < distanceFromItoWordEnd && wcPrevInPatternNprev < wcInPattern ) {
-                                            //logln("      w:%s[p:%s] -> w:%s[p:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                            //logln("      W:%s[P:%s] -> W:%s[P:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
                                             wcPrevInPattern = wcPrevInPatternNprev;
                                             if ( diffInPatternSum > 0 ) {
                                                 diffInPatternSum = diffInPatternSum - distanceChange - 1;
                                             }
                                             distanceFromCPrevToC = wcInPattern - wcPrevInPattern;
                                             if ( distanceFromCPrevToC > (distanceFromItoWordEnd + 2) ) {
-                                                //logln("   w:%s not found on reasonable length after w:%s[p:%s], found at p:%s", wc, wcPrev, wcPrevInPattern, wcInPattern);
-                                                continue;
+                                                //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                                prevCharResult = PREV_CHAR_NOT_FOUND;
+                                                continue wordCharsIterating;
                                             }
                                         }
                                         else {
-                                            //logln("   w:%s not found on reasonable length after w:%s[p:%s], found at p:%s", wc, wcPrev, wcPrevInPattern, wcInPattern);
-                                            continue;
+                                            //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                            prevCharResult = PREV_CHAR_NOT_FOUND;
+                                            continue wordCharsIterating;
                                         }
                                     }
                                 }
                             }
                             else {
-                                //logln("   w:%s not found on reasonable length after w:%s[p:%s], found at p:%s", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                 if ( distanceFromCPrevToC > found ) {
                                     char i2wc;
                                     int i2FirstWcInPattern = -1;
@@ -239,7 +284,7 @@ long evaluateV19(String pattern, String word) {
                                     int i2MatchInPattern = 0;
                                     int i2 = 0;
                                     int i2Order = 0;
-                                    int allowed = Math.max(fullMatch+1, found);
+                                    int allowed = Math.max(matchFull+1, found);
 
                                     duplicateSearch: for (; i2 < allowed; i2++) {
                                         i2wc = word.charAt(i2);
@@ -250,13 +295,11 @@ long evaluateV19(String pattern, String word) {
                                             }
 
                                             if ( i2wcInPattern < wcInPattern ) {
-                                                //logln("     duplication search: w:%s[p:%s]", i2wc, i2wcInPattern);
+                                                //logln("      duplication search: W:%s[P:%s]", i2wc, i2wcInPattern);
                                                 if ( i2 > 0 ) {
+                                                    i2MatchInPattern++;
                                                     if ( i2wcInPatternPrev + 1 == i2wcInPattern ) {
                                                         i2FullMatch++;
-                                                        i2MatchInPattern++;
-                                                    } else {
-                                                        i2MatchInPattern++;
                                                     }
                                                     i2Order++;
                                                 }
@@ -270,32 +313,34 @@ long evaluateV19(String pattern, String word) {
                                         }
 
                                         if ( i2+1 < allowed ) {
-                                            if ( i2FullMatch >= fullMatch && allowed < i ) {
+                                            if ( i2FullMatch >= matchFull && allowed < i ) {
                                                 allowed++;
                                             }
                                         }
                                     }
 
                                     boolean change =
-                                            i2FullMatch > fullMatch ||
-                                                    (i2FullMatch == fullMatch && i2MatchInPattern >= matchInPattern);
+                                            i2FullMatch > matchFull ||
+                                                    (i2FullMatch == matchFull && i2MatchInPattern >= matchInPattern);
 
                                     if ( change ) {
-                                        //logln("     duplication search: fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
+                                        //logln("      duplication search: fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
                                         i = i2 - 1;
                                         order = i2Order;
                                         firstWcInPattern = i2FirstWcInPattern;
                                         wcPrevInPattern = i2wcInPatternPrev;
                                         iPrev = i;
-                                        continue;
+                                        prevCharResult = PREV_CHAR_NOT_FOUND;
+                                        continue wordCharsIterating;
                                     }
                                     else {
-                                        break;
+                                        break wordCharsIterating;
                                     }
                                 }
                                 else {
-                                    //logln("   w:%s[p:%s] too far [3]!", wc, wcInPattern);
-                                    break;
+                                    //logln("      W:%s[P:%s] too far [3]!", wc, wcInPattern);
+                                    prevCharResult = PREV_CHAR_NOT_FOUND;
+                                    continue wordCharsIterating;
                                 }
                             }
                         }
@@ -305,16 +350,44 @@ long evaluateV19(String pattern, String word) {
                     }
                 }
 
-                //logln("   w:%s[p:%s]", wc, wcInPattern);
+                //logln("   W:%s[P:%s]", wc, wcInPattern);
                 if ( wcPrevInPattern > -1 ) {
                     diffInPattern = wcInPattern - wcPrevInPattern;
                     diffInWord = i - iPrev;
                     if ( diffInPattern == 1 ) {
-                        //logln("m");
+                        //logln("      M");
                         matchInPattern++;
                         if ( diffInWord == 1 ) {
-                            fullMatch++;
-                            //logln("fm");
+                            //logln("      FM");
+                            matchFull++;
+                            if ( prevCharResult == PREV_CHAR_MATCH_PATTERN ) {
+                                if ( matchInPatternWeak > 0 ) {
+                                    matchInPatternWeak--;
+                                    //logln("        w--");
+                                    matchInPatternStrong++;
+                                    //logln("        s");
+                                    if ( mismatches == 0 && diffInWordSum < 2 ) {
+                                        //logln("        s+");
+                                        matchInPatternStrengthBonus++;
+                                    }
+                                }
+                            }
+                            matchInPatternStrong++;
+                            //logln("        s");
+                            prevCharResult = PREV_CHAR_MATCH_FULL;
+                        }
+                        else {
+                            if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
+                                matchInPatternStrong++;
+                                //logln("        s");
+                            }
+                            else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN
+                                    || prevCharResult == PREV_CHAR_NOT_FOUND
+                                    || prevCharResult == PREV_CHAR_FOUND ) {
+                                matchInPatternWeak++;
+                                //logln("        w");
+                            }
+                            prevCharResult = PREV_CHAR_MATCH_PATTERN;
                         }
                     }
                     else {
@@ -322,36 +395,53 @@ long evaluateV19(String pattern, String word) {
                         boolean cPrevIndexBeforeCIndex = wcPrevInPattern < wcInPattern;
                         if ( cPrevIndexBeforeCIndex ) {
                             matchInPattern++;
-                            //logln("m");
+                            //logln("      M");
+                            if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
+                                matchInPatternStrong++;
+                                //logln("        s");
+                            }
+                            else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN || prevCharResult == PREV_CHAR_FOUND ) {
+                                matchInPatternWeak++;
+                                //logln("        w");
+
+                            }
+                            prevCharResult = PREV_CHAR_MATCH_PATTERN;
                         }
                         int wcPrevInPatternN = wcPrevInPattern;
-                        while ( diffMoreThanOne && cPrevIndexBeforeCIndex ) {
+                        gapFixing: while ( diffMoreThanOne && cPrevIndexBeforeCIndex ) {
                             gaps++;
-                            //logln("      gap between char w:%s[p:%s] and previous char w:%s[p:%s]!", wc, wcInPattern, wcPrev, wcPrevInPattern);
+                            //logln("      gap between char W:%s[P:%s] and previous char W:%s[P:%s]!", wc, wcInPattern, wcPrev, wcPrevInPattern);
 
                             wcPrev = word.charAt(i - 1);
                             wcPrevInPatternN = pattern.indexOf(wcPrev, wcPrevInPatternN + 1);
                             if ( wcPrevInPatternN < 0 ) {
-                                //logln("      w:%s not found after p:%s", wcPrev, wcPrevInPattern);
+                                //logln("      W:%s not found after P:%s", wcPrev, wcPrevInPattern);
                                 int gap = diffInPattern - 1;
-                                if ( fullMatch == 0 && gap > found ) {
+                                if ( matchFull == 0 && gap > found ) {
                                     //logln("         no full-matches, gap[%s] > found[%s]", gap, found);
                                     return -1;
                                 }
-                                break;
+    //                              /* V21.1 */   if ( wcInPattern == lastInPattern && i < lastInWord ) { // algorithm reached to last pattern char and there is a gap, but there are other word chars
+    //                              /* V21.1 */       found--; // throw this char away
+    //                              /* V21.1 */       matchInPattern--; // ignore match
+    //                              /* V21.1 */       order--; // ignore correct order of this char
+    //                              /* V25.0 */       prevCharResult = PREV_CHAR_NOT_FOUND;
+    //                              /* V21.1 */       continue wordCharsIterating; // proceed to next word char
+    //                              /* V21.1 */   }
+                                break gapFixing;
                             }
                             if ( wcPrevInPatternN > wcInPattern ) {
-                                //logln("      w:%s found only after current w:%s[p:%s]", wcPrev, wc, wcInPattern);
-                                break;
+                                //logln("      W:%s found only after current W:%s[P:%s]", wcPrev, wc, wcInPattern);
+                                break gapFixing;
                             }
                             if ( wcPrevInPatternN == wcInPattern) {
-                                break;
+                                break gapFixing;
                             }
                             diffInPattern = wcInPattern - wcPrevInPatternN;
 
                             if ( (diffInPattern + i) > wordLength) {
-                                //logln("         p:%s to far", wcPrevInPatternN);
-                                break;
+                                //logln("         P:%s to far", wcPrevInPatternN);
+                                break gapFixing;
                             }
 
                             diffMoreThanOne = diffInPattern > 1;
@@ -359,37 +449,31 @@ long evaluateV19(String pattern, String word) {
 
                             if ( ! diffMoreThanOne && cPrevIndexBeforeCIndex ) {
                                 wcPrevInPattern = wcPrevInPatternN;
-                                //logln("      gap fixed char w:%s[p:%s] and previous char w:%s[p:%s] - p:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
+                                //logln("      gap fixed char W:%s[P:%s] and previous char W:%s[P:%s] - P:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
                                 gaps--;
-                                //logln("m");
+                                //logln("      M");
                                 if ( diffInWord == 1 ) {
-                                    fullMatch++;
-                                    //logln("fm");
+                                    //logln("      FM");
+                                    matchFull++;
+                                    matchInPattern++;
+                                    if ( prevCharResult == PREV_CHAR_MATCH_PATTERN ) {
+                                        if ( matchInPatternWeak > 0 ) {
+                                            matchInPatternWeak--;
+                                            //logln("        w--");
+                                            matchInPatternStrong++;
+                                            //logln("        s");
+                                            if ( mismatches == 0 && diffInWordSum < 2 ) {
+                                                //logln("        s+");
+                                                matchInPatternStrengthBonus++;
+                                            }
+                                        }
+                                    }
+                                    matchInPatternStrong++;
+                                    //logln("        s");
+                                    prevCharResult = PREV_CHAR_MATCH_FULL;
                                 }
                             }
                         }
-
-                        // exp
-                        diffInPattern = wcInPattern - wcPrevInPattern;
-                        if ( diffInPattern > 1 ) {
-                            char pc;
-                            int pcInWord;
-                            for (int iPattern = wcPrevInPattern+1; iPattern < wcInPattern; iPattern++) {
-                                pc = pattern.charAt(iPattern);
-                                pcInWord = word.indexOf(pc, iPrev + 1);
-                                if ( pcInWord < 0 ) {
-                                    //logln("      search p:%s[%s] in word - not found!", pc, iPattern);
-//                                    mismatchesMinor++;
-//                                    mismatches++;
-                                }
-                                else if ( pcInWord > i + 3 ) {
-                                    //logln("      search p:%s[%s] in word - found at w[%s]", pc, iPattern, i);
-//                                    mismatchesMinor++;
-//                                    mismatches++;
-                                }
-                            }
-                        }
-                        // exp
                     }
                 }
 
@@ -403,7 +487,7 @@ long evaluateV19(String pattern, String word) {
 
                 if ( wordInPatternLength > wordLength + 2 ) {
                     //logln("      word-in-pattern-length is substantially longer than word");
-                    break;
+                    break wordCharsIterating;
                 }
 
                 if ( diffInWord > -1 ) {
@@ -415,16 +499,19 @@ long evaluateV19(String pattern, String word) {
                 iPrev = i;
 
                 found++;
+                if ( prevCharResult == PREV_CHAR_UNINITIALIZED ) {
+                    prevCharResult = PREV_CHAR_FOUND;
+                }
 
                 if ( wcInPattern == lastInPattern ) {
                     //logln("      end of pattern reached");
-                    break;
+                    break wordCharsIterating;
                 }
             }
         }
 
-        if ( fullMatch > 0 ) {
-            fullMatch++;
+        if ( matchFull > 0 ) {
+            matchFull++;
         }
         if ( matchInPattern > 0 ) {
             matchInPattern++;
@@ -436,7 +523,7 @@ long evaluateV19(String pattern, String word) {
             order++;
         }
 
-        if ( found == 0 || order == 0 || fullMatch + matchInPattern == 0 ) {
+        if ( found == 0 || order == 0 || matchFull + matchInPattern == 0 ) {
             //logln("   not found anything!");
             return -1;
         }
@@ -470,6 +557,8 @@ long evaluateV19(String pattern, String word) {
             }
         }
 
+        //logln("match type: %s", matchType == WORD_IS_PATTERN_FRAGMENT ? "WORD_IS_PATTERN_FRAGMENT" : "PATTERN_IS_WORD_FRAGMENT");
+
         if ( matchType == PATTERN_IS_WORD_FRAGMENT ) {
             if ( firstWcInPattern != 0 ) {
                 mismatchesMajor++;
@@ -478,7 +567,7 @@ long evaluateV19(String pattern, String word) {
         }
 
         int matchInPatternWeight = 7;
-        if ( order == found ) {
+        if ( order >= found ) {
             matchInPatternWeight = 9;
         }
 
@@ -501,14 +590,10 @@ long evaluateV19(String pattern, String word) {
                     matchInPatternWeight--;
                 }
                 else if ( diffInWordSum < diffLength ) {
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
+                    matchInPatternWeight = matchInPatternWeight - 2;
                 }
                 else {
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
+                    matchInPatternWeight = matchInPatternWeight - 4;
                 }
                 typoMatchesWeight = 3;
                 break;
@@ -518,34 +603,57 @@ long evaluateV19(String pattern, String word) {
 
                 }
                 else if ( diffInWordSum <= diffLength / 2 ) {
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
+                    matchInPatternWeight = matchInPatternWeight - 2;
                 }
                 else if ( diffInWordSum < diffLength ) {
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
+                    matchInPatternWeight = matchInPatternWeight - 3;
                 }
                 else {
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
-                    matchInPatternWeight--;
+                    matchInPatternWeight = matchInPatternWeight - 5;
                 }
                 typoMatchesWeight = 1;
                 break;
             }
             default: throw new IllegalStateException("Length ratio type is not defined!");
         }
+        int matchInPatternWeakWeight = matchInPatternWeight - 5;
 
-        int total = fullMatch * 10
-                + matchInPattern * matchInPatternWeight
-                + backwardMatches * 6
-                + found * 5
-                + typoMatches * typoMatchesWeight
-                - mismatchesMajor * 35
-                - mismatchesMinor * mismatchesMinorWeight;
+        if ( STRICT ) {
+            if ( lengthRatioType == LENGTHS_APPROX_EQUAL ) {
+                if ( found < matchLength && firstFoundWcInPattern != 0 ) {
+                    mismatchesMajor++;
+                    mismatches++;
+                }
+            }
+
+            if ( notFound == 1 && matchFull < 3 && matchType == PATTERN_IS_WORD_FRAGMENT ) {
+                mismatches++;
+            }
+        }
+
+        int total;
+        if ( matchFull > 2 || matchInPatternStrong > matchFull || matchInPatternWeak == 0 ) {
+            total = matchFull * 10
+                    + matchInPattern * matchInPatternWeight
+                    + matchInPatternStrengthBonus * 3
+                    + backwardMatches * 6
+                    + found * 5
+                    + typoMatches * typoMatchesWeight
+                    - mismatchesMajor * 35
+                    - mismatchesMinor * mismatchesMinorWeight;
+        }
+        else {
+            total = matchFull * 10
+                    + matchInPatternWeight + matchInPatternWeight * matchInPatternStrong
+                    + matchInPatternStrengthBonus * 3
+                    + matchInPatternWeakWeight * matchInPatternWeak
+                    + backwardMatches * 6
+                    + found * 5
+                    + typoMatches * typoMatchesWeight
+                    - mismatchesMajor * 35
+                    - mismatchesMinor * mismatchesMinorWeight;
+        }
+
 
         if ( mismatches == 0 && found > 2 ) {
             if ( found == matchLength ) {
@@ -561,7 +669,7 @@ long evaluateV19(String pattern, String word) {
             }
 
             if ( found == matchInPattern && order == found && backwardMatches == 0 ) {
-                if ( fullMatch >= (found / 2) ) {
+                if ( matchFull >= (found / 2) ) {
                     total = total + 10;
                 }
                 else {
@@ -604,15 +712,36 @@ long evaluateV19(String pattern, String word) {
                 }
             }
 
-            if ( found == fullMatch && found == matchInPattern ) {
-                total = total + fullMatch * 2;
+            if ( found == matchFull && found == matchInPattern ) {
+                total = total + matchFull * 2;
             }
         }
 
-        //logln("  order:%s, found:%s, full-matches:%s, pattern-matches:%s, back-matches:%s, typo-matches:%s, w-diff:%s, p-diff:%s, M-mismatches:%s, m-mismatches:%s", order, found, fullMatch, matchInPattern, backwardMatches, typoMatches, diffInWordSum, diffInPatternSum, mismatchesMajor, mismatchesMinor);
+        int matchFullVsPatternDiff = matchInPattern - matchFull;
+
+        if ( matchFull == 2 && backwardMatches == 0 ) {
+            if ( matchFullVsPatternDiff > 1 && matchInPatternWeak > 0 ) {
+                total = total - matchInPatternWeight * matchInPatternWeak;
+            }
+            else if ( matchFullVsPatternDiff == 1 && matchType == WORD_IS_PATTERN_FRAGMENT && diffInWordSum < 3 ) {
+                total = total + 2;
+            }
+        }
+
+//        if ( matchFull > 0 && matchFull < 3 && matchFullVsPatternDiff > 1 && backwardMatches == 0 && matchInPatternWeak > 0 ) {
+//            total = total - matchInPatternWeight * matchInPatternWeak;
+//        }
+
+        //logln("  order:%s, found:%s, full-matches:%s, pattern-matches:%s (s:%s w:%s), back-matches:%s, typo-matches:%s, w-diff:%s, p-diff:%s, M-mismatches:%s, m-mismatches:%s", order, found, matchFull, matchInPattern, matchInPatternStrong, matchInPatternWeak, backwardMatches, typoMatches, diffInWordSum, diffInPatternSum, mismatchesMajor, mismatchesMinor);
+
+        /* V.25.0 VALIDITY CHECK */
+//        if ( matchInPatternStrong + matchInPatternWeak != matchInPattern - 1 ) {
+//            throw new IllegalStateException();
+//        }
 
         int requiredFullMatches;
         int requiredPatternMatches;
+        int thresholdStrictBonus = 0;
 
         switch ( matchLength ) {
             case 1:
@@ -626,7 +755,11 @@ long evaluateV19(String pattern, String word) {
                 requiredPatternMatches = 3;
                 break;
             case 5:
-                if ( found >= 4 || matchType == PATTERN_IS_WORD_FRAGMENT ) {
+                if ( found >= 4 || matchType == PATTERN_IS_WORD_FRAGMENT || STRICT ) {
+                    if ( (lengthRatioType == LENGTHS_APPROX_EQUAL || lengthRatioType == LENGTHS_DIFF_INSIGNIFICANT) && matchFullVsPatternDiff > 1 ) {
+                        //logln("  threshold +5");
+                        thresholdStrictBonus = 5;
+                    }
                     requiredFullMatches = 3;
                     requiredPatternMatches = 3;
                 }
@@ -659,8 +792,7 @@ long evaluateV19(String pattern, String word) {
                 requiredPatternMatches = 5;
         }
 
-
-        int threshold = requiredFullMatches*10 + requiredPatternMatches*7 + found*5;
+        int threshold = requiredFullMatches*10 + requiredPatternMatches*7 + found*5 + thresholdStrictBonus;
         //logln("  threshold:%s, total:%s", threshold, total);
         if ( total >= threshold ) {
 

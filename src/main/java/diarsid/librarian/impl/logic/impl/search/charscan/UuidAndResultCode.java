@@ -1,7 +1,5 @@
 package diarsid.librarian.impl.logic.impl.search.charscan;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;

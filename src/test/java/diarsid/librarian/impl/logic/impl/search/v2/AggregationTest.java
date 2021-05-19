@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
-import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingCode;
+import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
 import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
 import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.UUID.randomUUID;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingCode.describe;
+import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.CURRENT_VERSION;
+import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.describe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -36,7 +37,7 @@ public class AggregationTest {
         report.newLine().add("pattern : ").add(pattern);
         boolean isFailed = false;
         for ( String word : words ) {
-            long code = PatternToWordMatchingCode.evaluate(pattern, word);
+            long code = CURRENT_VERSION.evaluate(pattern, word);
             if ( code < 0 ) {
                 isFailed = true;
             }
@@ -86,7 +87,7 @@ public class AggregationTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        PatternToWordMatchingCode.logEnabled.resetTo(false);
+        PatternToWordMatching.logEnabled.resetTo(false);
     }
 
     @Test
@@ -210,6 +211,22 @@ public class AggregationTest {
         pattern = "lorofrng";
         words = List.of("frog", "lorrie");
         expectOk = false;
+        analyze();
+    }
+
+    @Test
+    public void test_12() throws Exception {
+        pattern = "yasnrkawbata";
+        words = List.of("yasunari", "kawabata");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_13() throws Exception {
+        pattern = "yasnkawbata";
+        words = List.of("yasunari", "kawabata");
+        expectOk = true;
         analyze();
     }
 

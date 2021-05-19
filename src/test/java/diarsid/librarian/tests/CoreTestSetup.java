@@ -9,6 +9,7 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcOption;
 import diarsid.librarian.api.Core;
 import diarsid.librarian.api.interaction.UserInteraction;
+import diarsid.librarian.api.model.User;
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.api.required.UserProvidedResources;
 import diarsid.librarian.impl.logic.impl.CoreImpl;

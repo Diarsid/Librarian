@@ -32,17 +32,29 @@ public class DataImportFromBooks implements DataImport {
             "dune", "war", "army", "tolkien", "rome", "history", "science fiction");
 
     public static void main(String[] args) throws Exception {
-        staticExecuteUsing(server());
+        staticExecuteUsing(server(), "ANOTHER_USER_0");
     }
 
     public void executeUsing(CoreTestSetup coreTestSetup) throws SQLException, IOException {
         staticExecuteUsing(coreTestSetup);
     }
 
-    public static void staticExecuteUsing(CoreTestSetup coreTestSetup) throws SQLException, IOException {
+    public static void staticExecuteUsing(CoreTestSetup coreTestSetup, String... users) throws SQLException, IOException {
         Store store = coreTestSetup.core.store();
-        User user = coreTestSetup.user;
 
+        if ( users.length == 0 ) {
+            executeWith(store, coreTestSetup.user);
+        }
+        else {
+            User user;
+            for ( String userName : users ) {
+                user = coreTestSetup.core.users().findBy(userName).orElseGet(() -> coreTestSetup.core.users().create(userName));
+                executeWith(store, user);
+            }
+        }
+    }
+
+    private static void executeWith(Store store, User user) throws IOException {
         Entry.Label booksLabel = store.labels().getOrSave(user, "books");
         List<Entry.Label> semanticLabels = store.labels().getOrSave(user, SEMANTIC_LABEL_NAMES);
         Map<Entry.Label, List<String>> semanticLabelsAndWords = new HashMap<>();

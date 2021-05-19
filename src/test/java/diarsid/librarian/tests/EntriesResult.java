@@ -82,7 +82,50 @@ public class EntriesResult {
                 .collect(toList());
 
         if ( isNotEmpty(entriesNotContainingAllOfStrings) ) {
-            assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(this.resultingEntries.size() / 3);
+            int minority = this.resultingEntries.size() / 4;
+            if ( minority == 0 ) {
+                minority = 1;
+            }
+            assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(minority);
+        }
+    }
+
+    public void expectContainingStringInMostOfEntries(String string) {
+        expectSomeEntries();
+        String lowerString = string.strip().trim().toLowerCase();
+
+        List<String> entriesNotContainingAllOfStrings = this.resultingEntries
+                .stream()
+                .map(Entry::string)
+                .filter(entry -> ! entry.toLowerCase().contains(lowerString))
+                .collect(toList());
+
+        if ( isNotEmpty(entriesNotContainingAllOfStrings) ) {
+            int minority = this.resultingEntries.size() / 3;
+            if ( minority == 0 ) {
+                minority = 1;
+            }
+            assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(minority);
+        }
+    }
+
+    public void expectContainingStringInMostOfEntries(String string, float rate /* [0.1 -- 0.9] */) {
+        assertThat(rate).isBetween(0.1f, 0.9f);
+        expectSomeEntries();
+        String lowerString = string.strip().trim().toLowerCase();
+
+        List<String> entriesNotContainingAllOfStrings = this.resultingEntries
+                .stream()
+                .map(Entry::string)
+                .filter(entry -> ! entry.toLowerCase().contains(lowerString))
+                .collect(toList());
+
+        if ( isNotEmpty(entriesNotContainingAllOfStrings) ) {
+            int minority = (int) (this.resultingEntries.size() * rate);
+            if ( minority == 0 ) {
+                minority = 1;
+            }
+            assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(minority);
         }
     }
 
