@@ -84,9 +84,10 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public Entry save(User user, String entryString) {
-        RealEntry entry = new RealEntry(super.nextRandomUuid(), entryString, user.uuid());
+        UUID userUuid = user.uuid();
+        RealEntry entry = new RealEntry(super.nextRandomUuid(), entryString, userUuid);
 
-        boolean exists = doesEntryExistBy(user.uuid(), entry.stringLower());
+        boolean exists = doesEntryExistBy(userUuid, entry.stringLower());
 
         if ( exists ) {
             throw new IllegalArgumentException();
@@ -125,7 +126,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
             List<RealEntry> newDerivedEntries = new ArrayList<>();
 
             for ( String path : decomposePath(entry.string(), DONT_NORMALIZE, DONT_INCLUDE_ORIGINAL) ) {
-                derivedEntryNotExists = ! this.doesEntryExistBy(user.uuid(), path);
+                derivedEntryNotExists = ! this.doesEntryExistBy(userUuid, StringTransformations.simplify(path, CASE_TO_LOWER));
 
                 if ( derivedEntryNotExists ) {
                     newDerivedEntry = entry.newEntryWith(super.nextRandomUuid(), path);

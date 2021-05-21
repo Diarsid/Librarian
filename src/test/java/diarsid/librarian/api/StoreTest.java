@@ -213,4 +213,16 @@ public class StoreTest extends TransactionalRollbackTestForEmbeddedSetup {
         assertThat(countByNoneOf2Labels).isEqualTo(2);
     }
 
+    @Test
+    public void pathDecomposition() {
+        String entry1 = "Common_phrase/One";
+        String entry2 = "Common_phrase/Other";
+
+        CORE.store().entries().save(USER, entry1);
+        CORE.store().entries().save(USER, entry2);
+
+        long count = CORE.store().entries().countEntriesOf(USER);
+        assertThat(count).isEqualTo(3);
+    }
+
 }
