@@ -623,6 +623,26 @@ public class PatternToWordMatchingTest {
         doTest();
     }
 
+    @Test
+    public void test_jenknsinstl_jenkins_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jenknsinstl_install_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jenknsinstl_installing_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jenknsinstl_installation_true() {
+        doTest();
+    }
+
 
     @Test
     public void test_maximums() {

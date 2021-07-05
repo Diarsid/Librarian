@@ -8,17 +8,14 @@ import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.User;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 
 public interface Search {
 
-    List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);
+    List<PatternToEntry> findAllBy(User user, String pattern);
 
-    default List<PatternToEntry> findAllBy(User user, String pattern) {
-        return this.findAllBy(user, pattern, null, emptyList());
-    }
+    List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);
 
     default List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label label) {
         return this.findAllBy(user, pattern, ANY_OF, List.of(label));
@@ -28,6 +25,8 @@ public interface Search {
         return this.findAllBy(user, pattern, matching, asList(labels));
     }
 
+    Optional<PatternToEntry> findSingleBy(User user, String pattern);
+
     Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);
 
     default Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label label) {
@@ -36,9 +35,5 @@ public interface Search {
 
     default Optional<PatternToEntry> findSingleBy(User user, String pattern, Entry.Label.Matching matching, Entry.Label... labels) {
         return this.findSingleBy(user, pattern, matching, asList(labels));
-    }
-
-    default Optional<PatternToEntry> findSingleBy(User user, String pattern) {
-        return this.findSingleBy(user, pattern, null, emptyList());
     }
 }

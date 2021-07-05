@@ -120,3 +120,6 @@ ON entries(time);
 
 CREATE INDEX IX_STRING_AND_USER_IN_WORDS
 ON words(string, user_uuid);
+
+CREATE INDEX IX_STRING_AND_USER_IN_PATTERNS
+ON patterns(string, user_uuid);

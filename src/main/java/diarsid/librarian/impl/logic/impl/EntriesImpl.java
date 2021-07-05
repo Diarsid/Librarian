@@ -292,7 +292,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                         "SET \n" +
                         "   string_origin = ?, \n" +
                         "   string_lower = ?, \n" +
-                        "   time = ? \n" + // TODO introduce updateTime
+                        "   time = ? \n" + // TODO introduce updateTime ???
                         "WHERE entries.uuid = ? ",
                         newEntry.string(), newEntry.stringLower(), newEntry.createdAt(), newEntry.uuid());
 

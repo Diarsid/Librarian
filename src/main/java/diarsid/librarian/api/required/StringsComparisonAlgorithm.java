@@ -59,7 +59,7 @@ public interface StringsComparisonAlgorithm extends Comparator<PatternToEntry> {
         for ( Entry entry : entries ) {
             relation = this.analyze(pattern, entry);
 
-            if ( isBad(relation) ) {
+            if ( this.isBad(relation) ) {
                 continue;
             }
 
