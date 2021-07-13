@@ -23,6 +23,7 @@ import diarsid.librarian.impl.logic.api.Patterns;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 
+import static java.time.LocalDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -37,7 +38,8 @@ public class SearchImpl implements Search {
     private final Patterns patterns;
     private final PatternsToEntries patternsToEntries;
     private final Choices choices;
-    private final UserProvidedResources implementations;
+    private final UserInteraction userInteraction;
+    private final AlgorithmToModelAdapter algorithmAdapter;
     private final Map<Entry, PatternToEntry> mismatchCleanableCache;
 
     public SearchImpl(
@@ -46,13 +48,15 @@ public class SearchImpl implements Search {
             Patterns patterns,
             PatternsToEntries patternsToEntries,
             Choices choices,
-            UserProvidedResources implementations) {
+            UserInteraction userInteraction,
+            AlgorithmToModelAdapter algorithmAdapter) {
         this.properties = properties;
         this.entriesSearchByPattern = entriesSearchByPattern;
         this.patterns = patterns;
         this.patternsToEntries = patternsToEntries;
         this.choices = choices;
-        this.implementations = implementations;
+        this.userInteraction = userInteraction;
+        this.algorithmAdapter = algorithmAdapter;
         this.mismatchCleanableCache = new HashMap<>();
     }
 
@@ -60,7 +64,6 @@ public class SearchImpl implements Search {
     public List<PatternToEntry> findAllBy(User user, String patternString) {
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, patternString);
         List<PatternToEntry> foundRelations;
-        StringsComparisonAlgorithm algorithm = implementations.algorithm();
 
         Pattern pattern;
         if ( possiblyStoredPattern.isPresent() ) {
@@ -75,7 +78,8 @@ public class SearchImpl implements Search {
                 foundRelations = oldRelations;
             }
             else {
-                List<PatternToEntry> newRelations = algorithm.analyze(pattern, matchingEntriesAfterPattern);
+                LocalDateTime now = now();
+                List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntriesAfterPattern, now);
 
                 patternsToEntries.save(newRelations);
 
@@ -91,7 +95,7 @@ public class SearchImpl implements Search {
                 foundRelations = emptyList();
             }
             else {
-                List<PatternToEntry> newRelations = algorithm.analyze(pattern, matchingEntries);
+                List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntries, pattern.createdAt());
 
                 patternsToEntries.save(newRelations);
 
@@ -113,7 +117,6 @@ public class SearchImpl implements Search {
 
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, patternString, matching, labels);
         List<PatternToEntry> foundRelations;
-        StringsComparisonAlgorithm algorithm = implementations.algorithm();
 
         Pattern pattern;
         if ( possiblyStoredPattern.isPresent() ) {
@@ -128,7 +131,8 @@ public class SearchImpl implements Search {
                 foundRelations = oldRelations;
             }
             else {
-                List<PatternToEntry> newRelations = algorithm.analyze(pattern, matchingEntriesAfterPattern);
+                LocalDateTime now = now();
+                List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntriesAfterPattern, now);
 
                 patternsToEntries.save(newRelations);
 
@@ -136,9 +140,17 @@ public class SearchImpl implements Search {
             }
         }
         else {
-            pattern = patterns
-                    .findBy(user, patternString)
-                    .orElseGet(() -> patterns.save(user, patternString));
+            Optional<Pattern> existingPattern = patterns.findBy(user, patternString);
+
+            LocalDateTime newRelationsCreationTime;
+            if ( existingPattern.isPresent() ) {
+                pattern = existingPattern.get();
+                newRelationsCreationTime = now();
+            }
+            else {
+                pattern = patterns.save(user, patternString);
+                newRelationsCreationTime = pattern.createdAt();
+            }
 
             List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels);
 
@@ -146,7 +158,7 @@ public class SearchImpl implements Search {
                 foundRelations = emptyList();
             }
             else {
-                List<PatternToEntry> newRelations = algorithm.analyze(pattern, matchingEntries);
+                List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntries, newRelationsCreationTime);
 
                 patternsToEntries.save(newRelations);
 
@@ -186,16 +198,14 @@ public class SearchImpl implements Search {
                             return Optional.of(storedChoice.patternToEntry());
                         }
                         else {
-                            List<PatternToEntry> freshEntriesNewRelations = implementations
-                                    .algorithm()
-                                    .analyze(storedPattern, freshEntriesWithoutRelation);
+                            LocalDateTime now = now();
+                            List<PatternToEntry> freshEntriesNewRelations = algorithmAdapter.analyze(storedPattern, freshEntriesWithoutRelation, now);
                             patternsToEntries.save(freshEntriesNewRelations);
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
                             List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
 
-                            UserInteraction userInteraction = implementations.userInteraction();
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
@@ -245,14 +255,13 @@ public class SearchImpl implements Search {
                     allRelations = storedRelations;
                 }
                 else {
-                    StringsComparisonAlgorithm algorithm = implementations.algorithm();
-                    List<PatternToEntry> newRelations = algorithm.analyze(storedPattern, entriesWithoutRelations);
+                    LocalDateTime now = now();
+                    List<PatternToEntry> newRelations = algorithmAdapter.analyze(storedPattern, entriesWithoutRelations, now);
                     patternsToEntries.save(newRelations);
 
                     allRelations = union(newRelations, storedRelations);
                 }
 
-                UserInteraction userInteraction = implementations.userInteraction();
                 try {
                     UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
@@ -283,13 +292,10 @@ public class SearchImpl implements Search {
 
             List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, patternString);
 
-            List<PatternToEntry> entriesNewRelations = implementations
-                    .algorithm()
-                    .analyze(pattern, matchingEntries);
+            List<PatternToEntry> entriesNewRelations = algorithmAdapter.analyze(pattern, matchingEntries, pattern.createdAt());
 
             patternsToEntries.save(entriesNewRelations);
 
-            UserInteraction userInteraction = implementations.userInteraction();
             try {
                 UserChoice userChoice = userInteraction.askForChoice(user, entriesNewRelations);
 
@@ -351,16 +357,14 @@ public class SearchImpl implements Search {
                             return Optional.of(storedChoice.patternToEntry());
                         }
                         else {
-                            List<PatternToEntry> freshEntriesNewRelations = implementations
-                                    .algorithm()
-                                    .analyze(storedPattern, freshEntriesWithoutRelation);
+                            LocalDateTime now = now();
+                            List<PatternToEntry> freshEntriesNewRelations = algorithmAdapter.analyze(storedPattern, freshEntriesWithoutRelation, now);
                             patternsToEntries.save(freshEntriesNewRelations);
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
                             List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
 
-                            UserInteraction userInteraction = implementations.userInteraction();
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
@@ -410,14 +414,13 @@ public class SearchImpl implements Search {
                     allRelations = storedRelations;
                 }
                 else {
-                    StringsComparisonAlgorithm algorithm = implementations.algorithm();
-                    List<PatternToEntry> newRelations = algorithm.analyze(storedPattern, entriesWithoutRelations);
+                    LocalDateTime now = now();
+                    List<PatternToEntry> newRelations = algorithmAdapter.analyze(storedPattern, entriesWithoutRelations, now);
                     patternsToEntries.save(newRelations);
 
                     allRelations = union(newRelations, storedRelations);
                 }
 
-                UserInteraction userInteraction = implementations.userInteraction();
                 try {
                     UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
 
@@ -444,19 +447,24 @@ public class SearchImpl implements Search {
             }
         }
         else {
-            Pattern pattern = patterns
-                    .findBy(user, patternString)
-                    .orElseGet(() -> patterns.save(user, patternString));
+            Optional<Pattern> existingPattern = patterns.findBy(user, patternString);
+            Pattern pattern;
+            LocalDateTime newRelationsCreationTime;
+            if ( existingPattern.isPresent() ) {
+                pattern = existingPattern.get();
+                newRelationsCreationTime = now();
+            }
+            else {
+                pattern = patterns.save(user, patternString);
+                newRelationsCreationTime = pattern.createdAt();
+            }
 
             List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels);
 
-            List<PatternToEntry> entriesNewRelations = implementations
-                    .algorithm()
-                    .analyze(pattern, matchingEntries);
+            List<PatternToEntry> entriesNewRelations = algorithmAdapter.analyze(pattern, matchingEntries, newRelationsCreationTime);
 
             patternsToEntries.save(entriesNewRelations);
 
-            UserInteraction userInteraction = implementations.userInteraction();
             try {
                 UserChoice userChoice = userInteraction.askForChoice(user, entriesNewRelations);
 
@@ -529,7 +537,7 @@ public class SearchImpl implements Search {
         List<PatternToEntry> output = input
                 .stream()
                 .distinct()
-                .sorted(implementations.algorithm())
+                .sorted(algorithmAdapter)
                 .collect(toList());
 
         return output;

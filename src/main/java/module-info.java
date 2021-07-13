@@ -5,6 +5,8 @@ module diarsid.librarian {
     requires com.h2database;
     requires com.fasterxml.uuid;
     requires diarsid.jdbc;
+    requires diarsid.sceptre;
+    requires diarsid.strings.similarity;
     requires diarsid.support;
 
     exports diarsid.librarian.api;

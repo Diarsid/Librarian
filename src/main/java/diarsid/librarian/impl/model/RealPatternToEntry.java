@@ -84,8 +84,8 @@ public class RealPatternToEntry extends AbstractCreatedAt implements PatternToEn
     public RealPatternToEntry(
             UUID uuid,
             LocalDateTime time,
-            RealEntry entry,
-            RealPattern pattern,
+            Entry entry,
+            Pattern pattern,
             StringsComparisonAlgorithm algorithm,
             float weight) {
         super(uuid, time);

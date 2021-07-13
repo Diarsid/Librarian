@@ -513,6 +513,18 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     }
 
     @Test
+    public void test_tolosvirtl() throws Exception {
+        search();
+        entriesResult.expectContainingString("Tools");
+    }
+
+    @Test
+    public void test_tolsvirtl() throws Exception {
+        search();
+        entriesResult.expectContainingString("Tools");
+    }
+
+    @Test
     public void test_tols() throws Exception {
         search();
         entriesResult.expectContainingString("Tools");

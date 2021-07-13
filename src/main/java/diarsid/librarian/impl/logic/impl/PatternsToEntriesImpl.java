@@ -11,7 +11,6 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.PatternToEntry;
-import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
@@ -27,7 +26,7 @@ import static diarsid.support.model.Unique.uuidsOf;
 
 public class PatternsToEntriesImpl extends ThreadBoundTransactional implements PatternsToEntries {
 
-    private final StringsComparisonAlgorithm algorithm;
+    private final AlgorithmToModelAdapter algorithmAdapter;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectPatternToEntryByEntries;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntries;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlDeleterPatternToEntryByEntryAndPattern;
@@ -35,9 +34,9 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
     public PatternsToEntriesImpl(
             Jdbc jdbc,
             UuidSupplier uuidSupplier,
-            StringsComparisonAlgorithm algorithm) {
+            AlgorithmToModelAdapter algorithmAdapter) {
         super(jdbc, uuidSupplier);
-        this.algorithm = algorithm;
+        this.algorithmAdapter = algorithmAdapter;
         this.sqlSelectPatternToEntryByEntries = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT \n" +
                 "   p.uuid          AS p_uuid, \n" +
@@ -222,7 +221,9 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                         relation.uuid(),
                         relation.createdAt(),
                         relation.pattern().uuid(),
-                        relation.entry().uuid()))
+                        relation.entry().uuid(),
+                        relation.weight(),
+                        relation.algorithmCanonicalName()))
                 .collect(toList());
 
         int[] inserted = super.currentTransaction()
@@ -231,8 +232,10 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
                         "   uuid, \n" +
                         "   time, \n" +
                         "   pattern_uuid, \n" +
-                        "   entry_uuid) \n" +
-                        "VALUES (?, ?, ?, ?) ",
+                        "   entry_uuid, \n" +
+                        "   weight, \n" +
+                        "   algorithm) \n" +
+                        "VALUES (?, ?, ?, ?, ?, ?) ",
                         params);
 
         mustAllBe(1, inserted);
@@ -250,9 +253,10 @@ public class PatternsToEntriesImpl extends ThreadBoundTransactional implements P
 
         Pattern pattern;
         PatternToEntry newRelation;
+        LocalDateTime now = now();
         for ( PatternToEntry oldRelation : relations ) {
             pattern = oldRelation.pattern();
-            newRelation = this.algorithm.analyze(pattern, entry);
+            newRelation = this.algorithmAdapter.analyze(pattern, entry, now);
             newRelations.add(newRelation);
         }
 

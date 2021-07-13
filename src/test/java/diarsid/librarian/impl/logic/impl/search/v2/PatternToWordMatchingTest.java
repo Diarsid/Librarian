@@ -643,6 +643,31 @@ public class PatternToWordMatchingTest {
         doTest();
     }
 
+    @Test
+    public void test_tolosvirtl_tools_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolsvirtl_tools_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolosvirtl_virtualization_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drsprojs_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drsprojs_projects_true() {
+        doTest();
+    }
+
 
     @Test
     public void test_maximums() {

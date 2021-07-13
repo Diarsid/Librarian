@@ -24,11 +24,6 @@ import static java.lang.String.format;
 
 import static diarsid.support.lang.Booleans.isNot;
 
-
-/**
- *
- * @author Diarsid
- */
 public class H2TestDataBase implements TestDataBase {
 
     public enum Type implements CommonEnum<Type> {
@@ -129,7 +124,7 @@ public class H2TestDataBase implements TestDataBase {
         
     @Override
     public void setupRequiredTable(String tableCreationSQLScript) {
-        try (Connection con = this.connectionsPool.getConnection();
+        try (Connection con = this.getConnection();
              Statement st = con.createStatement();) {
             st.executeUpdate(tableCreationSQLScript);
             logger.info(format("Test table setup with SQL: %s", tableCreationSQLScript));
@@ -142,7 +137,9 @@ public class H2TestDataBase implements TestDataBase {
     }
 
     public void executeScript(Reader reader) throws SQLException {
-        RunScript.execute(this.getConnection(), reader);
+        try (Connection con = this.getConnection()) {
+            RunScript.execute(con, reader);
+        }
     }
 
     @Override

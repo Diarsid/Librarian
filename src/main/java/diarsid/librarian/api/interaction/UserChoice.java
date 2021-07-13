@@ -7,9 +7,15 @@ import diarsid.support.objects.CommonEnum;
 public interface UserChoice {
 
     enum Decision implements CommonEnum<Decision> {
-        DONE,
-        NOT_DONE,
-        REJECTION
+        DONE(true),
+        NOT_DONE(false),
+        REJECTION(false);
+
+        Decision(boolean hasIndex) {
+            this.hasIndex = hasIndex;
+        }
+
+        public boolean hasIndex;
     }
 
     Decision decision();

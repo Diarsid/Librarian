@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.TransactionAware;
+import diarsid.librarian.api.interaction.UserInteraction;
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.api.required.UserProvidedResources;
 import diarsid.librarian.impl.StoreImpl;
@@ -16,11 +17,13 @@ import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
+import diarsid.librarian.impl.logic.impl.AlgorithmToModelAdapter;
 import diarsid.librarian.impl.logic.impl.BehaviorImpl;
 import diarsid.librarian.impl.logic.impl.ChoicesImpl;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.logic.impl.EntriesImpl;
 import diarsid.librarian.impl.logic.impl.EntriesLabelsJoinTableImpl;
+import diarsid.librarian.impl.logic.impl.UserInteractionLockingWrapper;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.LabeledEntriesImpl;
 import diarsid.librarian.impl.logic.impl.LabelsImpl;
@@ -72,6 +75,7 @@ public interface Core {
 
         StringsComparisonAlgorithmValidation algorithmValidation = new StringsComparisonAlgorithmValidation(() -> algorithm);
 //        algorithmValidation.validate();
+        AlgorithmToModelAdapter algorithmAdapter = new AlgorithmToModelAdapter(algorithm, uuidSupplier);
 
         Behavior behavior = new BehaviorImpl(jdbc, uuidSupplier);
 
@@ -79,7 +83,7 @@ public interface Core {
         Labels labels = new LabelsImpl(jdbc, uuidSupplier);
         Choices choices = new ChoicesImpl(jdbc, uuidSupplier);
 
-        PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(jdbc, uuidSupplier, algorithm);
+        PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(jdbc, uuidSupplier, algorithmAdapter);
 
         Words words = new WordsImpl(jdbc, uuidSupplier);
 
@@ -106,7 +110,8 @@ public interface Core {
 
         EntriesSearchByPattern entriesSearchByPattern = new EntriesSearchByPatternImpl(words, searchByCharScan, searchByWord);
 
-        Search search = new SearchImpl(properties, entriesSearchByPattern, patterns, patternsToEntries, choices, resources);
+        UserInteraction lockingUserInteraction = new UserInteractionLockingWrapper(resources.userInteraction(), jdbc, usersLocking);
+        Search search = new SearchImpl(properties, entriesSearchByPattern, patterns, patternsToEntries, choices, lockingUserInteraction, algorithmAdapter);
 
         TransactionAware usersLockingOnOpenAndJoin = new UsersTransactionalLocking(coreMode, usersLocking);
 

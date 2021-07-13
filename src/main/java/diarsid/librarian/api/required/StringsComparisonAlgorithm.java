@@ -1,17 +1,11 @@
 package diarsid.librarian.api.required;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import diarsid.librarian.api.annotations.ImplementationRequired;
-import diarsid.librarian.api.model.Entry;
-import diarsid.librarian.api.model.Pattern;
-import diarsid.librarian.api.model.PatternToEntry;
 
 @ImplementationRequired
-public interface StringsComparisonAlgorithm extends Comparator<PatternToEntry> {
+public interface StringsComparisonAlgorithm {
 
     interface Version extends Comparable<StringsComparisonAlgorithm.Version> {
 
@@ -43,31 +37,13 @@ public interface StringsComparisonAlgorithm extends Comparator<PatternToEntry> {
                 + this.version().name().orElse("[unnamed]");
     }
 
-    double badEstimateThreshold();
+    int compare(float weight1, float weight2);
 
-    boolean isBad(PatternToEntry relation);
+    boolean isBad(float weight);
 
-    /* it is implied and crucial that a.pattern.equals(b.pattern) return TRUE */
-    int compareTo(PatternToEntry a, PatternToEntry b);
-
-    PatternToEntry analyze(Pattern pattern, Entry entry);
-
-    default List<PatternToEntry> analyze(Pattern pattern, List<Entry> entries) {
-        List<PatternToEntry> relations = new ArrayList<>();
-
-        PatternToEntry relation;
-        for ( Entry entry : entries ) {
-            relation = this.analyze(pattern, entry);
-
-            if ( this.isBad(relation) ) {
-                continue;
-            }
-
-            relations.add(relation);
-        }
-
-        relations.sort(this);
-
-        return relations;
+    default boolean isGood(float weight) {
+        return ! this.isBad(weight);
     }
+
+    float analyze(String pattern, String entry);
 }

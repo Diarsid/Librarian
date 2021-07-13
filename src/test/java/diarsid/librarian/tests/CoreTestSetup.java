@@ -12,9 +12,15 @@ import diarsid.librarian.api.interaction.UserInteraction;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
 import diarsid.librarian.api.required.UserProvidedResources;
+import diarsid.librarian.api.required.impl.SceptreStringsComparisonAlgorithm;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.model.RealUser;
 import diarsid.librarian.tests.imports.DataImport;
+import diarsid.sceptre.WeightAnalyzeReal;
+import diarsid.sceptre.api.WeightAnalyze;
+import diarsid.strings.similarity.api.Similarity;
+import diarsid.support.configuration.Configuration;
+import diarsid.support.objects.Pools;
 import diarsid.tests.db.h2.H2TestDataBase;
 import diarsid.tests.db.h2.SqlConnectionsSourceTestBase;
 import diarsid.tests.db.h2.TestDataBase;
@@ -23,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import static diarsid.jdbc.api.JdbcOption.SQL_HISTORY_ENABLED;
 import static diarsid.librarian.api.Core.Mode.DEVELOPMENT;
+import static diarsid.support.configuration.Configuration.actualConfiguration;
 import static diarsid.support.configuration.Configuration.configure;
 
 public class CoreTestSetup {
@@ -32,6 +39,7 @@ public class CoreTestSetup {
     static {
         configure().withDefault(
                 "log = true",
+                "analyze.result.variants.limit = 100",
                 "diarsid.strings.similarity.log.multiline = true",
                 "diarsid.strings.similarity.log.multiline.prefix = [similarity]",
                 "diarsid.strings.similarity.log.multiline.indent = 1",
@@ -56,11 +64,17 @@ public class CoreTestSetup {
         Map<JdbcOption, Object> options = Map.of(SQL_HISTORY_ENABLED, sqlHistoryEnabled);
         jdbc = Jdbc.init(connections, options);
 
+        Configuration configuration = actualConfiguration();
+        Pools pools = new Pools();
+        Similarity similarity = Similarity.createInstance(configuration);
+        WeightAnalyze weightAnalyze = new WeightAnalyzeReal(configuration, similarity, pools);
+        SceptreStringsComparisonAlgorithm algorithm = new SceptreStringsComparisonAlgorithm(weightAnalyze);
+
         UserProvidedResources impl = new UserProvidedResources() {
 
             @Override
             public StringsComparisonAlgorithm algorithm() {
-                return null;
+                return algorithm;
             }
 
             @Override
