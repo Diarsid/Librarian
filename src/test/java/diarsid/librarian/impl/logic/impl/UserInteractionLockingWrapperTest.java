@@ -8,7 +8,7 @@ import diarsid.librarian.api.interaction.UserInteraction;
 import diarsid.librarian.impl.interaction.RealUserChoice;
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.tests.setup.TransactionalRollbackTestForEmbeddedSetup;
+import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForEmbeddedSetup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

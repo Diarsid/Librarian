@@ -3,7 +3,7 @@ package diarsid.librarian.impl.logic.impl.search.v2;
 import java.util.List;
 
 import diarsid.librarian.api.model.Entry;
-import diarsid.librarian.tests.setup.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForServerSetup;
 import diarsid.support.time.Timer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

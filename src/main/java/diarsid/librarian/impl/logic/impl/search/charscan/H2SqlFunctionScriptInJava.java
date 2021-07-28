@@ -13,6 +13,7 @@ import static java.nio.file.Files.delete;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static java.time.LocalDateTime.now;
+import static java.util.stream.Collectors.joining;
 
 public interface H2SqlFunctionScriptInJava {
 
@@ -87,6 +88,10 @@ public interface H2SqlFunctionScriptInJava {
         scriptLines.add(scriptLines.size(), "$$");
 
         return scriptLines;
+    }
+
+    default String scriptLinesJoined() throws Exception {
+        return String.join(" \n", this.scriptLines());
     }
 
     default void rewriteScript() throws Exception {

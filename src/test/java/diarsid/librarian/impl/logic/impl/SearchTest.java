@@ -5,7 +5,7 @@ import java.util.List;
 import diarsid.librarian.api.Search;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.User;
-import diarsid.librarian.tests.setup.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForServerSetup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

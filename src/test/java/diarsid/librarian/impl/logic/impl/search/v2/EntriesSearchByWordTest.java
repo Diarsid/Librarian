@@ -10,7 +10,7 @@ import diarsid.librarian.impl.logic.impl.WordsImpl;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByWord;
 import diarsid.librarian.impl.model.Word;
 import diarsid.librarian.tests.model.EntriesResult;
-import diarsid.librarian.tests.setup.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForServerSetup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

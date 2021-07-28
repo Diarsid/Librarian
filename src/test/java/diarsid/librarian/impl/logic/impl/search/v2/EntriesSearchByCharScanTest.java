@@ -15,7 +15,7 @@ import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionF
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
 import diarsid.librarian.tests.model.EntriesResult;
-import diarsid.librarian.tests.setup.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForServerSetup;
 import diarsid.librarian.tests.model.WordCode;
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
