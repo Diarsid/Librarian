@@ -664,6 +664,11 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_projsdrs_diarsid_true() {
+        doTest();
+    }
+
+    @Test
     public void test_drsprojs_projects_true() {
         doTest();
     }

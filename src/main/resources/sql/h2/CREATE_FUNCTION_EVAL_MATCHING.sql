@@ -1,7 +1,7 @@
 -- generated 
---   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV26
---   at 2021-05-19T22:22:46.671960100
-CREATE ALIAS EVAL_MATCHING_V26 AS $$
+--   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV27
+--   at 2021-07-28T16:10:47.097671400
+CREATE ALIAS EVAL_MATCHING_V27 AS $$
     long evaluate(String pattern, String word) {
         //logln("P:%s --- W:%s", pattern, word);
 
@@ -218,7 +218,7 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                     }
                 }
             }
-            else {
+            else /* wcInPattern >= 0 */ {
                 if ( i == 0 ) {
                     firstWcInPattern = wcInPattern;
                 }
@@ -234,6 +234,7 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                         if ( distanceFromCPrevToC > 2 && distanceFromCPrevToC >= matchInPattern) {
 
                             if ( matchFull < 1 ) {
+                                // no full matches - can loop to find stronger matching of prev char
                                 int wcPrevInPatternN = wcPrevInPattern;
                                 int wcPrevInPatternNprev = -1;
                                 boolean goFurther = true;
@@ -260,92 +261,115 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                                             }
                                             distanceFromCPrevToC = wcInPattern - wcPrevInPattern;
                                             if ( distanceFromCPrevToC > (distanceFromItoWordEnd + 2) ) {
-                                                //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                                //logln("   W:%s not found on reasonable length [1] after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                                 prevCharResult = PREV_CHAR_NOT_FOUND;
                                                 continue wordCharsIterating;
                                             }
                                         }
                                         else {
-                                            //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                            //logln("   W:%s not found on reasonable length [2] after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                             prevCharResult = PREV_CHAR_NOT_FOUND;
                                             continue wordCharsIterating;
                                         }
                                     }
                                 }
                             }
-                            else {
-                                //logln("   W:%s not found on reasonable length after W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
-                                if ( distanceFromCPrevToC > found ) {
-                                    char i2wc;
-                                    int i2FirstWcInPattern = -1;
-                                    int i2wcInPattern = -1;
-                                    int i2wcInPatternPrev = wcPrevInPattern;
-                                    int i2FullMatch = 0;
-                                    int i2MatchInPattern = 0;
-                                    int i2 = 0;
-                                    int i2Order = 0;
-                                    int allowed = Math.max(matchFull+1, found);
-
-                                    duplicateSearch: for (; i2 < allowed; i2++) {
-                                        i2wc = word.charAt(i2);
-                                        i2wcInPattern = pattern.indexOf(i2wc, i2wcInPatternPrev + 1);
-                                        if ( i2wcInPattern > -1 ) {
-                                            if ( i2 == 0 ) {
-                                                i2FirstWcInPattern = i2wcInPattern;
-                                            }
-
-                                            if ( i2wcInPattern < wcInPattern ) {
-                                                //logln("      duplication search: W:%s[P:%s]", i2wc, i2wcInPattern);
-                                                if ( i2 > 0 ) {
-                                                    i2MatchInPattern++;
-                                                    if ( i2wcInPatternPrev + 1 == i2wcInPattern ) {
-                                                        i2FullMatch++;
-                                                    }
-                                                    i2Order++;
-                                                }
-                                                i2wcInPatternPrev = i2wcInPattern;
-                                            }
-                                        }
-                                        else {
-                                            if ( i2 == 0 ) {
-                                                break duplicateSearch;
-                                            }
-                                        }
-
-                                        if ( i2+1 < allowed ) {
-                                            if ( i2FullMatch >= matchFull && allowed < i ) {
-                                                allowed++;
+                            else /* matchFull >= 1 */ {
+                                //logln("   W:%s not found on reasonable length after [3] W:%s[P:%s], found at [P:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                boolean foundInGap = false;
+                                if ( gaps > 0 ) {
+                                    int from = firstWcInPattern > -1 ? firstWcInPattern : firstFoundWcInPattern;
+                                    if ( from > -1 ) {
+                                        from++;
+                                        char pc;
+                                        //logln("      scanning gaps from [P:%s] to [P:%s]", from, wcPrevInPattern-1);
+                                        for ( int i2 = from; i2 < wcPrevInPattern; i2++ ) {
+                                            pc = pattern.charAt(i2);
+                                            if ( wc == pc ) {
+                                                //logln("        found at [P:%s]", i2);
+                                                foundInGap = true;
+                                                backwardMatches++;
+                                                found++;
                                             }
                                         }
                                     }
+                                }
 
-                                    boolean change =
-                                            i2FullMatch > matchFull ||
-                                                    (i2FullMatch == matchFull && i2MatchInPattern >= matchInPattern);
+                                if ( ! foundInGap ) {
+                                    //logln("        not found in gaps");
+                                    if ( distanceFromCPrevToC > found ) {
+                                        char i2wc;
+                                        int i2FirstWcInPattern = -1;
+                                        int i2wcInPattern = -1;
+                                        int i2wcInPatternPrev = wcPrevInPattern;
+                                        int i2FullMatch = 0;
+                                        int i2MatchInPattern = 0;
+                                        int i2 = 0;
+                                        int i2Order = 0;
+                                        int allowed = Math.max(matchFull+1, found);
 
-                                    if ( change ) {
-                                        //logln("      duplication search: fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
-                                        i = i2 - 1;
-                                        order = i2Order;
-                                        firstWcInPattern = i2FirstWcInPattern;
-                                        wcPrevInPattern = i2wcInPatternPrev;
-                                        iPrev = i;
+                                        //logln("      duplication search from 0 to %s", allowed-1);
+                                        duplicateSearch: for (; i2 < allowed; i2++) {
+                                            i2wc = word.charAt(i2);
+                                            i2wcInPattern = pattern.indexOf(i2wc, i2wcInPatternPrev + 1);
+                                            if ( i2wcInPattern > -1 ) {
+                                                if ( i2 == 0 ) {
+                                                    i2FirstWcInPattern = i2wcInPattern;
+                                                }
+
+                                                if ( i2wcInPattern < wcInPattern ) {
+                                                    //logln("        duplication search: W:%s[P:%s]", i2wc, i2wcInPattern);
+                                                    if ( i2 > 0 ) {
+                                                        i2MatchInPattern++;
+                                                        if ( i2wcInPatternPrev + 1 == i2wcInPattern ) {
+                                                            i2FullMatch++;
+                                                        }
+                                                        i2Order++;
+                                                    }
+                                                    i2wcInPatternPrev = i2wcInPattern;
+                                                }
+                                            }
+                                            else {
+                                                if ( i2 == 0 ) {
+                                                    break duplicateSearch;
+                                                }
+                                            }
+
+                                            if ( i2+1 < allowed ) {
+                                                if ( i2FullMatch >= matchFull && allowed < i ) {
+                                                    allowed++;
+                                                }
+                                            }
+                                        }
+
+                                        boolean change =
+                                                i2FullMatch > matchFull ||
+                                                        (i2FullMatch == matchFull && i2MatchInPattern >= matchInPattern);
+
+                                        if ( change ) {
+                                            //logln("        duplication search: change fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
+                                            i = i2 - 1;
+                                            order = i2Order;
+                                            firstWcInPattern = i2FirstWcInPattern;
+                                            wcPrevInPattern = i2wcInPatternPrev;
+                                            iPrev = i;
+                                            prevCharResult = PREV_CHAR_FOUND;
+                                            continue wordCharsIterating;
+                                        }
+                                        else {
+                                            break wordCharsIterating;
+                                        }
+                                    }
+                                    else {
+                                        //logln("      W:%s[P:%s] too far [3]!", wc, wcInPattern);
                                         prevCharResult = PREV_CHAR_NOT_FOUND;
                                         continue wordCharsIterating;
                                     }
-                                    else {
-                                        break wordCharsIterating;
-                                    }
-                                }
-                                else {
-                                    //logln("      W:%s[P:%s] too far [3]!", wc, wcInPattern);
-                                    prevCharResult = PREV_CHAR_NOT_FOUND;
-                                    continue wordCharsIterating;
                                 }
                             }
                         }
                     }
-                    else if ( distanceFromCPrevToC > 0 ) {
+                    else if /* distanceFromCPrevToC <= 1 */ ( distanceFromCPrevToC > 0 ) {
                         order++;
                     }
                 }
@@ -355,37 +379,37 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                     diffInPattern = wcInPattern - wcPrevInPattern;
                     diffInWord = i - iPrev;
                     if ( diffInPattern == 1 ) {
-                        //logln("      M");
+                        //logln("      PATTERN MATCH");
                         matchInPattern++;
                         if ( diffInWord == 1 ) {
-                            //logln("      FM");
+                            //logln("      FULL MATCH");
                             matchFull++;
                             if ( prevCharResult == PREV_CHAR_MATCH_PATTERN ) {
                                 if ( matchInPatternWeak > 0 ) {
                                     matchInPatternWeak--;
-                                    //logln("        w--");
+                                    //logln("        weak--");
                                     matchInPatternStrong++;
-                                    //logln("        s");
+                                    //logln("        strong, prev match is full");
                                     if ( mismatches == 0 && diffInWordSum < 2 ) {
-                                        //logln("        s+");
+                                        //logln("        strong bonus");
                                         matchInPatternStrengthBonus++;
                                     }
                                 }
                             }
                             matchInPatternStrong++;
-                            //logln("        s");
+                            //logln("        strong, full match");
                             prevCharResult = PREV_CHAR_MATCH_FULL;
                         }
                         else {
                             if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
                                 matchInPatternStrong++;
-                                //logln("        s");
+                                //logln("        strong, prev match is full");
                             }
                             else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN
                                     || prevCharResult == PREV_CHAR_NOT_FOUND
                                     || prevCharResult == PREV_CHAR_FOUND ) {
                                 matchInPatternWeak++;
-                                //logln("        w");
+                                //logln("        weak");
                             }
                             prevCharResult = PREV_CHAR_MATCH_PATTERN;
                         }
@@ -395,15 +419,14 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                         boolean cPrevIndexBeforeCIndex = wcPrevInPattern < wcInPattern;
                         if ( cPrevIndexBeforeCIndex ) {
                             matchInPattern++;
-                            //logln("      M");
+                            //logln("      PATTERN MATCH, prev before current");
                             if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
                                 matchInPatternStrong++;
-                                //logln("        s");
+                                //logln("        strong, prev match is full");
                             }
                             else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN || prevCharResult == PREV_CHAR_FOUND ) {
                                 matchInPatternWeak++;
-                                //logln("        w");
-
+                                //logln("        weak");
                             }
                             prevCharResult = PREV_CHAR_MATCH_PATTERN;
                         }
@@ -451,25 +474,25 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                                 wcPrevInPattern = wcPrevInPatternN;
                                 //logln("      gap fixed char W:%s[P:%s] and previous char W:%s[P:%s] - P:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
                                 gaps--;
-                                //logln("      M");
+                                //logln("      MATCH, gap fixed");
                                 if ( diffInWord == 1 ) {
-                                    //logln("      FM");
+                                    //logln("      FULL MATCH");
                                     matchFull++;
                                     matchInPattern++;
                                     if ( prevCharResult == PREV_CHAR_MATCH_PATTERN ) {
                                         if ( matchInPatternWeak > 0 ) {
                                             matchInPatternWeak--;
-                                            //logln("        w--");
+                                            //logln("        weak--");
                                             matchInPatternStrong++;
-                                            //logln("        s");
+                                            //logln("        strong");
                                             if ( mismatches == 0 && diffInWordSum < 2 ) {
-                                                //logln("        s+");
+                                                //logln("        strong bonus");
                                                 matchInPatternStrengthBonus++;
                                             }
                                         }
                                     }
                                     matchInPatternStrong++;
-                                    //logln("        s");
+                                    //logln("        strong");
                                     prevCharResult = PREV_CHAR_MATCH_FULL;
                                 }
                             }
@@ -724,7 +747,9 @@ CREATE ALIAS EVAL_MATCHING_V26 AS $$
                 total = total - matchInPatternWeight * matchInPatternWeak;
             }
             else if ( matchFullVsPatternDiff == 1 && matchType == WORD_IS_PATTERN_FRAGMENT && diffInWordSum < 3 ) {
-                total = total + 2;
+                if ( ! STRICT ) {
+                    total = total + matchInPatternWeight; // CHANGED
+                }
             }
         }
 
