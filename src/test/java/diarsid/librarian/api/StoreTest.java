@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.librarian.api.model.Entry;
-import diarsid.librarian.tests.TransactionalRollbackTestForEmbeddedSetup;
+import diarsid.librarian.tests.setup.TransactionalRollbackTestForEmbeddedSetup;
 import org.junit.jupiter.api.Test;
 
 import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;

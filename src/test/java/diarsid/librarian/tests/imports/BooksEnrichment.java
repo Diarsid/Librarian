@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import diarsid.librarian.api.Store;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
-import diarsid.librarian.tests.CoreTestSetup;
+import diarsid.librarian.tests.setup.CoreTestSetup;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
@@ -25,7 +25,7 @@ import static java.util.stream.Collectors.joining;
 
 import static diarsid.librarian.impl.logic.impl.StringTransformations.CaseConversion.CASE_TO_LOWER;
 import static diarsid.librarian.impl.logic.impl.StringTransformations.toSimplifiedWords;
-import static diarsid.librarian.tests.CoreTestSetupStaticSingleton.server;
+import static diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton.server;
 import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
 
 public class BooksEnrichment {

@@ -4,12 +4,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import diarsid.librarian.api.interaction.UserChoice;
 import diarsid.librarian.api.interaction.UserInteraction;
 import diarsid.librarian.impl.interaction.RealUserChoice;
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.tests.TransactionalRollbackTestForEmbeddedSetup;
+import diarsid.librarian.tests.setup.TransactionalRollbackTestForEmbeddedSetup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

@@ -12,10 +12,10 @@ import java.util.function.Consumer;
 import diarsid.librarian.api.Core;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
-import diarsid.librarian.tests.CoreTestSetup;
+import diarsid.librarian.tests.setup.CoreTestSetup;
 
 import static diarsid.librarian.api.model.Entry.Label.ConditionBindable.ENTRY_CONTAINS_LABEL_IGNORE_CASE;
-import static diarsid.librarian.tests.CoreTestSetupStaticSingleton.server;
+import static diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton.server;
 
 public class DataImportFromPaths implements DataImport {
 

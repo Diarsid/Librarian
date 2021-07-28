@@ -11,12 +11,12 @@ import java.util.UUID;
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV17;
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
-import diarsid.librarian.tests.EntriesResult;
-import diarsid.librarian.tests.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.model.EntriesResult;
+import diarsid.librarian.tests.setup.TransactionalRollbackTestForServerSetup;
+import diarsid.librarian.tests.model.WordCode;
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
@@ -227,7 +227,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V26(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V27(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +

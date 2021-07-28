@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.impl.UsersLockingImpl;
-import diarsid.librarian.tests.TransactionalRollbackTestForEmbeddedSetup;
+import diarsid.librarian.tests.setup.TransactionalRollbackTestForEmbeddedSetup;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.System.currentTimeMillis;

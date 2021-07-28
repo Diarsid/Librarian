@@ -12,8 +12,4 @@ public final class CharSort {
         String sorted = String.copyValueOf(chars);
         return sorted;
     }
-
-    public static void main(String[] args) {
-        System.out.println(transform("tolos"));
-    }
 }

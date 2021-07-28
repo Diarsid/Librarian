@@ -7,6 +7,7 @@ import java.util.List;
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
 import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
 import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
+import diarsid.librarian.tests.model.WordCode;
 import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

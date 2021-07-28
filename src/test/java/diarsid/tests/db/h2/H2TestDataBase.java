@@ -11,9 +11,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import diarsid.support.objects.CommonEnum;
 import diarsid.support.strings.MultilineMessage;
+import diarsid.support.strings.PathUtils;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.RunScript;
 import org.h2.tools.Server;
@@ -21,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.support.lang.Booleans.isNot;
+import static diarsid.support.strings.PathUtils.pathIsDirectory;
 
 public class H2TestDataBase implements TestDataBase {
 
@@ -78,8 +84,6 @@ public class H2TestDataBase implements TestDataBase {
             }
         }
     }
-
-
     
     private static final Logger logger = LoggerFactory.getLogger(H2TestDataBase.class);
 
@@ -98,11 +102,7 @@ public class H2TestDataBase implements TestDataBase {
                 String databasePath = Paths
                         .get(".")
                         .toAbsolutePath()
-                        .resolve("src")
-                        .resolve("test")
-                        .resolve("resources")
-                        .resolve("database")
-                        .resolve("h2")
+                        .resolve("src/test/resources/database/h2")
                         .resolve(name)
                         .normalize()
                         .toString();
@@ -144,12 +144,37 @@ public class H2TestDataBase implements TestDataBase {
 
     @Override
     public void executeScript(Path script) throws SQLException, IOException {
+        if ( pathIsDirectory(script) ) {
+            throw new IllegalArgumentException(script.toString() + " is directory!");
+        }
         this.executeScript(new FileReader(script.toFile()));
         MultilineMessage importing = new MultilineMessage("[SCRIPT] ");
         Files.readAllLines(script).forEach(line -> importing.add(line).newLine());
         logger.info(importing.compose());
     }
-    
+
+    @Override
+    public void executeScriptsIn(Path scriptsFolder) throws SQLException, IOException {
+        if ( ! pathIsDirectory(scriptsFolder) ) {
+            throw new IllegalArgumentException(scriptsFolder.toString() + " is not a directory!");
+        }
+        try ( Stream<Path> paths = Files.list(scriptsFolder) ) {
+            List<Path> scripts = paths
+                    .filter(Predicate.not(PathUtils::pathIsDirectory))
+                    .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".sql"))
+                    .collect(toList());
+
+            MultilineMessage importing = new MultilineMessage("[SCRIPT] ");
+            for ( Path script : scripts ) {
+                this.executeScript(new FileReader(script.toFile()));
+                importing.newLine();
+                importing.add(script.getFileName().toString()).newLine();
+                Files.readAllLines(script).forEach(line -> importing.add(line).newLine());
+            }
+            logger.info(importing.compose());
+        }
+    }
+
     @Override
     public int countRowsInTable(String tableName) {
         try (Connection con = this.connectionsPool.getConnection();
