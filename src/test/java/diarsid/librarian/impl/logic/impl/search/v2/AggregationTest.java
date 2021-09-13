@@ -231,4 +231,12 @@ public class AggregationTest {
         analyze();
     }
 
+    @Test
+    public void test_drklalver() throws Exception {
+        pattern = "drklalver";
+        words = List.of("dracula", "lover");
+        expectOk = true;
+        analyze();
+    }
+
 }

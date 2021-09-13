@@ -178,4 +178,15 @@ public class LengthTest {
     public void test_yasnrkwabta_yasunari() {
         testLength("yasnrkwabta", "yasunari", true);
     }
+
+    @Test
+    public void test_prjs_projects() {
+        testLength("prjs", "projects", true);
+    }
+
+    @Test
+    public void test_drs_diarsid() {
+        testLength("drs", "diarsid", true);
+    }
+
 }

@@ -42,8 +42,14 @@ public class CoreTestSetup {
                 "diarsid.strings.similarity.log.multiline = true",
                 "diarsid.strings.similarity.log.multiline.prefix = [similarity]",
                 "diarsid.strings.similarity.log.multiline.indent = 1",
-                "diarsid.strings.similarity.log.base = true",
-                "diarsid.strings.similarity.log.advanced = true");
+                "diarsid.strings.similarity.log.base = false",
+                "diarsid.strings.similarity.log.advanced = true",
+                "analyze.weight.base.log = false",
+                "analyze.weight.positions.search.log = true",
+                "analyze.weight.positions.clusters.log = true",
+//                "analyze.result.variants.limit = 11",
+                "analyze.similarity.log.base = false",
+                "analyze.similarity.log.advanced = true");
     }
 
     private static final boolean sqlHistoryEnabled = true;

@@ -35,6 +35,14 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
     }
 
     @Test
+    public void test_lorofrngbyjrtolk() {
+        List<PatternToEntry> relations = search.findAllBy(user, "lorofrngbyjrtolk");
+        for ( PatternToEntry relation : relations ) {
+            log.info(format("%s %s", relation.weight(), relation.entryString()));
+        }
+    }
+
+    @Test
     public void test_servs() {
         List<PatternToEntry> relations = search.findAllBy(user, "servs");
         for ( PatternToEntry relation : relations ) {
@@ -65,6 +73,21 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }
     }
+
+    @Test
+    public void test_goldpath() {
+        List<PatternToEntry> relations = search.findAllBy(user, "goldpath");
+        for ( PatternToEntry relation : relations ) {
+            log.info(format("%s %s", relation.weight(), relation.entryString()));
+        }
+    }
+
+//    @Test
+//    public void test_tolsvitrl_x() {
+//        List<PatternToEntry> relations = search.findAllBy(user, "tolsvirtl");
+//
+//        CORE.search().
+//    }
 
     @Test
     public void test_virtualize() {
@@ -106,8 +129,6 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
         }
     }
 
-
-
     @Test
     public void test_drsprojs() {
         List<PatternToEntry> relations = search.findAllBy(user, "drsprojs");
@@ -115,4 +136,36 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }
     }
+
+    @Test
+    public void test_projsdrs() {
+        List<PatternToEntry> relations = search.findAllBy(user, "projsdrs");
+        for ( PatternToEntry relation : relations ) {
+            log.info(format("%s %s", relation.weight(), relation.entryString()));
+        }
+    }
+
+    @Test
+    public void test_kwistzhadrch() {
+        List<PatternToEntry> relations = search.findAllBy(user, "kwistzhadrch");
+        for ( PatternToEntry relation : relations ) {
+            log.info(format("%s %s", relation.weight(), relation.entryString()));
+        }
+    }
+
+    @Test
+    public void test_kwizachoderah() {
+        List<PatternToEntry> relations = search.findAllBy(user, "kwizachoderah");
+        for ( PatternToEntry relation : relations ) {
+            log.info(format("%s %s", relation.weight(), relation.entryString()));
+        }
+    }
+
+//    @Test
+//    public void test_projsdrs() {
+//        List<PatternToEntry> relations = search.findAllBy(user, "projsdrs");
+//        for ( PatternToEntry relation : relations ) {
+//            log.info(format("%s %s", relation.weight(), relation.entryString()));
+//        }
+//    }
 }

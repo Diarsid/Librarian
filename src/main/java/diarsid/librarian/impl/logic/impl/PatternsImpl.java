@@ -135,7 +135,7 @@ public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
                         "    p.string = ? AND \n" +
                         "    p.user_uuid = ? AND \n" +
                         "    le.label_uuid = ? ",
-                        pattern.trim().toLowerCase(), label.uuid(), user.uuid());
+                        pattern.trim().toLowerCase(), user.uuid(), label.uuid());
     }
 
     private Optional<Pattern> findByNotLabel(User user, String pattern, Entry.Label label) {
@@ -165,7 +165,7 @@ public class PatternsImpl extends ThreadBoundTransactional implements Patterns {
                         "        SELECT entry_uuid \n" +
                         "        FROM not_labeled_entries \n" +
                         "        ) ",
-                        label.uuid(), userUuid, userUuid, pattern.trim().toLowerCase());
+                        label.uuid(), userUuid, pattern.trim().toLowerCase(), userUuid);
     }
 
     private Optional<Pattern> findByAnyOfLabels(User user, String pattern, List<Entry.Label> labels) {

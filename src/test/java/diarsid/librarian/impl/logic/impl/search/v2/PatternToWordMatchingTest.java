@@ -29,12 +29,20 @@ public class PatternToWordMatchingTest {
                 () -> new IllegalArgumentException("Method declaration does not contain any boolean matching!"));
         if ( expectMatching ) {
             if ( code < 0 ) {
+                System.out.println("expect matching:TRUE, result:FAIL");
                 fail();
+            }
+            else {
+                System.out.println("expect matching:TRUE, result:PASS");
             }
         }
         else {
             if ( code > -1 ) {
+                System.out.println("expect matching:FALSE, result:FAIL");
                 fail();
+            }
+            else {
+                System.out.println("expect matching:FALSE, PASS");
             }
         }
     }
@@ -670,6 +678,76 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_drsprojs_projects_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwiszhedrah_haderach_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwisahaderh_haderach_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwisahaderh_kwisatz_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_exti_exit_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ext_exit_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drsid_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_prjsdrs_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_prjsdrs_projects_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drs_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_dracula_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_draculas_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_lover_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsotapi_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsotapi_api_true() {
         doTest();
     }
 

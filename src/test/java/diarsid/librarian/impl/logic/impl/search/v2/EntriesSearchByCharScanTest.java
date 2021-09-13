@@ -119,13 +119,15 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
         entry = entryAndWords.getKey();
         message.newLine().indent().add(i).add(" : ").add(entry);
         message.newLine().indent().add("    ").add(entriesAggregates.get(entry).report());
-        for( WordCode word : entryAndWords.getValue() ) {
+        List<WordCode> words = entryAndWords.getValue();
+        words.sort(WordCode.RATE_COMPARATOR);
+        for( WordCode word : words ) {
             message.newLine().indent(3)
                     .add(word.string)
                     .add(" : ")
                     .add(word.code)
                     .add(" : ")
-                    .add(describe(word.code));
+                    .add(word.description);
         }
         i++;
         }
@@ -227,7 +229,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V27(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V28(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -635,6 +637,66 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_iloveyo() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwistz() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwistzhadrch() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwiszhedrah() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwizachaderah() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwizachederah() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwisahaderh() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwizachederahatrids() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwizachoderah() throws Exception {
+        search();
+        entriesResult.expectSomeEntries();
+    }
+
+    @Test
+    public void test_kwezachoderah() throws Exception {
+        search();
+        entriesResult.expectNoEntries(); // KWezAc is too far from KWisAtz ez-is + c-tz
+    }
+
+    @Test
+    public void test_drklalver() throws Exception {
         search();
         entriesResult.expectSomeEntries();
     }

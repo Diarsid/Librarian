@@ -8,18 +8,25 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import diarsid.support.strings.MultilineMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.lang.String.format;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static java.time.LocalDateTime.now;
-import static java.util.stream.Collectors.joining;
 
 public interface H2SqlFunctionScriptInJava {
 
     String name();
 
     int version();
+
+    default String nameAndVersion() {
+        return this.name() + "_V" + this.version();
+    }
 
     default Path sourceFile() {
         String relativeClassPath = this.getClass().getCanonicalName().replace('.', '/') + ".java";
@@ -84,7 +91,7 @@ public interface H2SqlFunctionScriptInJava {
         scriptLines.add(0, "-- generated ");
         scriptLines.add(1, "--   by " + this.getClass().getCanonicalName());
         scriptLines.add(2, "--   at " + now());
-        scriptLines.add(3, format("CREATE ALIAS %s_V%s AS $$", this.name(), this.version()));
+        scriptLines.add(3, format("CREATE ALIAS %s AS $$", this.nameAndVersion()));
         scriptLines.add(scriptLines.size(), "$$");
 
         return scriptLines;
@@ -95,12 +102,25 @@ public interface H2SqlFunctionScriptInJava {
     }
 
     default void rewriteScript() throws Exception {
-        Path script = this.scriptFile();
+        Logger log = LoggerFactory.getLogger(this.getClass());
+        try {
+            MultilineMessage message = new MultilineMessage("[script]", "   ");
+            message.newLine().add("name: ").add(this.nameAndVersion());
 
-        if ( exists(script) ) {
-            delete(script);
+            Path script = this.scriptFile();
+            message.newLine().add("file: ").add(script.toString());
+
+            if ( exists(script) ) {
+                delete(script);
+                message.newLine().add("removing existing file...");
+            }
+
+            write(script, this.scriptLines());
+            message.newLine().add("written successfully.");
+            log.info(message.compose());
         }
-
-        write(script, this.scriptLines());
+        catch (Exception e) {
+            log.error("cannot rewrite script", e);
+        }
     }
 }
