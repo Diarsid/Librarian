@@ -13,12 +13,12 @@ import diarsid.librarian.impl.logic.api.UsersLocking;
 public class UserInteractionLockingWrapper implements UserInteraction {
 
     private final Jdbc jdbc;
-    private final UserInteraction real;
+    private final UserInteraction userInteraction;
     private final UsersLocking locking;
 
-    public UserInteractionLockingWrapper(UserInteraction real, Jdbc jdbc, UsersLocking locking) {
+    public UserInteractionLockingWrapper(UserInteraction userInteraction, Jdbc jdbc, UsersLocking locking) {
         this.jdbc = jdbc;
-        this.real = real;
+        this.userInteraction = userInteraction;
         this.locking = locking;
     }
 
@@ -39,6 +39,6 @@ public class UserInteractionLockingWrapper implements UserInteraction {
         transaction.sqlHistory().comment("user data locking transaction while interacting with user");
         transaction.doNotGuard();
         locking.lock(user);
-        return real.askForChoice(user, variants);
+        return userInteraction.askForChoice(user, variants);
     }
 }

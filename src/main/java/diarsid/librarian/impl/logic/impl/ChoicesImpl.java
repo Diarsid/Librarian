@@ -11,7 +11,7 @@ import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.PatternToEntryChoice;
 import diarsid.librarian.impl.logic.api.Choices;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealPatternToEntryChoice;
 
 import static java.time.LocalDateTime.now;

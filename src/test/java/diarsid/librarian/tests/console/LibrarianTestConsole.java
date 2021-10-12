@@ -1,14 +1,16 @@
 package diarsid.librarian.tests.console;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import diarsid.console.api.Console;
 import diarsid.console.api.format.ConsoleFormat;
 import diarsid.console.api.io.Command;
 import diarsid.console.api.io.ConsoleInteraction;
-import diarsid.console.impl.ConsoleBuilding;
-import diarsid.console.impl.ProcessingBuilding;
+import diarsid.console.api.io.operations.OperationLogic;
+import diarsid.console.impl.building.ConsoleBuilding;
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcTransaction;
 import diarsid.librarian.api.Core;
@@ -18,6 +20,8 @@ import diarsid.librarian.api.model.User;
 import diarsid.librarian.tests.setup.CoreTestSetup;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.console.api.format.ConsoleFormatElement.NAME;
@@ -27,6 +31,7 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton.server;
 import static diarsid.support.configuration.Configuration.configure;
+import static diarsid.support.model.Joined.distinctLeftsOf;
 
 public class LibrarianTestConsole {
 
@@ -57,10 +62,10 @@ public class LibrarianTestConsole {
         User user = setup.user;
         Jdbc jdbc = setup.jdbc;
 
-        BiFunction<ConsoleInteraction, Command, List<String>> logic = (interaction, command) -> {
+        OperationLogic findByMatching = (interaction, command) -> {
             JdbcTransaction tx = jdbc.createTransaction();
 
-            String arg = command.argAt(0);
+            String arg = command.argAt(1);
             List<String> labelNames = command.valuesOf(labelFlag);
             String labelsMode = command.valueOf(labelsModeFlag).orElse("any");
 
@@ -82,16 +87,47 @@ public class LibrarianTestConsole {
                     .collect(toList());
         };
 
+        OperationLogic getByLabels = (interaction, command) -> {
+            String labelName = command.argAt(1);
+            Optional<Entry.Label> label = core.store().labels().findBy(user, labelName);
+
+            if ( label.isPresent() ) {
+                List<Entry.Labeled> labeleds = core.store().labeledEntries().findAllBy(label.get());
+                if ( labeleds.isEmpty() ) {
+                    return singletonList("No entries for this label");
+                }
+                else {
+                    List<Entry> entries = distinctLeftsOf(labeleds);
+                    return entries
+                            .stream()
+                            .map(Entry::string)
+                            .collect(toList());
+                }
+            }
+            else {
+                return singletonList("No such label");
+            }
+        };
+
         Console console = new ConsoleBuilding()
                 .withFlags(labelFlag, singleFlag, commitFlag, labelsModeFlag)
                 .withFormat(ConsoleFormat.building()
                         .with(NAME, "librarian"))
                 .stopWhenInputIs("exit")
                 .enableExitConfirmation("y", "+", "yes")
-                .withProcessing(ProcessingBuilding
-                        .named("logic")
-                        .doing(logic)
-                        .matching(command -> command.args().size() == 1 && command.hasNot(singleFlag)))
+                .withOperation(building -> building
+                        .named("find-by-matching")
+                        .doing(findByMatching)
+                        .matching(command ->
+                                command.args().size() == 2 &&
+                                command.argAt(0).equalsIgnoreCase("find") &&
+                                command.hasNot(singleFlag)))
+                .withOperation(building -> building
+                        .named("get-by-label")
+                        .doing(getByLabels)
+                        .matching(command ->
+                                command.args().size() == 2 &&
+                                command.argAt(0).equalsIgnoreCase("get")))
                 .done();
 
         console.life().start();

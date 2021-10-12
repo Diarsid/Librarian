@@ -6,7 +6,7 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 
 public class UsersLockingImpl extends ThreadBoundTransactional implements UsersLocking {
 

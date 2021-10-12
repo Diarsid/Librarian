@@ -5,7 +5,7 @@ import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.librarian.api.Behavior;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 
 import static java.time.LocalDateTime.now;
 

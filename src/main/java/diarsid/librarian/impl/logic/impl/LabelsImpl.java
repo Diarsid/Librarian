@@ -13,7 +13,7 @@ import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealLabel;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 

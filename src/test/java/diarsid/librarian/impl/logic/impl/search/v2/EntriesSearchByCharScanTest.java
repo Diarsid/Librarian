@@ -40,7 +40,6 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.describe;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
 import static org.assertj.core.api.Assertions.assertThat;

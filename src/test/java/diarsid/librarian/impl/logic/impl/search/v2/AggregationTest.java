@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV20;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV21;
 import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
 import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
 import diarsid.librarian.tests.model.WordCode;
@@ -25,7 +27,7 @@ public class AggregationTest {
 
     static Logger log = LoggerFactory.getLogger(AggregationTest.class);
 
-    H2AggregateFunctionForAnalyzeV19 aggregator = new H2AggregateFunctionForAnalyzeV19();
+    H2AggregateFunctionForAnalyzeV21 aggregator = new H2AggregateFunctionForAnalyzeV21();
     String pattern;
     Boolean expectOk;
     List<String> words;
@@ -36,23 +38,17 @@ public class AggregationTest {
     void analyze() throws SQLException {
         MultilineMessage report = new MultilineMessage("", "   ");
         report.newLine().add("pattern : ").add(pattern);
-        boolean isFailed = false;
+
         for ( String word : words ) {
             long code = CURRENT_VERSION.evaluate(pattern, word);
-            if ( code < 0 ) {
-                isFailed = true;
-            }
             wordCodes.add(new WordCode(word, code));
             report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(describe(code));
         }
 
-        if ( isFailed && expectOk ) {
-            log.info(report.compose());
-            fail();
-        }
-
         for ( WordCode wordCode : wordCodes) {
-            aggregator.add(wordCode.code);
+            if ( wordCode.code > 0 ) {
+                aggregator.add(wordCode.code);
+            }
         }
 
         resultCode = aggregator.getResult();
@@ -61,6 +57,15 @@ public class AggregationTest {
             assertThat(uuidAndResultCode.missed).isEqualTo(aggregator.missed());
             assertThat(uuidAndResultCode.overlaps).isEqualTo(aggregator.overlaps());
             assertThat(uuidAndResultCode.patternLength).isEqualTo(aggregator.patternLength());
+        }
+        else {
+            var reason = H2AggregateFunctionForAnalyzeV19
+                    .RejectionReason
+                    .findByValue((int) resultCode)
+                    .map(Enum::name)
+                    .orElse("UNKOWN");
+
+            report.newLine().add("rejection reason: ").add(reason);
         }
 
         report.newLine().add("result  : ").add(aggregator.report());
@@ -239,4 +244,27 @@ public class AggregationTest {
         analyze();
     }
 
+    @Test
+    public void test_lororng() throws Exception {
+        pattern = "lororng";
+        words = List.of(
+                "the",
+                "lord",
+                "of",
+                "rings");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_lororng_2() throws Exception {
+        pattern = "lororng";
+        words = List.of(
+                "the",
+                "lord",
+                "of",
+                "rings", "by", "rob", "inglis", "and", "jrr", "tolkien", "alan", "lee");
+        expectOk = true;
+        analyze();
+    }
 }

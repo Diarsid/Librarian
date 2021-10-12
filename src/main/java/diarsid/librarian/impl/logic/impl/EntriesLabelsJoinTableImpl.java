@@ -7,7 +7,7 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.LabelToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
@@ -40,23 +40,23 @@ public class EntriesLabelsJoinTableImpl extends ThreadBoundTransactional impleme
                 .doQueryAndStream(
                         row -> new LabelToEntry(entriesAtualAt, row, "j_", "e_", "l_"),
                         "SELECT \n" +
-                                "   le.uuid         AS j_uuid, \n" +
-                                "   le.time         AS j_time, \n" +
-                                "   e.uuid          AS e_uuid, \n" +
-                                "   e.time          AS e_time, \n" +
-                                "   e.user_uuid     AS e_user_uuid, \n" +
-                                "   e.string_origin AS e_string_origin, \n" +
-                                "   e.string_lower  AS e_string_lower, \n" +
-                                "   l.uuid          AS l_uuid, \n" +
-                                "   l.time          AS l_time, \n" +
-                                "   l.user_uuid     AS l_user_uuid, \n" +
-                                "   l.name          AS l_name \n" +
-                                "FROM labels_to_entries le \n" +
-                                "   JOIN labels l \n" +
-                                "       ON le.label_uuid = l.uuid \n" +
-                                "   JOIN entries e \n" +
-                                "       ON le.entry_uuid = e.uuid \n" +
-                                "WHERE le.entry_uuid = ? ",
+                        "   le.uuid         AS j_uuid, \n" +
+                        "   le.time         AS j_time, \n" +
+                        "   e.uuid          AS e_uuid, \n" +
+                        "   e.time          AS e_time, \n" +
+                        "   e.user_uuid     AS e_user_uuid, \n" +
+                        "   e.string_origin AS e_string_origin, \n" +
+                        "   e.string_lower  AS e_string_lower, \n" +
+                        "   l.uuid          AS l_uuid, \n" +
+                        "   l.time          AS l_time, \n" +
+                        "   l.user_uuid     AS l_user_uuid, \n" +
+                        "   l.name          AS l_name \n" +
+                        "FROM labels_to_entries le \n" +
+                        "   JOIN labels l \n" +
+                        "       ON le.label_uuid = l.uuid \n" +
+                        "   JOIN entries e \n" +
+                        "       ON le.entry_uuid = e.uuid \n" +
+                        "WHERE le.entry_uuid = ? ",
                         entry.uuid())
                 .collect(toList());
     }

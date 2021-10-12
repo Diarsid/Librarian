@@ -751,6 +751,17 @@ public class PatternToWordMatchingTest {
         doTest();
     }
 
+    @Test
+    public void test_dnehrbrt_dune_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_dnehrbrt_herbert_true() {
+        doTest();
+    }
+
+
 
     @Test
     public void test_maximums() {

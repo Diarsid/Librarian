@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.jdbc.api.Jdbc;
+import diarsid.jdbc.api.JdbcOperations;
 import diarsid.librarian.api.Behavior;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealEntry;
 import diarsid.librarian.impl.model.Word;
 import diarsid.librarian.impl.model.WordInEntry;
@@ -55,27 +56,45 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         else {
             List<String> wordStrings = splitEntryToWords(user, entry);
 
+//            WordInEntry.Position wordPosition;
+//            String wordString;
+//            int last = wordStrings.size() - 1;
+//            int wordsActualCounter = 0;
+//
+//            for (int i = 0; i < wordStrings.size(); i++) {
+//                wordString = wordStrings.get(i);
+//
+//                if ( containsTextSeparator(wordString) ) {
+//                    continue;
+//                }
+//
+//                word = this.words.getOrSave(entry.userUuid(), wordString, entry.createdAt());
+//                wordPosition = definePosition(i, last);
+//
+//                wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, wordPosition, wordsActualCounter);
+//                this.save(wordInEntry);
+//                wordInEntries.add(wordInEntry);
+//
+//                wordsActualCounter++;
+//            }
+
+            wordStrings = wordStrings
+                    .stream()
+                    .filter(wordString -> ! containsTextSeparator(wordString))
+                    .collect(toList());
+
+            List<Word> words = this.words.getOrSave(user.uuid(), wordStrings, entry.createdAt());
+
             WordInEntry.Position wordPosition;
-            String wordString;
-            int last = wordStrings.size() - 1;
-            int wordsActualCounter = 0;
-
-            for (int i = 0; i < wordStrings.size(); i++) {
-                wordString = wordStrings.get(i);
-
-                if ( containsTextSeparator(wordString) ) {
-                    continue;
-                }
-
-                word = this.words.getOrSave(entry.userUuid(), wordString, entry.createdAt());
+            int last = words.size() - 1;
+            for (int i = 0; i < words.size(); i++) {
+                word = words.get(i);
                 wordPosition = definePosition(i, last);
-
-                wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, wordPosition, wordsActualCounter);
-                this.save(wordInEntry);
+                wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, wordPosition, i);
                 wordInEntries.add(wordInEntry);
-
-                wordsActualCounter++;
             }
+
+            this.save(wordInEntries);
         }
 
         return wordInEntries;
@@ -109,6 +128,32 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         }
 
         wordInEntry.setState(STORED);
+    }
+
+    private void save(List<WordInEntry> wordInEntries) {
+        int updated = super.currentTransaction()
+                .doBatchUpdate(
+                        "INSERT INTO words_in_entries( \n" +
+                        "   uuid, \n" +
+                        "   word_uuid, \n" +
+                        "   entry_uuid, \n" +
+                        "   position, \n" +
+                        "   index) \n" +
+                        "VALUES(?, ?, ?, ?, ?)",
+                        (wordInEntry, params) -> {
+                            params.add(wordInEntry.uuid());
+                            params.add(wordInEntry.word().uuid());
+                            params.add(wordInEntry.entry().uuid());
+                            params.add(wordInEntry.position());
+                            params.add(wordInEntry.index());
+                        },
+                        wordInEntries);
+
+        if ( updated != 1 ) {
+            throw new IllegalStateException();
+        }
+
+        wordInEntries.forEach(wordInEntry -> wordInEntry.setState(STORED));
     }
 
     private static WordInEntry.Position definePosition(int i, int last) {

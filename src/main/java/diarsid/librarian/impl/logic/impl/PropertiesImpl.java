@@ -9,7 +9,7 @@ import diarsid.librarian.api.Properties;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 
 public class PropertiesImpl extends ThreadBoundTransactional implements Properties {
 

@@ -53,19 +53,33 @@ public class StringsComparisonAlgorithmValidation {
                 betterEntry),
                 now());
 
-        boolean noBadEntry = relations
+        boolean badEntryAbsent = relations
                 .stream()
                 .map(PatternToEntry::entryString)
                 .noneMatch(badEntryString::equals);
 
+        if ( ! badEntryAbsent ) {
+            throw new IllegalStateException();
+        }
+
         PatternToEntry better = relations.get(0);
         PatternToEntry worse = relations.get(1);
 
-        better.entryString().equals(betterEntryString);
-        worse.entryString().equals(worseEntryString);
+        if ( ! better.entryString().equals(betterEntryString) ) {
+            throw new IllegalStateException();
+        }
 
-        better.patternString().equals(patternString);
-        worse.patternString().equals(patternString);
+        if ( ! worse.entryString().equals(worseEntryString) ) {
+            throw new IllegalStateException();
+        }
+
+        if ( ! better.patternString().equals(patternString) ) {
+            throw new IllegalStateException();
+        }
+
+        if ( ! worse.patternString().equals(patternString) ) {
+            throw new IllegalStateException();
+        }
 
         int comparison = algorithmAdapter.compare(better, worse);
     }

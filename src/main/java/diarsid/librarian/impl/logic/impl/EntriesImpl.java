@@ -19,7 +19,7 @@ import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.WordsInEntries;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealEntry;
 import diarsid.librarian.impl.model.WordInEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
@@ -125,7 +125,8 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
             RealEntry newDerivedEntry;
             List<RealEntry> newDerivedEntries = new ArrayList<>();
 
-            for ( String path : decomposePath(entry.string(), DONT_NORMALIZE, DONT_INCLUDE_ORIGINAL) ) {
+            List<String> decomposedPaths = decomposePath(entry.string(), DONT_NORMALIZE, DONT_INCLUDE_ORIGINAL);
+            for ( String path : decomposedPaths ) {
                 derivedEntryNotExists = ! this.doesEntryExistBy(userUuid, StringTransformations.simplify(path, CASE_TO_LOWER));
 
                 if ( derivedEntryNotExists ) {

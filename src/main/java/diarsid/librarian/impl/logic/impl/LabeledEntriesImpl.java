@@ -17,7 +17,7 @@ import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesLabelsJoinTable;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.LabelToEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 

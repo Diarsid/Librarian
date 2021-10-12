@@ -74,7 +74,11 @@ public interface Core {
         StringsComparisonAlgorithm algorithm = resources.algorithm();
 
         StringsComparisonAlgorithmValidation algorithmValidation = new StringsComparisonAlgorithmValidation(() -> algorithm);
-//        algorithmValidation.validate();
+        algorithmValidation.validate(
+                "pattern",
+                "pattrn",
+                "paxtrn",
+                "abcdfgh");
         AlgorithmToModelAdapter algorithmAdapter = new AlgorithmToModelAdapter(algorithm, uuidSupplier);
 
         Behavior behavior = new BehaviorImpl(jdbc, uuidSupplier);

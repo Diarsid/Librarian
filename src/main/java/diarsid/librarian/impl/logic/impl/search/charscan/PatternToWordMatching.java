@@ -1,5 +1,6 @@
 package diarsid.librarian.impl.logic.impl.search.charscan;
 
+import diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.H2SqlFunctionScriptInJava;
 import diarsid.support.objects.references.Possible;
 
 import static java.lang.String.format;

@@ -8,7 +8,7 @@ import diarsid.librarian.api.Users;
 import diarsid.librarian.api.exceptions.NotFoundException;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealUser;
 
 import static diarsid.support.model.Storable.State.STORED;

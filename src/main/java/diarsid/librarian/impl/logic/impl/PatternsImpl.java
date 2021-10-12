@@ -11,7 +11,7 @@ import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.Patterns;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.support.ThreadBoundTransactional;
+import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.RealPattern;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
