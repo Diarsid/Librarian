@@ -17,6 +17,7 @@ import diarsid.librarian.impl.model.WordInEntry;
 
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
 import static diarsid.librarian.api.Behavior.Feature.JOIN_SINGLE_CHARS_TO_NEXT_WORD;
 import static diarsid.librarian.api.Behavior.Feature.USE_CAMEL_CASE_WORDS_DECOMPOSITION;
 import static diarsid.librarian.api.model.Entry.Type.WORD;
@@ -55,28 +56,6 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
         }
         else {
             List<String> wordStrings = splitEntryToWords(user, entry);
-
-//            WordInEntry.Position wordPosition;
-//            String wordString;
-//            int last = wordStrings.size() - 1;
-//            int wordsActualCounter = 0;
-//
-//            for (int i = 0; i < wordStrings.size(); i++) {
-//                wordString = wordStrings.get(i);
-//
-//                if ( containsTextSeparator(wordString) ) {
-//                    continue;
-//                }
-//
-//                word = this.words.getOrSave(entry.userUuid(), wordString, entry.createdAt());
-//                wordPosition = definePosition(i, last);
-//
-//                wordInEntry = new WordInEntry(super.nextRandomUuid(), entry, word, wordPosition, wordsActualCounter);
-//                this.save(wordInEntry);
-//                wordInEntries.add(wordInEntry);
-//
-//                wordsActualCounter++;
-//            }
 
             wordStrings = wordStrings
                     .stream()
@@ -131,7 +110,7 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
     }
 
     private void save(List<WordInEntry> wordInEntries) {
-        int updated = super.currentTransaction()
+        int[] updated = super.currentTransaction()
                 .doBatchUpdate(
                         "INSERT INTO words_in_entries( \n" +
                         "   uuid, \n" +
@@ -141,17 +120,15 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
                         "   index) \n" +
                         "VALUES(?, ?, ?, ?, ?)",
                         (wordInEntry, params) -> {
-                            params.add(wordInEntry.uuid());
-                            params.add(wordInEntry.word().uuid());
-                            params.add(wordInEntry.entry().uuid());
-                            params.add(wordInEntry.position());
-                            params.add(wordInEntry.index());
+                            params.addNext(wordInEntry.uuid());
+                            params.addNext(wordInEntry.word().uuid());
+                            params.addNext(wordInEntry.entry().uuid());
+                            params.addNext(wordInEntry.position());
+                            params.addNext(wordInEntry.index());
                         },
                         wordInEntries);
 
-        if ( updated != 1 ) {
-            throw new IllegalStateException();
-        }
+        mustAllBe(1, updated);
 
         wordInEntries.forEach(wordInEntry -> wordInEntry.setState(STORED));
     }

@@ -42,4 +42,14 @@ public class Word extends AbstractIdentifiableUserScoped {
                 .map(Word::string)
                 .collect(joining());
     }
+
+    @Override
+    public String toString() {
+        return "Word{" +
+                "uuid='" + super.uuid() + "', " +
+                "time='" + super.createdAt() + "', " +
+                "userUuid='" + super.userUuid() + "', " +
+                "string='" + string + '\'' +
+                '}';
+    }
 }

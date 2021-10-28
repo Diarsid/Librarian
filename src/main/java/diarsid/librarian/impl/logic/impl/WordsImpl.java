@@ -77,22 +77,19 @@ public class WordsImpl extends ThreadBoundTransactional implements Words {
                 .map(string -> new Word(super.nextRandomUuid(), string, time, userUuid))
                 .collect(toList());
 
-        List<List> args = newWords
-                .stream()
-                .map(word -> List.of(
-                        word.uuid(),
-                        word.string(),
-                        transform(word.string()),
-                        word.string().length(),
-                        word.userUuid(),
-                        word.createdAt()))
-                .collect(toList());
-
         int[] changed = super.currentTransaction()
                 .doBatchUpdate(
                         "INSERT INTO words (uuid, string, string_sort, word_size, user_uuid, time) \n" +
                         "VALUES(?, ?, ?, ?, ?, ?)",
-                        args);
+                        (word, params) -> {
+                            params.addNext(word.uuid());
+                            params.addNext(word.string());
+                            params.addNext(transform(word.string()));
+                            params.addNext(word.string().length());
+                            params.addNext(word.userUuid());
+                            params.addNext(word.createdAt());
+                        },
+                        newWords);
 
         mustAllBe(1, changed);
 

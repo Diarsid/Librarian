@@ -27,6 +27,7 @@ import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
 import static diarsid.librarian.api.Behavior.Feature.DECOMPOSE_ENTRY_PATH;
 import static diarsid.librarian.api.model.Entry.Type.PATH;
 import static diarsid.librarian.api.model.meta.UserScoped.checkMustBelongToOneUser;
@@ -136,13 +137,6 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
             }
 
             if ( isNotEmpty(newDerivedEntries) ) {
-                JdbcOperations.ArgsFrom<RealEntry> argsFromEntry = (realEntry) -> List.of(
-                        realEntry.uuid(),
-                        realEntry.string(),
-                        realEntry.stringLower(),
-                        realEntry.type(),
-                        realEntry.createdAt(),
-                        realEntry.userUuid());
 
                 int[] insertedAll = super.currentTransaction()
                         .doBatchUpdate(
@@ -154,10 +148,17 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                                 "   time, \n" +
                                 "   user_uuid) \n" +
                                 "VALUES (?, ?, ?, ?, ?, ?)",
-                                argsFromEntry,
-                                newDerivedEntries
-                                );
+                                (realEntry, params) -> {
+                                    params.addNext(realEntry.uuid());
+                                    params.addNext(realEntry.string());
+                                    params.addNext(realEntry.stringLower());
+                                    params.addNext(realEntry.type());
+                                    params.addNext(realEntry.createdAt());
+                                    params.addNext(realEntry.userUuid());
+                                },
+                                newDerivedEntries);
 
+                mustAllBe(1, insertedAll);
                 if ( insertedAll.length != newDerivedEntries.size() ) {
                     throw new IllegalStateException();
                 }

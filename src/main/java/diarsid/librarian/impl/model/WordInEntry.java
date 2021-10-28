@@ -38,4 +38,14 @@ public class WordInEntry extends AbstractUniqueStorable {
     public int index() {
         return index;
     }
+
+    @Override
+    public String toString() {
+        return "WordInEntry{" +
+                "entry=" + entry +
+                ", word=" + word +
+                ", position=" + position +
+                ", index=" + index +
+                '}';
+    }
 }
