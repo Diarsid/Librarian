@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import diarsid.librarian.api.Properties;
 import diarsid.librarian.api.Search;
@@ -16,8 +15,6 @@ import diarsid.librarian.api.model.PatternToEntryChoice;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.api.interaction.UserChoice;
 import diarsid.librarian.api.interaction.UserInteraction;
-import diarsid.librarian.api.required.StringsComparisonAlgorithm;
-import diarsid.librarian.api.required.UserProvidedResources;
 import diarsid.librarian.impl.logic.api.Choices;
 import diarsid.librarian.impl.logic.api.Patterns;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
@@ -216,6 +213,7 @@ public class SearchImpl implements Search {
                                         PatternToEntry chosenRelation = allRelations.get(chosenIndex);
                                         if ( storedChoice.is(chosenRelation) ) {
                                             choices.assertActual(storedChoice);
+                                            return Optional.of(chosenRelation);
                                         }
                                         else {
                                             PatternToEntryChoice newChoice = choices.replace(storedChoice, chosenRelation);
@@ -304,7 +302,7 @@ public class SearchImpl implements Search {
                         int chosenIndex = userChoice.chosenVariantIndex();
                         PatternToEntry chosenRelation = entriesNewRelations.get(chosenIndex);
                         PatternToEntryChoice newChoice = choices.save(chosenRelation);
-                        return Optional.of(chosenRelation);
+                        return Optional.of(newChoice.patternToEntry());
                     }
                     case NOT_DONE:
                     case REJECTION: {
@@ -375,6 +373,7 @@ public class SearchImpl implements Search {
                                         PatternToEntry chosenRelation = allRelations.get(chosenIndex);
                                         if ( storedChoice.is(chosenRelation) ) {
                                             choices.assertActual(storedChoice);
+                                            return Optional.of(chosenRelation);
                                         }
                                         else {
                                             PatternToEntryChoice newChoice = choices.replace(storedChoice, chosenRelation);
@@ -473,7 +472,7 @@ public class SearchImpl implements Search {
                         int chosenIndex = userChoice.chosenVariantIndex();
                         PatternToEntry chosenRelation = entriesNewRelations.get(chosenIndex);
                         PatternToEntryChoice newChoice = choices.save(chosenRelation);
-                        return Optional.of(chosenRelation);
+                        return Optional.of(newChoice.patternToEntry());
                     }
                     case NOT_DONE:
                     case REJECTION: {
