@@ -53,7 +53,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev");
         results(entriesSearchByWord.findBy(word, ANY_OF, labels));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -68,7 +68,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev");
         results(entriesSearchByWord.findBy(word, ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -76,7 +76,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "books");
         results(entriesSearchByWord.findBy(word, ANY_OF, labels));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -84,7 +84,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "books");
         results(entriesSearchByWord.findBy(word, ANY_OF, labels, BEFORE, now()));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
     
     @Test
@@ -92,21 +92,21 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "books");
         results(entriesSearchByWord.findBy(word, ANY_OF, labels, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
     
     @Test
     public void findByBefore() {
         Word word = word("tools");
         results(entriesSearchByWord.findBy(word, BEFORE, now()));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
     public void findByAfterOrEqual() {
         Word word = word("tools");
         results(entriesSearchByWord.findBy(word, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
     
     @Test
@@ -114,7 +114,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -122,7 +122,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels, BEFORE, now()));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -130,14 +130,14 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();}
+        entriesResult.expect().someEntries();}
 
     @Test
     public void findByNoneOf() {
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -145,7 +145,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels, BEFORE, now()));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -153,7 +153,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, NONE_OF, labels, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
     
     @Test
@@ -161,7 +161,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, ALL_OF, labels));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
     
     @Test
@@ -169,7 +169,7 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, ALL_OF, labels, BEFORE, now()));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 
     @Test
@@ -177,6 +177,6 @@ public class EntriesSearchByWordTest extends TransactionalRollbackTestForServerS
         Word word = word("tools");
         List<Entry.Label> labels = labels("dev", "servers");
         results(entriesSearchByWord.findBy(word, ALL_OF, labels, AFTER_OR_EQUAL, now().minusYears(1)));
-        entriesResult.expectSomeEntries();
+        entriesResult.expect().someEntries();
     }
 }

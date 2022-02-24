@@ -38,6 +38,7 @@ public interface PatternToEntry extends Unique, Storable, CreatedAt, Joined<Patt
 
     @Override
     default UUID userUuid() {
+        this.pattern().checkHasSameUser(this.entry());
         return this.entry().userUuid();
     }
 }

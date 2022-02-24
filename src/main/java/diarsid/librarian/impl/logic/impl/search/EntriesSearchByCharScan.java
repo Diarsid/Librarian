@@ -11,7 +11,6 @@ import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.util.Objects.nonNull;
@@ -42,7 +41,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -59,7 +58,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -73,7 +72,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -92,7 +91,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -106,7 +105,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -129,7 +128,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -143,7 +142,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -168,7 +167,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -182,7 +181,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -207,7 +206,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -221,7 +220,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -242,7 +241,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -256,7 +255,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -277,7 +276,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -291,7 +290,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -310,7 +309,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -324,7 +323,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -343,7 +342,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
-                "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                 "   FROM labeled_words_scan_raw \n" +
                 "   WHERE word_code >-1 \n" +
                 "   GROUP BY entry_uuid \n" +
@@ -453,14 +452,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
         }
     }
 
-    private List<UUID> filterAll(List<UuidAndResultCode> uuidAndResultCodes) {
+    private List<UUID> filterAll(List<UuidAndAggregationCode> uuidAndAggregationCodes) {
         List<UUID> entriesWithoutMissed = new ArrayList<>();
         List<UUID> entriesWithMissed = new ArrayList<>();
 
         UUID uuid;
-        for ( UuidAndResultCode uuidAndResultCode : uuidAndResultCodes ) {
-            uuid = uuidAndResultCode.uuid;
-            if ( uuidAndResultCode.hasMissed() ) {
+        for ( UuidAndAggregationCode uuidAndAggregationCode : uuidAndAggregationCodes) {
+            uuid = uuidAndAggregationCode.uuid;
+            if ( uuidAndAggregationCode.hasMissed() ) {
                 entriesWithMissed.add(uuid);
             }
             else {
@@ -471,29 +470,28 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
         if ( entriesWithoutMissed.isEmpty() ) {
             return entriesWithMissed;
         }
-        else {
-            if ( isNotEmpty(entriesWithMissed) ) {
-                List<String> ignoreWithMissed = entriesWithMissed
-                        .stream()
-                        .map(uuidCode -> "ignore entry '" + uuidCode + "' due to missed")
-                        .collect(toList());
-                SqlHistory history = this.currentTransaction().sqlHistory();
-                if ( nonNull(history) ) {
-                    history.comment(ignoreWithMissed);
-                }
-            }
 
-            return entriesWithoutMissed;
+        if ( isNotEmpty(entriesWithMissed) ) {
+            List<String> ignoreWithMissed = entriesWithMissed
+                    .stream()
+                    .map(uuidCode -> "ignore entry '" + uuidCode + "' due to missed")
+                    .collect(toList());
+            SqlHistory history = this.currentTransaction().sqlHistory();
+            if ( nonNull(history) ) {
+                history.comment(ignoreWithMissed);
+            }
         }
+
+        return entriesWithoutMissed;
     }
 
     private List<Entry> searchBy(User user, String pattern) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V30(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V36(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -505,7 +503,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V21(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V23(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -525,14 +523,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByLabel(String pattern, Entry.Label label) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -544,7 +542,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "		EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "   WHERE word_code >-1 \n" +
                         "   GROUP BY entry_uuid \n" +
@@ -561,9 +559,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAnyOfLabels(String pattern, List<Entry.Label> labels) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -574,9 +572,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAllOfLabels(String pattern, List<Entry.Label> labels) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -587,12 +585,12 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByBefore(User user, String pattern, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V30(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V36(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -604,7 +602,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V21(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V23(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -626,12 +624,12 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAfterOrEqual(User user, String pattern, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V30(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V36(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -643,7 +641,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE w_code > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "	SELECT we.entry_uuid, EVAL_CODES_V21(ws.w_code) r_code \n" +
+                        "	SELECT we.entry_uuid, EVAL_CODES_V23(ws.w_code) r_code \n" +
                         "	FROM words_scan ws \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.word_uuid = ws.uuid \n" +
@@ -665,14 +663,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByLabelBefore(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -684,7 +682,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "		EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS (" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "      JOIN entries e \n" +
                         "          ON e.uuid = entry_uuid AND e.time < ? \n" +
@@ -703,14 +701,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByLabelAfterOrEqual(String pattern, Entry.Label label, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -722,7 +720,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "		EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS (" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "      JOIN entries e \n" +
                         "          ON e.uuid = entry_uuid AND e.time >= ? \n" +
@@ -741,9 +739,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAnyOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -754,9 +752,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAnyOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -767,9 +765,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAllOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -780,9 +778,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     }
 
     private List<Entry> searchByAllOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
@@ -794,14 +792,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     private List<Entry> searchByNotLabel(String pattern, Entry.Label label) {
         UUID userUuid = label.userUuid();
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -822,7 +820,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "   WHERE word_code >-1 \n" +
                         "   GROUP BY entry_uuid \n" +
@@ -841,9 +839,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
     private List<Entry> searchByNoneOfLabels(String pattern, List<Entry.Label> labels) {
         UUID userUuid = labels.get(0).userUuid();
 
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabels.getFor(labels),
                         pattern, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());
@@ -855,14 +853,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     private List<Entry> searchByNotLabelBefore(String pattern, Entry.Label label, LocalDateTime time) {
         UUID userUuid = label.userUuid();
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -885,7 +883,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "   WHERE word_code >-1 \n" +
                         "   GROUP BY entry_uuid \n" +
@@ -903,14 +901,14 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     private List<Entry> searchByNotLabelAfterOrEqual(String pattern, Entry.Label label, LocalDateTime time) {
         UUID userUuid = label.userUuid();
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         "WITH \n" +
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V30(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V36(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -933,7 +931,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "       EVAL_LENGTH_V5(?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
-                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V21(word_code) AS r_code \n" +
+                        "   SELECT entry_uuid AS uuid, EVAL_CODES_V23(word_code) AS r_code \n" +
                         "   FROM labeled_words_scan_raw \n" +
                         "   WHERE word_code >-1 \n" +
                         "   GROUP BY entry_uuid \n" +
@@ -951,9 +949,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     private List<Entry> searchByNoneOfLabelsBefore(String pattern, List<Entry.Label> labels, LocalDateTime time) {
         UUID userUuid = labels.get(0).userUuid();
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsBeforeTime.getFor(labels),
                         pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());
@@ -965,9 +963,9 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     private List<Entry> searchByNoneOfLabelsAfterOrEqual(String pattern, List<Entry.Label> labels, LocalDateTime time) {
         UUID userUuid = labels.get(0).userUuid();
-        List<UuidAndResultCode> entryUuidsCodes = super.currentTransaction()
+        List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
-                        UuidAndResultCode::new,
+                        UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsAfterOrEqualTime.getFor(labels),
                         pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());

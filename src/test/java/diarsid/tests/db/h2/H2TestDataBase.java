@@ -50,7 +50,7 @@ public class H2TestDataBase implements TestDataBase {
 
     public static class TcpServer {
 
-        public static final String PORT = "53489";
+        public static final String PORT = "53487";
 
         public static class Start {
 

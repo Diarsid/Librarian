@@ -189,4 +189,19 @@ public class LengthTest {
         testLength("drs", "diarsid", true);
     }
 
+    @Test
+    public void test_drklalver_dracula() {
+        testLength("drklalver", "dracula", true);
+    }
+
+    @Test
+    public void test_drklalver_draculas() {
+        testLength("drklalver", "draculas", true);
+    }
+
+    @Test
+    public void test_drklalver_lover() {
+        testLength("drklalver", "lover", true);
+    }
+
 }

@@ -80,7 +80,7 @@ public class SearchImpl implements Search {
 
                 patternsToEntries.save(newRelations);
 
-                foundRelations = union(newRelations, oldRelations);
+                foundRelations = unite(newRelations, oldRelations);
             }
         }
         else {
@@ -133,7 +133,7 @@ public class SearchImpl implements Search {
 
                 patternsToEntries.save(newRelations);
 
-                foundRelations = union(newRelations, oldRelations);
+                foundRelations = unite(newRelations, oldRelations);
             }
         }
         else {
@@ -191,7 +191,7 @@ public class SearchImpl implements Search {
                         List<Entry> freshEntriesWithoutRelation = findEntriesWithoutRelations(freshEntries, freshEntriesStoredRelations);
 
                         if ( freshEntriesWithoutRelation.isEmpty() ) {
-                            choices.assertActual(storedChoice);
+                            choices.actualize(storedChoice);
                             return Optional.of(storedChoice.patternToEntry());
                         }
                         else {
@@ -201,7 +201,11 @@ public class SearchImpl implements Search {
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
-                            List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
+
+                            List<PatternToEntry> allRelations = unite(
+                                    freshEntriesNewRelations,
+                                    freshEntriesStoredRelations,
+                                    oldEntriesRelations);
 
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
@@ -212,7 +216,7 @@ public class SearchImpl implements Search {
                                         int chosenIndex = userChoice.chosenVariantIndex();
                                         PatternToEntry chosenRelation = allRelations.get(chosenIndex);
                                         if ( storedChoice.is(chosenRelation) ) {
-                                            choices.assertActual(storedChoice);
+                                            choices.actualize(storedChoice);
                                             return Optional.of(chosenRelation);
                                         }
                                         else {
@@ -257,7 +261,7 @@ public class SearchImpl implements Search {
                     List<PatternToEntry> newRelations = algorithmAdapter.analyze(storedPattern, entriesWithoutRelations, now);
                     patternsToEntries.save(newRelations);
 
-                    allRelations = union(newRelations, storedRelations);
+                    allRelations = unite(newRelations, storedRelations);
                 }
 
                 try {
@@ -351,7 +355,7 @@ public class SearchImpl implements Search {
                         List<Entry> freshEntriesWithoutRelation = findEntriesWithoutRelations(freshEntries, freshEntriesStoredRelations);
 
                         if ( freshEntriesWithoutRelation.isEmpty() ) {
-                            choices.assertActual(storedChoice);
+                            choices.actualize(storedChoice);
                             return Optional.of(storedChoice.patternToEntry());
                         }
                         else {
@@ -361,7 +365,11 @@ public class SearchImpl implements Search {
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels, BEFORE, storedChoiceTime);
                             List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
-                            List<PatternToEntry> allRelations = union(freshEntriesNewRelations, freshEntriesStoredRelations, oldEntriesRelations);
+
+                            List<PatternToEntry> allRelations = unite(
+                                    freshEntriesNewRelations,
+                                    freshEntriesStoredRelations,
+                                    oldEntriesRelations);
 
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
@@ -372,7 +380,7 @@ public class SearchImpl implements Search {
                                         int chosenIndex = userChoice.chosenVariantIndex();
                                         PatternToEntry chosenRelation = allRelations.get(chosenIndex);
                                         if ( storedChoice.is(chosenRelation) ) {
-                                            choices.assertActual(storedChoice);
+                                            choices.actualize(storedChoice);
                                             return Optional.of(chosenRelation);
                                         }
                                         else {
@@ -417,7 +425,7 @@ public class SearchImpl implements Search {
                     List<PatternToEntry> newRelations = algorithmAdapter.analyze(storedPattern, entriesWithoutRelations, now);
                     patternsToEntries.save(newRelations);
 
-                    allRelations = union(newRelations, storedRelations);
+                    allRelations = unite(newRelations, storedRelations);
                 }
 
                 try {
@@ -510,7 +518,7 @@ public class SearchImpl implements Search {
         return mismatchCleanableCache.containsKey(entry);
     }
 
-    private List<PatternToEntry> union(
+    private List<PatternToEntry> unite(
             List<PatternToEntry> newRelations,
             List<PatternToEntry> storedRelations) {
         newRelations.addAll(storedRelations);
@@ -520,7 +528,7 @@ public class SearchImpl implements Search {
         return result;
     }
 
-    private List<PatternToEntry> union(
+    private List<PatternToEntry> unite(
             List<PatternToEntry> freshEntiresNewRelations,
             List<PatternToEntry> freshEntriesStoredRelations,
             List<PatternToEntry> oldEntriesRelations) {

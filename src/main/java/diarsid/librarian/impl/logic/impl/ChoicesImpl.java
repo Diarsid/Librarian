@@ -157,7 +157,7 @@ public class ChoicesImpl extends ThreadBoundTransactional implements Choices {
     }
 
     @Override
-    public void assertActual(PatternToEntryChoice choice) {
+    public void actualize(PatternToEntryChoice choice) {
         checkMustBeStored(choice);
 
         choice.actualize();

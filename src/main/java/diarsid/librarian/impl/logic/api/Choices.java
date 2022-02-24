@@ -21,5 +21,5 @@ public interface Choices {
 
     void removeAllBy(Entry entry);
 
-    void assertActual(PatternToEntryChoice choice);
+    void actualize(PatternToEntryChoice choice);
 }

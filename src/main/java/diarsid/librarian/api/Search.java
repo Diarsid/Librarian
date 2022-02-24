@@ -13,6 +13,13 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 
 public interface Search {
 
+    public interface DecisionsObserver {
+
+        default void entriesFound(List<Entry> entries) {}
+
+        default void entriesAssessed(List<Entry> entries, List<PatternToEntry> relations) {}
+    }
+
     List<PatternToEntry> findAllBy(User user, String pattern);
 
     List<PatternToEntry> findAllBy(User user, String pattern, Entry.Label.Matching matching, List<Entry.Label> labels);

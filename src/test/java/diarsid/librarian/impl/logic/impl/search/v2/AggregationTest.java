@@ -4,12 +4,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV19;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV20;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV21;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV23;
+import diarsid.librarian.impl.logic.impl.search.UuidAndAggregationCode;
 import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
-import diarsid.librarian.impl.logic.impl.search.charscan.UuidAndResultCode;
-import diarsid.librarian.tests.model.WordCode;
+import diarsid.librarian.tests.model.WordMatchingCode;
 import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import static java.util.UUID.randomUUID;
 
 import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.CURRENT_VERSION;
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.describe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -27,25 +24,26 @@ public class AggregationTest {
 
     static Logger log = LoggerFactory.getLogger(AggregationTest.class);
 
-    H2AggregateFunctionForAnalyzeV21 aggregator = new H2AggregateFunctionForAnalyzeV21();
+    H2AggregateFunctionForAnalyzeV23 aggregator = new H2AggregateFunctionForAnalyzeV23();
+    PatternToWordMatching matching = CURRENT_VERSION;
     String pattern;
     Boolean expectOk;
     List<String> words;
-    List<WordCode> wordCodes = new ArrayList<>();
+    List<WordMatchingCode> wordCodes = new ArrayList<>();
     long resultCode;
-    UuidAndResultCode uuidAndResultCode;
+    UuidAndAggregationCode uuidAndAggregationCode;
 
     void analyze() throws SQLException {
         MultilineMessage report = new MultilineMessage("", "   ");
         report.newLine().add("pattern : ").add(pattern);
 
         for ( String word : words ) {
-            long code = CURRENT_VERSION.evaluate(pattern, word);
-            wordCodes.add(new WordCode(word, code));
-            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(describe(code));
+            long code = matching.evaluate(pattern, word);
+            wordCodes.add(new WordMatchingCode(word, code));
+            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(matching.describe(code).toString());
         }
 
-        for ( WordCode wordCode : wordCodes) {
+        for ( WordMatchingCode wordCode : wordCodes) {
             if ( wordCode.code > 0 ) {
                 aggregator.add(wordCode.code);
             }
@@ -53,13 +51,13 @@ public class AggregationTest {
 
         resultCode = aggregator.getResult();
         if ( resultCode > -1 ) {
-            uuidAndResultCode = new UuidAndResultCode(randomUUID(), resultCode);
-            assertThat(uuidAndResultCode.missed).isEqualTo(aggregator.missed());
-            assertThat(uuidAndResultCode.overlaps).isEqualTo(aggregator.overlaps());
-            assertThat(uuidAndResultCode.patternLength).isEqualTo(aggregator.patternLength());
+            uuidAndAggregationCode = new UuidAndAggregationCode(randomUUID(), resultCode);
+            assertThat(uuidAndAggregationCode.missed).isEqualTo(aggregator.missed());
+            assertThat(uuidAndAggregationCode.overlaps).isEqualTo(aggregator.overlaps());
+            assertThat(uuidAndAggregationCode.rateSum).isEqualTo(aggregator.rateSum());
         }
         else {
-            var reason = H2AggregateFunctionForAnalyzeV19
+            var reason = H2AggregateFunctionForAnalyzeV23
                     .RejectionReason
                     .findByValue((int) resultCode)
                     .map(Enum::name)
@@ -133,6 +131,19 @@ public class AggregationTest {
                 "of",
                 "old");
         expectOk = false;
+        analyze();
+    }
+
+
+
+    @Test
+    public void test_byjrrtolk() throws Exception {
+        pattern = "byjrrtolk";
+        words = List.of(
+                "by",
+                "jrr",
+                "tolkien");
+        expectOk = true;
         analyze();
     }
 
@@ -245,6 +256,30 @@ public class AggregationTest {
     }
 
     @Test
+    public void test_drklalver_1() throws Exception {
+        pattern = "drklalver";
+        words = List.of("draculas", "lover");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_drklalver_2() throws Exception {
+        pattern = "drklalver";
+        words = List.of("draculas", "dracula", "lover");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_romeries() throws Exception {
+        pattern = "romeries";
+        words = List.of("rome", "rise");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
     public void test_lororng() throws Exception {
         pattern = "lororng";
         words = List.of(
@@ -264,6 +299,87 @@ public class AggregationTest {
                 "lord",
                 "of",
                 "rings", "by", "rob", "inglis", "and", "jrr", "tolkien", "alan", "lee");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_tolosvirtl() throws Exception {
+        pattern = "tolosvirtl";
+        words = List.of(
+                "tools",
+                "lvirtualization");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_kwisahaderh() throws Exception {
+        pattern = "kwisahaderh";
+        words = List.of(
+                "kwisatz",
+                "haderach",
+                "is",
+                "desire",
+                "had",
+                "aharkonnen",
+                "have",
+                "her",
+                "adaughter",
+                "desert",
+                "another",
+                "has",
+                "ha",
+                "hebrew",
+                "derekh");
+
+        expectOk = true;
+        analyze();
+    }
+
+//    too much 7
+//    P:
+//        4 : The Last Hours of Ancient Sunlight: The Fate of the World and What We Can Do Before It's Too Late by Neale Donald Walsch and Thom Hartmann, and Joseph Chilton Pearce
+//    result:80015402012000403 pos:122117777 rateSum:154 missed:0 span-missed:4 overlaps:3 words:2 wordsLength:12
+//     : 10909208010804 : pattern_L=9, word_L=8, found=4, match_Ix=1, match_Span=8, rate=92
+//     : 10906204000403 : pattern_L=9, word_L=4, found=3, match_Ix=0, match_Span=4, rate=62
+    @Test
+    public void test_whltwhtmn() throws Exception {
+        pattern = "whltwhtmn";
+        words = List.of(
+                "hartmann",
+                "what");
+        expectOk = true;
+        analyze();
+    }
+
+//    too much 7
+//            P:lorofrng
+//            51 : L'Étranger by Albert Camus
+//    result:80009201009000400 pos:11117777 rateSum:92 missed:0 span-missed:4 overlaps:0 words:1 wordsLength:9
+//    létranger : 10809209000804 : pattern_L=8, word_L=9, found=4, match_Ix=0, match_Span=8, rate=92
+    @Test
+    public void test_lorofrng() throws Exception {
+        pattern = "lorofrng";
+        words = List.of(
+                "létranger");
+        expectOk = true;
+        analyze();
+    }
+
+//    incorrect positions row:
+//            0 : The Sacred Art of Lovingkindness: Preparing to Practice (The Art of Spiritual Living) by Rami M. Shapiro
+//    result:80020703017000101 pos:1111211117 rateSum:207 missed:0 span-missed:1 overlaps:1 words:3 wordsLength:17
+//    spiritual : 11010109040605 : pattern_L=10, word_L=9, found=5, match_Ix=4, match_Span=6, rate=101
+//    living : 11006206020503 : pattern_L=10, word_L=6, found=3, match_Ix=2, match_Span=5, rate=62
+//    to : 11004402000202 : pattern_L=10, word_L=2, found=2, match_Ix=0, match_Span=2, rate=44
+    @Test
+    public void test________() throws Exception {
+        pattern = "????????";
+        words = List.of(
+                "spiritual",
+                "living",
+                "to");
         expectOk = true;
         analyze();
     }

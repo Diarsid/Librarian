@@ -7,6 +7,7 @@ import diarsid.support.objects.CommonEnum;
 public interface UserChoice {
 
     enum Decision implements CommonEnum<Decision> {
+
         DONE(true),
         NOT_DONE(false),
         REJECTION(false);
@@ -15,12 +16,13 @@ public interface UserChoice {
             this.hasIndex = hasIndex;
         }
 
-        public boolean hasIndex;
+        public final boolean hasIndex;
     }
 
     Decision decision();
 
     /*
+    By contract, it must return index of a variant, chosen by user. Should return:
     < 0 when this.type() returns REJECTION or NOT_DONE
     >= 0 when DONE
      */
