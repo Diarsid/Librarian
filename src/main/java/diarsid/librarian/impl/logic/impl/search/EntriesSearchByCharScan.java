@@ -1,9 +1,9 @@
 package diarsid.librarian.impl.logic.impl.search;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.SqlHistory;
@@ -19,10 +19,11 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
 import static diarsid.support.model.Unique.uuidsOf;
-import static diarsid.support.objects.collections.CollectionUtils.isNotEmpty;
 
 public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries implements EntriesSearchByPattern {
 
+    private final ResultsFiltration resultsFiltration;
+    private final Consumer<List<UUID>> rejected;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAnyOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByAllOfLabels;
     private final StringCacheForRepeatedSeparatedPrefixSuffix sqlSelectEntriesUuidsByNoneOfLabels;
@@ -35,6 +36,17 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     public EntriesSearchByCharScan(Jdbc jdbc, UuidSupplier uuidSupplier) {
         super(jdbc, uuidSupplier);
+        this.resultsFiltration = new ResultsLoggingWrapper(new ResultsFiltrationV1());
+        this.rejected = (entries) -> {
+            List<String> ignoreWithMissed = entries
+                    .stream()
+                    .map(uuidCode -> "ignore entry '" + uuidCode + "' due to missed")
+                    .collect(toList());
+            SqlHistory history = this.currentTransaction().sqlHistory();
+            if ( nonNull(history) ) {
+                history.comment(ignoreWithMissed);
+            }
+        };
 
         this.sqlSelectEntriesUuidsByAnyOfLabels = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "WITH \n" +
@@ -452,39 +464,6 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
         }
     }
 
-    private List<UUID> filterAll(List<UuidAndAggregationCode> uuidAndAggregationCodes) {
-        List<UUID> entriesWithoutMissed = new ArrayList<>();
-        List<UUID> entriesWithMissed = new ArrayList<>();
-
-        UUID uuid;
-        for ( UuidAndAggregationCode uuidAndAggregationCode : uuidAndAggregationCodes) {
-            uuid = uuidAndAggregationCode.uuid;
-            if ( uuidAndAggregationCode.hasMissed() ) {
-                entriesWithMissed.add(uuid);
-            }
-            else {
-                entriesWithoutMissed.add(uuid);
-            }
-        }
-
-        if ( entriesWithoutMissed.isEmpty() ) {
-            return entriesWithMissed;
-        }
-
-        if ( isNotEmpty(entriesWithMissed) ) {
-            List<String> ignoreWithMissed = entriesWithMissed
-                    .stream()
-                    .map(uuidCode -> "ignore entry '" + uuidCode + "' due to missed")
-                    .collect(toList());
-            SqlHistory history = this.currentTransaction().sqlHistory();
-            if ( nonNull(history) ) {
-                history.comment(ignoreWithMissed);
-            }
-        }
-
-        return entriesWithoutMissed;
-    }
-
     private List<Entry> searchBy(User user, String pattern) {
         List<UuidAndAggregationCode> entryUuidsCodes = super.currentTransaction()
                 .doQueryAndStream(
@@ -517,7 +496,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, transform(pattern), user.uuid())
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -553,7 +532,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, label.uuid(), label.userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -566,7 +545,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -579,7 +558,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -618,7 +597,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -657,7 +636,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -695,7 +674,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, label.uuid(), label.userUuid(), transform(pattern), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -733,7 +712,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, label.uuid(), label.userUuid(), transform(pattern), time)
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -746,7 +725,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -759,7 +738,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -772,7 +751,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -785,7 +764,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -831,7 +810,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, label.uuid(), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -846,7 +825,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -894,7 +873,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, label.uuid(), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -942,7 +921,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, label.uuid(), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -956,7 +935,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }
@@ -970,7 +949,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
                 .collect(toList());
 
-        List<UUID> entryUuids = this.filterAll(entryUuidsCodes);
+        List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
 
         return super.getEntriesBy(entryUuids);
     }

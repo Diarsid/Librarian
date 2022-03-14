@@ -42,7 +42,7 @@ public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgor
 
     @Override
     public int compare(float weight1, float weight2) {
-        return Float.compare(weight1, weight2) * -1;
+        return Float.compare(weight1, weight2);
     }
 
     @Override

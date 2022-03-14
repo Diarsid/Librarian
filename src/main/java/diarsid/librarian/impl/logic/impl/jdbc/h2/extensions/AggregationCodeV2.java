@@ -1,8 +1,14 @@
 package diarsid.librarian.impl.logic.impl.jdbc.h2.extensions;
 
+import java.util.Comparator;
+
 import diarsid.jdbc.api.sqltable.rows.Row;
 
 public class AggregationCodeV2 extends AggregationCode {
+
+    public static final Comparator<AggregationCodeV2> COMPARATOR_BY_FACTORS = Comparator
+            .comparingInt(AggregationCodeV2::negativeFactor)
+            .thenComparingLong(code0 -> code0.rateSum);
 
     /*
      * template '10 aa 0 bb 0 cc 0 dd' where:
@@ -94,5 +100,34 @@ public class AggregationCodeV2 extends AggregationCode {
 
     public boolean hasMissed() {
         return missed > 0;
+    }
+
+    public String describe() {
+        return "AggregationCodeV2{" +
+                "rateSum=" + rateSum +
+                ", words=" + words +
+                ", wordsLengthSum=" + wordsLengthSum +
+                ", missed=" + missed +
+                ", wordSpaces=" + wordSpaces +
+                ", overlaps=" + overlaps +
+                '}';
+    }
+
+    public int negativeFactor() {
+        int factor = 0;
+
+        if ( missed > 0 ) {
+            factor++;
+        }
+
+        if ( overlaps > 0 ) {
+            factor++;
+        }
+
+        if ( wordSpaces > 0 ) {
+            factor++;
+        }
+
+        return factor;
     }
 }

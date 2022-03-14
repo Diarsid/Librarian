@@ -22,6 +22,7 @@ import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.librarian.api.model.meta.UserScoped.checkMustBelongToUser;
@@ -58,7 +59,11 @@ public class SearchImpl implements Search {
     }
 
     @Override
-    public List<PatternToEntry> findAllBy(User user, String patternString) {
+    public List<PatternToEntry> findAllBy(
+            User user,
+            String patternString,
+            Observer observer) {
+        boolean hasObserver = nonNull(observer);
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, patternString);
         List<PatternToEntry> foundRelations;
 
@@ -66,10 +71,22 @@ public class SearchImpl implements Search {
         if ( possiblyStoredPattern.isPresent() ) {
             pattern = possiblyStoredPattern.get();
 
+            if ( hasObserver ) {
+                observer.patternFound(pattern);
+            }
+
             List<PatternToEntry> oldRelations = patternsToEntries.findBy(pattern);
+
+            if ( hasObserver ) {
+                observer.relationsFound(oldRelations);
+            }
 
             List<Entry> matchingEntriesAfterPattern = entriesSearchByPattern.findBy(
                     user, pattern.string(), AFTER_OR_EQUAL, pattern.createdAt());
+
+            if ( hasObserver ) {
+                observer.entriesFound(matchingEntriesAfterPattern);
+            }
 
             if ( matchingEntriesAfterPattern.isEmpty() ) {
                 foundRelations = oldRelations;
@@ -77,6 +94,10 @@ public class SearchImpl implements Search {
             else {
                 LocalDateTime now = now();
                 List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntriesAfterPattern, now);
+
+                if ( hasObserver ) {
+                    observer.entriesAssessed(matchingEntriesAfterPattern, newRelations);
+                }
 
                 patternsToEntries.save(newRelations);
 
@@ -88,13 +109,26 @@ public class SearchImpl implements Search {
 
             List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, patternString);
 
+            if ( hasObserver ) {
+                observer.entriesFound(matchingEntries);
+            }
+
             if ( matchingEntries.isEmpty() ) {
                 foundRelations = emptyList();
             }
             else {
                 List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntries, pattern.createdAt());
 
-                patternsToEntries.save(newRelations);
+                if ( hasObserver ) {
+                    observer.entriesAssessed(matchingEntries, newRelations);
+                }
+
+                if ( newRelations.isEmpty() ) {
+                    foundRelations = emptyList();
+                }
+                else {
+                    patternsToEntries.save(newRelations);
+                }
 
                 foundRelations = newRelations;
             }
@@ -105,12 +139,18 @@ public class SearchImpl implements Search {
 
     @Override
     public List<PatternToEntry> findAllBy(
-            User user, String patternString, Entry.Label.Matching matching, List<Entry.Label> labels) {
+            User user,
+            String patternString,
+            Entry.Label.Matching matching,
+            List<Entry.Label> labels,
+            Observer observer) {
         if ( labels.isEmpty() ) {
-            return this.findAllBy(user, patternString);
+            return this.findAllBy(user, patternString, observer);
         }
 
         checkMustBelongToUser(user, labels);
+
+        boolean hasObserver = nonNull(observer);
 
         Optional<Pattern> possiblyStoredPattern = patterns.findBy(user, patternString, matching, labels);
         List<PatternToEntry> foundRelations;
@@ -119,10 +159,22 @@ public class SearchImpl implements Search {
         if ( possiblyStoredPattern.isPresent() ) {
             pattern = possiblyStoredPattern.get();
 
+            if ( hasObserver ) {
+                observer.patternFound(pattern);
+            }
+
             List<PatternToEntry> oldRelations = patternsToEntries.findBy(pattern);
+
+            if ( hasObserver ) {
+                observer.relationsFound(oldRelations);
+            }
 
             List<Entry> matchingEntriesAfterPattern = entriesSearchByPattern.findBy(
                     user, pattern.string(), matching, labels, AFTER_OR_EQUAL, pattern.createdAt());
+
+            if ( hasObserver ) {
+                observer.entriesFound(matchingEntriesAfterPattern);
+            }
 
             if ( matchingEntriesAfterPattern.isEmpty() ) {
                 foundRelations = oldRelations;
@@ -130,6 +182,10 @@ public class SearchImpl implements Search {
             else {
                 LocalDateTime now = now();
                 List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntriesAfterPattern, now);
+
+                if ( hasObserver ) {
+                    observer.entriesAssessed(matchingEntriesAfterPattern, newRelations);
+                }
 
                 patternsToEntries.save(newRelations);
 
@@ -142,6 +198,11 @@ public class SearchImpl implements Search {
             LocalDateTime newRelationsCreationTime;
             if ( existingPattern.isPresent() ) {
                 pattern = existingPattern.get();
+
+                if ( hasObserver ) {
+                    observer.patternFound(pattern);
+                }
+
                 newRelationsCreationTime = now();
             }
             else {
@@ -151,11 +212,19 @@ public class SearchImpl implements Search {
 
             List<Entry> matchingEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels);
 
+            if ( hasObserver ) {
+                observer.entriesFound(matchingEntries);
+            }
+
             if ( matchingEntries.isEmpty() ) {
                 foundRelations = emptyList();
             }
             else {
                 List<PatternToEntry> newRelations = algorithmAdapter.analyze(pattern, matchingEntries, newRelationsCreationTime);
+
+                if ( hasObserver ) {
+                    observer.entriesAssessed(matchingEntries, newRelations);
+                }
 
                 patternsToEntries.save(newRelations);
 

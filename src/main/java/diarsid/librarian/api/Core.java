@@ -47,6 +47,7 @@ import static diarsid.jdbc.api.Jdbc.WhenNoTransactionThen.IF_NO_TRANSACTION_OPEN
 public interface Core {
 
     enum Mode implements CommonEnum<Mode> {
+
         PRODUCTION,
         DEVELOPMENT;
 

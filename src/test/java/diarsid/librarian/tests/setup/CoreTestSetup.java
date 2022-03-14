@@ -60,6 +60,7 @@ public class CoreTestSetup {
     public final RealUser user;
     public final Jdbc jdbc;
     public final TestDataBase dataBase;
+    public final StringsComparisonAlgorithm algorithm;
 
     CoreTestSetup(H2TestDataBase.Type type, DataImport... dataImports) throws SQLException, IOException {
         H2TestDataBase dataBase = new H2TestDataBase(type, "search");
@@ -73,7 +74,7 @@ public class CoreTestSetup {
         Pools pools = new Pools();
         Similarity similarity = Similarity.createInstance(configuration);
         WeightAnalyze weightAnalyze = new WeightAnalyzeReal(configuration, similarity, pools);
-        SceptreStringsComparisonAlgorithm algorithm = new SceptreStringsComparisonAlgorithm(weightAnalyze);
+        this.algorithm = new SceptreStringsComparisonAlgorithm(weightAnalyze);
 
         UserProvidedResources impl = new UserProvidedResources() {
 

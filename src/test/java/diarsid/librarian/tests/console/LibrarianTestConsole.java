@@ -1,26 +1,27 @@
 package diarsid.librarian.tests.console;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 import diarsid.console.api.Console;
 import diarsid.console.api.format.ConsoleFormat;
 import diarsid.console.api.io.Command;
-import diarsid.console.api.io.ConsoleInteraction;
 import diarsid.console.api.io.operations.OperationLogic;
 import diarsid.console.impl.building.ConsoleBuilding;
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcTransaction;
 import diarsid.librarian.api.Core;
+import diarsid.librarian.api.Search;
 import diarsid.librarian.api.model.Entry;
+import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.tests.setup.CoreTestSetup;
+import diarsid.support.strings.MultilineMessage;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
@@ -30,7 +31,6 @@ import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
 import static diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton.server;
-import static diarsid.support.configuration.Configuration.configure;
 import static diarsid.support.model.Joined.distinctLeftsOf;
 
 public class LibrarianTestConsole {
@@ -62,6 +62,12 @@ public class LibrarianTestConsole {
         User user = setup.user;
         Jdbc jdbc = setup.jdbc;
 
+        Comparator<PatternToEntry> comparator = (o1, o2) -> {
+            return setup.algorithm.compare(o1.weight(), o2.weight());
+        };
+
+        Search.Observer observer = new LoggingSearchObserver(comparator);
+
         OperationLogic findByMatching = (interaction, command) -> {
             JdbcTransaction tx = jdbc.createTransaction();
 
@@ -72,7 +78,7 @@ public class LibrarianTestConsole {
             Entry.Label.Matching matching = matchingOfFlag(labelsMode);
             List<Entry.Label> labels = core.store().labels().getOrSave(user, labelNames);
 
-            List<PatternToEntry> entries = core.search().findAllBy(user, arg, matching, labels);
+            List<PatternToEntry> entries = core.search().findAllBy(user, arg, matching, labels, observer);
 
             if ( command.has(commitFlag) ) {
                 tx.commitAndClose();

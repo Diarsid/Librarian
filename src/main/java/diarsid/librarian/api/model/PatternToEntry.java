@@ -41,4 +41,12 @@ public interface PatternToEntry extends Unique, Storable, CreatedAt, Joined<Patt
         this.pattern().checkHasSameUser(this.entry());
         return this.entry().userUuid();
     }
+
+    default boolean has(Pattern pattern) {
+        return this.pattern().equals(pattern);
+    }
+
+    default boolean hasSamePattern(PatternToEntry other) {
+        return this.has(other.pattern());
+    }
 }

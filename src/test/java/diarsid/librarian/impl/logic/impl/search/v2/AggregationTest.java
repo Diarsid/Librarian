@@ -383,4 +383,18 @@ public class AggregationTest {
         expectOk = true;
         analyze();
     }
+
+    // TODO test
+    @Test
+    public void test_tolknlororing() throws Exception {
+        pattern = "tolknlororing";
+        words = List.of(
+                "lord",
+                "of",
+                "rings",
+                "tolkien");
+        expectOk = true;
+        analyze();
+    }
+
 }

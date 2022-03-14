@@ -29,7 +29,11 @@ public class AlgorithmToModelAdapter implements Comparator<PatternToEntry> {
     @Override
     /* it is implied and crucial that a.pattern.equals(b.pattern) return TRUE */
     public int compare(PatternToEntry a, PatternToEntry b) {
-        return Float.compare(a.weight(), b.weight());
+        if ( a.hasSamePattern(b) ) {
+            return Float.compare(a.weight(), b.weight());
+        }
+
+        throw new IllegalArgumentException("Given relations has different patterns - cannot be compared!");
     }
 
     public PatternToEntry analyze(Pattern pattern, Entry entry, LocalDateTime time) {
