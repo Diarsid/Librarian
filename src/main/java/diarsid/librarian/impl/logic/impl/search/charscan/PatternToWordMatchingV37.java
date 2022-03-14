@@ -1154,6 +1154,15 @@ public final class PatternToWordMatchingV37 implements PatternToWordMatchingCode
             logln("   +15 longest word diff = 1");
         }
 
+        if ( found == 2 && wordLength == 3 ) {
+            if ( matchIndex == 0 ) {
+                if ( diffInWordSum == 1 ) {
+                    rate = rate + 10;
+                    logln("   +10 found=2 wordL=3");
+                }
+            }
+        }
+
 
         if ( found == 3 && order == found && backwardMatches == 0 ) {
             if ( matchInPatternStrong == 2 || strongWordEnd ) {

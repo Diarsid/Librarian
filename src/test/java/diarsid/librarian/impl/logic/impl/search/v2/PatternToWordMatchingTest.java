@@ -1418,49 +1418,41 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_romeries_recipes_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_others_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_memory_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_revised_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_mysteries_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_episode_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_renaissance_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
     @Test
     public void test_romeries_modern_false() {
-//        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
