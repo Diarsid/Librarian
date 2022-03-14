@@ -1,7 +1,7 @@
 -- generated 
---   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV36
---   at 2022-02-18T13:15:48.887242200
-CREATE ALIAS EVAL_MATCHING_V36 AS $$
+--   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV37
+--   at 2022-03-14T17:05:38.277622300
+CREATE ALIAS EVAL_MATCHING_V37 AS $$
     long evaluate(String pattern, String word) {
         //logln("%s : PATTERN:%s  <--->  WORD:%s", this.nameAndVersion(), pattern, word);
 
@@ -131,6 +131,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
         int diffInPattern = -1;
         int diffInWord = -1;
         boolean iterationIsStrong = false;
+        boolean iterationIsWeak = false;
 
         int longestDiffInWord = -1;
 
@@ -156,6 +157,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
             diffInPattern = -1;
             diffInWord = -1;
             iterationIsStrong = false;
+            iterationIsWeak = false;
 
             if ( wcInPattern < 0 ) {
                 if ( i == 0 ) {
@@ -484,6 +486,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                     if ( diffInWordSum >= 3 && matchFull < 2 ) {
                                         //logln("        weak++ [?]");
                                         matchInPatternWeak++;
+                                        iterationIsWeak = true;
                                         if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                             matchInPatternWeakTooMuchNoStrong = true;
                                             //logln("        too weak, no strong");
@@ -532,6 +535,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                     }
                                     else {
                                         matchInPatternWeak++;
+                                        iterationIsWeak = true;
                                         //logln("        weak++ [1]");
                                         if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                             matchInPatternWeakTooMuchNoStrong = true;
@@ -554,6 +558,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                 }
                                 else {
                                     matchInPatternWeak++;
+                                    iterationIsWeak = true;
                                     //logln("        weak++ [2]");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
@@ -576,6 +581,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                 }
                                 else {
                                     matchInPatternWeak++;
+                                    iterationIsWeak = true;
                                     //logln("        weak++ [3]");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
@@ -597,6 +603,12 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                 //logln("      WORD:%s[PATTERN:%s] too far [4], ignore and continue!", wc, wcInPattern);
                                 order--;
                                 //logln("      order--");
+                                if ( iterationIsStrong ) {
+                                    matchInPatternStrong--;
+                                }
+                                if ( iterationIsWeak ) {
+                                    matchInPatternWeak--;
+                                }
                                 continue wordCharsIterating;
                             }
                         }
@@ -615,6 +627,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                     || prevCharResult == PREV_CHAR_FOUND
                                     || prevCharResult == PREV_CHAR_NOT_FOUND ) {
                                 matchInPatternWeak++;
+                                iterationIsWeak = true;
                                 //logln("        weak [4]");
                                 if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                     matchInPatternWeakTooMuchNoStrong = true;
@@ -627,6 +640,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
 
                         boolean diffMoreThanOne = diffInPattern > 1;
                         int wcPrevInPatternN = wcPrevInPattern;
+                        boolean gapNotFixed = true;
                         gapFixing: while ( diffMoreThanOne && cPrevIndexBeforeCIndex ) {
                             gaps++;
                             //logln("      gap between char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s]!", wc, wcInPattern, wcPrev, wcPrevInPattern);
@@ -664,6 +678,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                 //logln("      gap fixed char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s] - PATTERN:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
                                 gaps--;
                                 //logln("      MATCH, gap fixed");
+                                gapNotFixed = false;
                                 if ( diffInWord == 1 ) {
                                     //logln("      FULL MATCH [2]");
                                     matchFull++;
@@ -688,6 +703,30 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                     }
                                     prevCharMatchStrength = PREV_CHAR_STRONG;
                                     prevCharResult = PREV_CHAR_MATCH_FULL;
+                                }
+                            }
+                        }
+
+                        if ( gapNotFixed ) {
+                            int patternRemnant = patternLength - wcInPattern - 1;
+                            if ( lengthRatioType == LENGTHS_APPROX_EQUAL || lengthRatioType == LENGTHS_DIFF_INSIGNIFICANT ) {
+                                if ( gap > 1 && gap > patternRemnant ) {
+                                    int iNext = word.indexOf(wc, i + 1);
+                                    if ( iNext > -1 ) {
+                                        int wordRemnant = wordLength - i - 1;
+                                        if ( wordRemnant >= patternRemnant ) {
+                                            //logln("      WORD:%s[PATTERN:%s] too far [5], ignore and continue!", wc, wcInPattern);
+                                            order--;
+                                            //logln("      order--");
+                                            if ( iterationIsStrong ) {
+                                                matchInPatternStrong--;
+                                            }
+                                            if ( iterationIsWeak ) {
+                                                matchInPatternWeak--;
+                                            }
+                                            continue wordCharsIterating;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -753,6 +792,7 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
                                 //logln("      only 1 char remain in word");
                                 if ( prevCharMatchStrength == PREV_CHAR_STRONG ) {
                                     matchInPatternWeak++;
+                                    iterationIsWeak = true;
                                     //logln("        weak++ strong--");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
@@ -1103,6 +1143,15 @@ CREATE ALIAS EVAL_MATCHING_V36 AS $$
         if ( diffInPatternSum == 0 && diffInWordSum < 3 && longestDiffInWord == 1 && matchInPatternStrong > 0 ) {
             rate = rate + 15;
             //logln("   +15 longest word diff = 1");
+        }
+
+        if ( found == 2 && wordLength == 3 ) {
+            if ( matchIndex == 0 ) {
+                if ( diffInWordSum == 1 ) {
+                    rate = rate + 10;
+                    //logln("   +10 found=2 wordL=3");
+                }
+            }
         }
 
 
