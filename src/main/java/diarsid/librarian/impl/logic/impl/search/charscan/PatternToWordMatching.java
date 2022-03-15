@@ -9,7 +9,7 @@ import static diarsid.support.objects.references.References.simplePossibleButEmp
 
 public interface PatternToWordMatching extends H2SqlFunctionScriptInJava {
 
-    PatternToWordMatching CURRENT_VERSION = new PatternToWordMatchingV37();
+    PatternToWordMatching CURRENT_VERSION = new PatternToWordMatchingV38();
 
     Possible<Boolean> logEnabled = simplePossibleButEmpty();
 

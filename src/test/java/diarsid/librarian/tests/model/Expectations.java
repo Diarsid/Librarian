@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import diarsid.librarian.api.model.Entry;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -85,6 +86,30 @@ public class Expectations {
         return this;
     }
 
+    public Expectations containingAllStringsInAtLeastOneEntry(String... entryStrings) {
+        this.someEntries();
+        this.addNewExpectation(entries -> {
+            List<String> strings = asList(entryStrings);
+
+            boolean contains = entries
+                    .stream()
+                    .map(Entry::string)
+                    .anyMatch(entry -> {
+                        String entryLower = entry.toLowerCase();
+                        boolean entryOk = strings
+                                .stream()
+                                .allMatch(string -> {
+                                    boolean stringFound = entryLower.contains(string.toLowerCase());
+                                    return stringFound;
+                                });
+                        return entryOk;
+                    });
+
+            assertThat(contains).isTrue();
+        });
+        return this;
+    }
+
     public Expectations containingAllStringsInMostOfEntries(String... entryStrings) {
         this.someEntries();
         this.addNewExpectation(entries -> {
@@ -103,7 +128,38 @@ public class Expectations {
                 if ( minority == 0 ) {
                     minority = 1;
                 }
-                assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(minority);
+                assertThat(entriesNotContainingAllOfStrings).hasSizeLessThanOrEqualTo(minority);
+            }
+        });
+        return this;
+    }
+
+    public Expectations containingAllStringsInMostOfEntries(List<String> strings, float rate /* [0.1 -- 0.9] */) {
+        assertThat(rate).isBetween(0.1f, 0.9f);
+        this.someEntries();
+        this.addNewExpectation(entries -> {
+            List<String> stringsLower = strings
+                    .stream()
+                    .map(s -> s.strip().trim().toLowerCase())
+                    .collect(toList());
+
+            List<String> entriesNotContainingAllOfStrings = entries
+                    .stream()
+                    .map(Entry::string)
+                    .filter(entry -> {
+                        String entryLower = entry.toLowerCase();
+                        return ! stringsLower
+                                .stream()
+                                .allMatch(stringLower -> entryLower.contains(stringLower));
+                    })
+                    .collect(toList());
+
+            if ( isNotEmpty(entriesNotContainingAllOfStrings) ) {
+                int minority = (int) (entries.size() * rate);
+                if ( minority == 0 ) {
+                    minority = 1;
+                }
+                assertThat(entriesNotContainingAllOfStrings).hasSizeLessThanOrEqualTo(minority);
             }
         });
         return this;
@@ -125,7 +181,80 @@ public class Expectations {
                 if ( minority == 0 ) {
                     minority = 1;
                 }
-                assertThat(entriesNotContainingAllOfStrings).hasSizeLessThan(minority);
+                assertThat(entriesNotContainingAllOfStrings).hasSizeLessThanOrEqualTo(minority);
+            }
+        });
+        return this;
+    }
+
+    public Expectations containingStringInSignificantCountOfEntries(String string) {
+        this.someEntries();
+        this.addNewExpectation(entries -> {
+            String lowerString = string.strip().trim().toLowerCase();
+
+            List<String> entriesContainingAllOfStrings = entries
+                    .stream()
+                    .map(Entry::string)
+                    .filter(entry -> entry.toLowerCase().contains(lowerString))
+                    .collect(toList());
+
+            int count = entriesContainingAllOfStrings.size();
+
+            if ( count == 0 ) {
+                fail();
+            }
+            else {
+                int threshold;
+                if ( entries.size() > 9 ) {
+                    threshold = 3;
+                }
+                else {
+                    threshold = 1;
+                }
+
+                if ( count < threshold ) {
+                    fail();
+                }
+            }
+        });
+        return this;
+    }
+
+    public Expectations containingStringsInSignificantCountOfEntries(String... strings) {
+        this.someEntries();
+        this.addNewExpectation(entries -> {
+            List<String> lowerStrings = stream(strings)
+                    .map(string -> string.strip().trim().toLowerCase())
+                    .collect(toList());
+
+            List<String> entriesContainingAllOfStrings = entries
+                    .stream()
+                    .map(Entry::string)
+                    .filter(entry -> {
+                        String lowerEntry = entry.toLowerCase();
+                        return lowerStrings
+                                .stream()
+                                .allMatch(lowerString -> lowerEntry.contains(lowerString));
+                    })
+                    .collect(toList());
+
+            int count = entriesContainingAllOfStrings.size();
+
+            if ( count == 0 ) {
+                fail();
+            }
+            else {
+                int threshold;
+                if ( entries.size() > 9 ) {
+                    threshold = 3;
+                }
+                else {
+                    threshold = 1;
+                }
+
+                if ( count < threshold ) {
+                    fail();
+                }
             }
         });
         return this;
@@ -182,6 +311,21 @@ public class Expectations {
                     .anyMatch(entry -> entry.toLowerCase().contains(fragment));
 
             if ( ! contains ) {
+                fail();
+            }
+        });
+        return this;
+    }
+
+    public Expectations notContainingString(String string) {
+        this.addNewExpectation(entries -> {
+            String fragment = string.toLowerCase();
+            boolean contains = entries
+                    .stream()
+                    .map(Entry::string)
+                    .anyMatch(entry -> entry.toLowerCase().contains(fragment));
+
+            if ( contains ) {
                 fail();
             }
         });

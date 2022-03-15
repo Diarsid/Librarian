@@ -231,7 +231,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V37(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V38(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -456,13 +456,13 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_jeschrstpassn() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("passion", "jesus", "christ").andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("passion", "jesus", "christ").andAssert();
     }
 
     @Test
     public void test_waltwitmn() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("walt", "whitman").andAssert();
+        entriesResult.expect().containingAllStringsInMostOfEntries("walt", "whitman").andAssert();
     }
 
     @Test
@@ -474,19 +474,19 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_waltwthmn() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("walt", "whitman").andAssert();
+        entriesResult.expect().containingAllStringsInMostOfEntries("walt", "whitman").andAssert();
     }
 
     @Test
     public void test_harmurakm() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("haruki", "murakami").andAssert();
+        entriesResult.expect().containingAllStringsInMostOfEntries("haruki", "murakami").andAssert();
     }
 
     @Test
     public void test_virtl() throws Exception {
         search();
-        entriesResult.expect().containingStringInMostOfEntries("virtual").andAssert();
+        entriesResult.expect().containingStringInSignificantCountOfEntries("virtual").andAssert();
     }
 
     @Test
@@ -618,104 +618,109 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     @Test
     public void test_romerise() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingStringsInSignificantCountOfEntries("rome", "rise").andAssert();
     }
 
     @Test
     public void test_romeries() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("rome", "rise").andAssert();
     }
 
     @Test
     public void test_immnlknt() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInEveryEntry("immanuel", "kant").andAssert();
     }
 
-    @Disabled("incorrect behavior of single-char-word 'i' ")
     @Test
     public void test_ilovyo() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInEveryEntry("i", "love", "you").andAssert();
     }
 
     @Test
     public void test_iloveyo() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInEveryEntry("i", "love", "you").andAssert();
     }
 
     @Test
     public void test_kwistz() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz").andAssert();
     }
 
     @Test
     public void test_kwistzhadrch() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwiszhedrah() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwizachaderah() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwizachederah() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwisahaderh() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwizachederahatrids() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach", "atreides").andAssert();
     }
 
     @Test
     public void test_kwizachoderah() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("kwisatz", "haderach").andAssert();
     }
 
     @Test
     public void test_kwezachoderah() throws Exception {
         search();
-        entriesResult.expect().noEntries().andAssert(); // KWezAc is too far from KWisAtz ez-is + c-tz
+        entriesResult.expect().notContainingString("kwisatz").andAssert(); // KWezAc is too far from KWisAtz ez-is + c-tz
     }
 
     @Test
     public void test_drklalver() throws Exception {
         search();
-        entriesResult.expect().someEntries().andAssert();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("dracula", "lover").andAssert();
     }
 
     @Test
     public void test_naplon() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("passion", "jesus", "christ").andAssert();
+        entriesResult.expect().containingStringInMostOfEntries("napoleon").andAssert();
     }
 
     @Test
     public void test_lancstr() throws Exception {
         search();
-        entriesResult.expect().containingAllStringsInEveryEntry("lancaster").andAssert();
+        entriesResult.expect().containingStringInSignificantCountOfEntries("lancaster").andAssert();
+    }
+
+    @Test
+    public void test_upshstnoftftclnt() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("ukrposhta", "notification", "client").andAssert();
     }
 
 }

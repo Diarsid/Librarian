@@ -1,9 +1,18 @@
--- generated 
---   by diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatchingV38
---   at 2022-03-16T00:52:53.029104400
-CREATE ALIAS EVAL_MATCHING_V38 AS $$
-    long evaluate(String pattern, String word) {
-        //logln("%s : PATTERN:%s  <--->  WORD:%s", this.nameAndVersion(), pattern, word);
+package diarsid.librarian.impl.logic.impl.search.charscan;
+
+import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.logln;
+
+public final class PatternToWordMatchingV38 implements PatternToWordMatchingCodeV2 {
+
+    @Override
+    public int version() {
+        return 38;
+    }
+
+    @Override
+    /* script */
+    public long evaluate(String pattern, String word) {
+        logln("%s : PATTERN:%s  <--->  WORD:%s", this.nameAndVersion(), pattern, word);
 
         final long CODE_BASE = 10000000000000L;
 
@@ -26,7 +35,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
             int wordInPatternIndex = pattern.indexOf(word);
             if ( wordInPatternIndex > -1 ) {
                 int rate = wordLength*10 + wordLength*7 + wordLength*5;
-                //logln("   " + rate);
+                logln("   " + rate);
                 long code = CODE_BASE;
 
                 code = code + patternLength         * 100000000000L;
@@ -39,11 +48,11 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 return code;
             }
             else if ( wordLength == 2 ) {
-                //logln("  [c]");
+                logln("  [c]");
                 return -1;
             }
             else if ( bothLength < 7 ) {
-                //logln("  [d]");
+                logln("  [d]");
                 return -1;
             }
         }
@@ -54,7 +63,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
             int patternInWordIndex = word.indexOf(pattern);
             if ( patternInWordIndex > -1 ) {
                 int rate = patternLength*10 + patternLength*7 + patternLength*5;
-                //logln("   " + rate);
+                logln("   " + rate);
                 long code = CODE_BASE;
 
                 code = code + patternLength         * 100000000000L;
@@ -67,11 +76,11 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 return code;
             }
             else if ( patternLength == 2 ) {
-                //logln("  [a]");
+                logln("  [a]");
                 return -1;
             }
             else if ( bothLength < 7 ) {
-                //logln("  [b]");
+                logln("  [b]");
                 return -1;
             }
         }
@@ -82,15 +91,15 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
         if ( diffLength < matchLength / 2 ) {
             lengthRatioType = LENGTHS_APPROX_EQUAL;
-            //logln("length diff: LENGTHS_APPROX_EQUAL");
+            logln("length diff: LENGTHS_APPROX_EQUAL");
         }
         else if ( diffLength >= matchLength / 2 && diffLength < matchLength - 1 ) {
             lengthRatioType = LENGTHS_DIFF_INSIGNIFICANT;
-            //logln("length diff: LENGTHS_DIFF_INSIGNIFICANT");
+            logln("length diff: LENGTHS_DIFF_INSIGNIFICANT");
         }
         else {
             lengthRatioType = LENGTHS_DIFF_SUBSTANTIAL;
-            //logln("length diff: LENGTHS_DIFF_SUBSTANTIAL");
+            logln("length diff: LENGTHS_DIFF_SUBSTANTIAL");
         }
 
         int firstCharMissed = 0;
@@ -161,23 +170,23 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
             if ( wcInPattern < 0 ) {
                 if ( i == 0 ) {
-                    //logln("   WORD:%s not found! ", wc, wcPrev);
+                    logln("   WORD:%s not found! ", wc, wcPrev);
                     firstCharMissed++;
                     mismatches++;
                 }
                 else if ( i == 1 ) {
-                    //logln("   WORD:%s not found! ", wc, wcPrev);
+                    logln("   WORD:%s not found! ", wc, wcPrev);
                     secondCharMissed++;
                     if ( firstCharMissed > 0 ) {
-                        //logln("      mismatches major!");
+                        logln("      mismatches major!");
                         return -1;
                     }
                 }
                 else {
-                    //logln("   WORD:%s not found after WORD:%s[PATTERN:%s] - %s : %s", wc, wcPrev, wcPrevInPattern, higlightChar(word, i), higlightChar(pattern, wcPrevInPattern));
+                    logln("   WORD:%s not found after WORD:%s[PATTERN:%s] - %s : %s", wc, wcPrev, wcPrevInPattern, higlightChar(word, i), higlightChar(pattern, wcPrevInPattern));
                     int wcInPatternWeak = pattern.indexOf(wc, firstWcInPattern);
                     if ( wcInPatternWeak < 0 ) {
-                        //logln("      WORD:%s not found from word-in-pattern beginning [PATTERN:%s]", wc, firstWcInPattern);
+                        logln("      WORD:%s not found from word-in-pattern beginning [PATTERN:%s]", wc, firstWcInPattern);
                         prevCharResult = PREV_CHAR_NOT_FOUND;
                     }
                     else {
@@ -185,7 +194,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                             int distanceFromItoWordEnd = lastInWord - i;
                             int distanceFromCPrevToC = wcPrevInPattern - wcInPatternWeak;
                             if ( distanceFromCPrevToC > distanceFromItoWordEnd ) {
-                                //logln("      WORD:%s[PATTERN:%s] too far [1]!", wc, wcInPatternWeak);
+                                logln("      WORD:%s[PATTERN:%s] too far [1]!", wc, wcInPatternWeak);
                                 break wordCharsIterating;
                             }
                             else {
@@ -197,25 +206,25 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                         (i+1)/2 > matchInPattern+1 ||
                                                         secondCharMissed > 0;
                                                 if ( backwardMatchProhibited ) {
-                                                    //logln("         WORD:%s[PATTERN:%s] backward match [+1] prohibited!",  wc, wcInPatternWeak);
+                                                    logln("         WORD:%s[PATTERN:%s] backward match [+1] prohibited!",  wc, wcInPatternWeak);
                                                 }
                                                 else {
                                                     if ( gaps > 0 ) {
-                                                        //logln("      WORD:%s[PATTERN:%s] backward match [+1] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
+                                                        logln("      WORD:%s[PATTERN:%s] backward match [+1] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
                                                         backwardMatches++;
                                                         found++;
                                                         if ( wordFirstFoundCharIndex < 0 ) {
                                                             wordFirstFoundCharIndex = i;
                                                         }
                                                         wordLastFoundCharIndex = i;
-                                                        //logln("   found++[1]");
+                                                        logln("   found++[1]");
                                                         gaps--;
 
                                                         boolean firstCharsTypo =
                                                                 wcInPatternWeak == firstWcInPattern + 1 &&
                                                                 (prevCharResult == PREV_CHAR_MATCH_PATTERN || prevCharResult == PREV_CHAR_FOUND);
                                                         if ( firstCharsTypo ) {
-                                                            //logln("        abc-acb typo!");
+                                                            logln("        abc-acb typo!");
                                                             order++;
                                                             matchInPattern++;
                                                             matchFull++;
@@ -250,12 +259,12 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                         matchFull+1 > 2 ||
                                                         secondCharMissed > 0;
                                                 if ( backwardMatch2Prohibited ) {
-                                                    //logln("         WORD:%s[PATTERN:%s] backward match [+2] prohibited!",  wc, wcInPatternWeak);
+                                                    logln("         WORD:%s[PATTERN:%s] backward match [+2] prohibited!",  wc, wcInPatternWeak);
                                                     mismatchesOnlyWord++;
                                                 }
                                                 else {
                                                     if ( gaps > 0 ) {
-                                                        //logln("      WORD:%s[PATTERN:%s] backward match [+2] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
+                                                        logln("      WORD:%s[PATTERN:%s] backward match [+2] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPattern, wcPrev, wcPrevInPattern);
                                                         wcPrevInPattern = wcInPatternWeak;
                                                         backwardMatches++;
                                                         found++;
@@ -263,7 +272,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                             wordFirstFoundCharIndex = i;
                                                         }
                                                         wordLastFoundCharIndex = i;
-                                                        //logln("   found++[2]");
+                                                        logln("   found++[2]");
                                                         gaps--;
                                                     }
                                                 }
@@ -274,7 +283,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                         }
                                         else {
                                             typoMatches++;
-                                            //logln("      WORD:%s[PATTERN:%s] typo match from word-in-pattern beginning", wc, wcInPatternWeak);
+                                            logln("      WORD:%s[PATTERN:%s] typo match from word-in-pattern beginning", wc, wcInPatternWeak);
                                         }
                                     }
                                 }
@@ -295,7 +304,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                     int distanceFromCPrevToC = wcInPattern - wcPrevInPattern;
                     if ( distanceFromCPrevToC > 1 ) {
                         order++;
-                        //logln("   order+ [2]");
+                        logln("   order+ [2]");
                         int distanceFromItoWordEnd = wordLength - i;
                         if ( distanceFromCPrevToC > 2 && distanceFromCPrevToC >= matchInPattern) {
 
@@ -312,7 +321,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                 if ( wcPrevInPatternNprev != wcPrevInPattern ) {
                                     if ( firstWcInPattern == wcPrevInPattern ) {
                                         if ( wcPrevInPatternNprev > wcPrevInPattern && wcPrevInPatternNprev < wcInPattern ) {
-                                            //logln("      WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                            logln("      WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
                                             firstWcInPattern = wcPrevInPatternNprev;
                                             wcPrevInPattern = wcPrevInPatternNprev;
                                         }
@@ -320,32 +329,32 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     else {
                                         int distanceChange = wcPrevInPatternNprev - wcPrevInPattern;
                                         if ( distanceChange > 0 && distanceChange < distanceFromItoWordEnd && wcPrevInPatternNprev < wcInPattern ) {
-                                            //logln("      WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                            logln("      WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
                                             wcPrevInPattern = wcPrevInPatternNprev;
                                             if ( diffInPatternSum > 0 ) {
                                                 diffInPatternSum = diffInPatternSum + distanceChange - 1;
                                             }
                                             distanceFromCPrevToC = wcInPattern - wcPrevInPattern;
                                             if ( distanceFromCPrevToC > (distanceFromItoWordEnd + 2) ) {
-                                                //logln("   WORD:%s not found on reasonable length [1] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                                logln("   WORD:%s not found on reasonable length [1] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                                 order--;
-                                                //logln("   order-- [2][1]");
+                                                logln("   order-- [2][1]");
                                                 prevCharResult = PREV_CHAR_NOT_FOUND;
                                                 continue wordCharsIterating;
                                             }
                                         }
                                         else {
-                                            //logln("   WORD:%s not found on reasonable length [2] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                            logln("   WORD:%s not found on reasonable length [2] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                             prevCharResult = PREV_CHAR_NOT_FOUND;
                                             order--;
-                                            //logln("   order-- [2][2]");
+                                            logln("   order-- [2][2]");
                                             continue wordCharsIterating;
                                         }
                                     }
                                 }
                             }
                             else /* matchFull >= 1 */ {
-                                //logln("   WORD:%s not found on reasonable length after [3] WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
+                                logln("   WORD:%s not found on reasonable length after [3] WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
                                 if ( prevCharResult != PREV_CHAR_NOT_FOUND ) {
                                     mismatchWordChars++;
                                 }
@@ -356,11 +365,11 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     if ( from > -1 ) {
                                         from++;
                                         char pc;
-                                        //logln("      scanning gaps from [PATTERN:%s] to [PATTERN:%s]", from, wcPrevInPattern-1);
+                                        logln("      scanning gaps from [PATTERN:%s] to [PATTERN:%s]", from, wcPrevInPattern-1);
                                         for ( int i2 = from; i2 < wcPrevInPattern; i2++ ) {
                                             pc = pattern.charAt(i2);
                                             if ( wc == pc ) {
-                                                //logln("        found at [PATTERN:%s]", i2);
+                                                logln("        found at [PATTERN:%s]", i2);
                                                 foundInGap = true;
                                                 backwardMatches++;
                                                 found++;
@@ -368,7 +377,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                     wordFirstFoundCharIndex = i;
                                                 }
                                                 wordLastFoundCharIndex = i;
-                                                //logln("   found++[3]");
+                                                logln("   found++[3]");
                                                 if ( prevCharResult != PREV_CHAR_NOT_FOUND ) {
                                                     mismatchWordChars--;
                                                 }
@@ -378,7 +387,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                 }
 
                                 if ( ! foundInGap ) {
-                                    //logln("        not found in gaps");
+                                    logln("        not found in gaps");
                                     if ( distanceFromCPrevToC > found ) {
                                         char i2wc;
                                         int i2FirstWcInPattern = -1;
@@ -390,7 +399,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                         int i2Order = 0;
                                         int allowed = Math.max(matchFull+1, found);
 
-                                        //logln("      duplication search from 0[incl] to %s[incl]", allowed-1);
+                                        logln("      duplication search from 0[incl] to %s[incl]", allowed-1);
                                         duplicateSearch: for (; i2 < allowed; i2++) {
                                             i2wc = word.charAt(i2);
                                             i2wcInPattern = pattern.indexOf(i2wc, i2wcInPatternPrev + 1);
@@ -400,7 +409,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                 }
 
                                                 if ( i2wcInPattern < wcInPattern ) {
-                                                    //logln("        duplication search: WORD:%s[PATTERN:%s]", i2wc, i2wcInPattern);
+                                                    logln("        duplication search: WORD:%s[PATTERN:%s]", i2wc, i2wcInPattern);
                                                     if ( i2 > 0 ) {
                                                         i2MatchInPattern++;
                                                         if ( i2wcInPatternPrev + 1 == i2wcInPattern ) {
@@ -429,7 +438,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                                 (i2FullMatch == matchFull && i2MatchInPattern >= matchInPattern);
 
                                         if ( change ) {
-                                            //logln("        duplication search: change fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
+                                            logln("        duplication search: change fullMatches %s starting from %s", i2FullMatch, i2FirstWcInPattern);
                                             i = i2 - 1;
                                             order = i2Order;
                                             firstWcInPattern = i2FirstWcInPattern;
@@ -445,7 +454,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                         continue wordCharsIterating;
                                     }
                                     else {
-                                        //logln("      WORD:%s[PATTERN:%s] too far [3]!", wc, wcInPattern);
+                                        logln("      WORD:%s[PATTERN:%s] too far [3]!", wc, wcInPattern);
                                         prevCharResult = PREV_CHAR_NOT_FOUND;
                                         order--;
                                         continue wordCharsIterating;
@@ -455,12 +464,12 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         }
                     }
                     else if /* distanceFromCPrevToC <= 1 */ ( distanceFromCPrevToC > 0 ) {
-                        //logln("   order+ [1]");
+                        logln("   order+ [1]");
                         order++;
                     }
                 }
 
-                //logln("   WORD:%s[PATTERN:%s]", wc, wcInPattern);
+                logln("   WORD:%s[PATTERN:%s]", wc, wcInPattern);
                 if ( wcPrevInPattern > -1 ) {
                     diffInPattern = wcInPattern - wcPrevInPattern;
                     diffInWord = i - iPrev;
@@ -470,41 +479,41 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                     }
 
                     if ( diffInPattern == 1 ) {
-                        //logln("      PATTERN MATCH");
+                        logln("      PATTERN MATCH");
                         matchInPattern++;
                         if ( diffInWord == 1 ) {
-                            //logln("      FULL MATCH [1]");
+                            logln("      FULL MATCH [1]");
                             matchFull++;
                             if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
                                 matchInPatternStrong++;
                                 iterationIsStrong = true;
-                                //logln("        strong, prev match is full {1}");
+                                logln("        strong, prev match is full {1}");
                                 prevCharMatchStrength = PREV_CHAR_STRONG;
                             }
                             else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN || prevCharResult == PREV_CHAR_FOUND ) {
                                 if ( matchInPatternWeak > 0 ) {
                                     if ( diffInWordSum >= 3 && matchFull < 2 ) {
-                                        //logln("        weak++ [?]");
+                                        logln("        weak++ [?]");
                                         matchInPatternWeak++;
                                         iterationIsWeak = true;
                                         if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                             matchInPatternWeakTooMuchNoStrong = true;
-                                            //logln("        too weak, no strong");
+                                            logln("        too weak, no strong");
                                         }
                                         prevCharMatchStrength = PREV_CHAR_WEAK;
                                     }
                                     else {
                                         if ( diffInWordSum == 1 ) {
-                                            //logln("        weak-- strong++");
+                                            logln("        weak-- strong++");
                                             matchInPatternStrong++;
                                             matchInPatternWeak--;
                                         }
                                         matchInPatternStrong++;
                                         iterationIsStrong = true;
-                                        //logln("        strong, prev match is pattern or found {1}");
+                                        logln("        strong, prev match is pattern or found {1}");
                                         prevCharMatchStrength = PREV_CHAR_STRONG;
                                         if ( mismatches == 0 && diffInWordSum <= 3 ) {
-                                            //logln("        strong bonus");
+                                            logln("        strong bonus");
                                             matchInPatternStrengthBonus++;
                                         }
                                     }
@@ -513,7 +522,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     matchInPatternStrong++;
                                     iterationIsStrong = true;
                                     prevCharMatchStrength = PREV_CHAR_STRONG;
-                                    //logln("        strong, full match");
+                                    logln("        strong, full match");
                                 }
                             }
                             prevCharResult = PREV_CHAR_MATCH_FULL;
@@ -523,23 +532,23 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                 if ( i == lastInWord ) {
                                     matchInPatternStrong++;
                                     iterationIsStrong = true;
-                                    //logln("        strong, prev match is full and char finishes the word");
+                                    logln("        strong, prev match is full and char finishes the word");
                                     prevCharMatchStrength = PREV_CHAR_STRONG;
                                 }
                                 else {
                                     if ( matchInPattern > 2 && matchFull > 1 ) {
                                         matchInPatternStrong++;
                                         iterationIsStrong = true;
-                                        //logln("        strong, prev match is full {2}");
+                                        logln("        strong, prev match is full {2}");
                                         prevCharMatchStrength = PREV_CHAR_STRONG;
                                     }
                                     else {
                                         matchInPatternWeak++;
                                         iterationIsWeak = true;
-                                        //logln("        weak++ [1]");
+                                        logln("        weak++ [1]");
                                         if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                             matchInPatternWeakTooMuchNoStrong = true;
-                                            //logln("        too weak, no strong");
+                                            logln("        too weak, no strong");
                                         }
                                         prevCharMatchStrength = PREV_CHAR_WEAK;
                                     }
@@ -549,7 +558,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                 if ( i == lastInWord ) {
                                     matchInPatternStrong++;
                                     iterationIsStrong = true;
-                                    //logln("        strong, prev match is pattern but char finishes the word");
+                                    logln("        strong, prev match is pattern but char finishes the word");
                                     if ( prevCharResult == PREV_CHAR_MATCH_PATTERN && prevCharMatchStrength == PREV_CHAR_WEAK ) {
                                         matchInPatternWeak--;
                                         matchInPatternStrong++;
@@ -559,10 +568,10 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                 else {
                                     matchInPatternWeak++;
                                     iterationIsWeak = true;
-                                    //logln("        weak++ [2]");
+                                    logln("        weak++ [2]");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
-                                        //logln("        too weak, no strong");
+                                        logln("        too weak, no strong");
                                     }
                                     prevCharMatchStrength = PREV_CHAR_WEAK;
                                 }
@@ -571,21 +580,21 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     || prevCharResult == PREV_CHAR_FOUND) {
                                 if ( i <= 3 && matchFull > 0 && diffInPatternSum == 0 ) {
                                     Ab_c_pattern = true;
-                                    //logln("Ab_c pattern");
+                                    logln("Ab_c pattern");
                                 }
                                 if ( wcPrevInPattern == 0 && diffInPattern == 1 && diffInWord <= 3 ) {
                                     matchInPatternStrong++;
                                     iterationIsStrong = true;
-                                    //logln("        strong?");
+                                    logln("        strong?");
                                     prevCharMatchStrength = PREV_CHAR_STRONG;
                                 }
                                 else {
                                     matchInPatternWeak++;
                                     iterationIsWeak = true;
-                                    //logln("        weak++ [3]");
+                                    logln("        weak++ [3]");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
-                                        //logln("        too weak, no strong");
+                                        logln("        too weak, no strong");
                                     }
                                     prevCharMatchStrength = PREV_CHAR_WEAK;
                                 }
@@ -600,9 +609,9 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     gap > 2
                                             || diffInPattern > (patternLength / 2);
                             if ( gapToBigToAccept ) {
-                                //logln("      WORD:%s[PATTERN:%s] too far [4], ignore and continue!", wc, wcInPattern);
+                                logln("      WORD:%s[PATTERN:%s] too far [4], ignore and continue!", wc, wcInPattern);
                                 order--;
-                                //logln("      order--");
+                                logln("      order--");
                                 if ( iterationIsStrong ) {
                                     matchInPatternStrong--;
                                 }
@@ -616,11 +625,11 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         boolean cPrevIndexBeforeCIndex = wcPrevInPattern < wcInPattern;
                         if ( cPrevIndexBeforeCIndex ) {
                             matchInPattern++;
-                            //logln("      PATTERN MATCH, prev before current");
+                            logln("      PATTERN MATCH, prev before current");
                             if ( prevCharResult == PREV_CHAR_MATCH_FULL ) {
                                 matchInPatternStrong++;
                                 iterationIsStrong = true;
-                                //logln("        strong, prev match is full {3}");
+                                logln("        strong, prev match is full {3}");
                                 prevCharMatchStrength = PREV_CHAR_STRONG;
                             }
                             else if ( prevCharResult == PREV_CHAR_MATCH_PATTERN
@@ -628,10 +637,10 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     || prevCharResult == PREV_CHAR_NOT_FOUND ) {
                                 matchInPatternWeak++;
                                 iterationIsWeak = true;
-                                //logln("        weak [4]");
+                                logln("        weak [4]");
                                 if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                     matchInPatternWeakTooMuchNoStrong = true;
-                                    //logln("        too weak, no strong");
+                                    logln("        too weak, no strong");
                                 }
                                 prevCharMatchStrength = PREV_CHAR_WEAK;
                             }
@@ -643,21 +652,21 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         boolean gapNotFixed = true;
                         gapFixing: while ( diffMoreThanOne && cPrevIndexBeforeCIndex ) {
                             gaps++;
-                            //logln("      gap between char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s]!", wc, wcInPattern, wcPrev, wcPrevInPattern);
+                            logln("      gap between char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s]!", wc, wcInPattern, wcPrev, wcPrevInPattern);
 
                             wcPrev = word.charAt(i - 1);
                             wcPrevInPatternN = pattern.indexOf(wcPrev, wcPrevInPatternN + 1);
                             if ( wcPrevInPatternN < 0 ) {
-                                //logln("      WORD:%s not found after PATTERN:%s", wcPrev, wcPrevInPattern);
+                                logln("      WORD:%s not found after PATTERN:%s", wcPrev, wcPrevInPattern);
                                 gap = diffInPattern - 1;
                                 if ( matchFull == 0 && gap > found ) {
-                                    //logln("         no full-matches, gap[%s] > found[%s]", gap, found);
+                                    logln("         no full-matches, gap[%s] > found[%s]", gap, found);
                                     return -1;
                                 }
                                 break gapFixing;
                             }
                             if ( wcPrevInPatternN > wcInPattern ) {
-                                //logln("      WORD:%s found only after current WORD:%s[PATTERN:%s]", wcPrev, wc, wcInPattern);
+                                logln("      WORD:%s found only after current WORD:%s[PATTERN:%s]", wcPrev, wc, wcInPattern);
                                 break gapFixing;
                             }
                             if ( wcPrevInPatternN == wcInPattern) {
@@ -666,7 +675,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                             diffInPattern = wcInPattern - wcPrevInPatternN;
 
                             if ( (diffInPattern + i) > wordLength) {
-                                //logln("         PATTERN:%s to far", wcPrevInPatternN);
+                                logln("         PATTERN:%s to far", wcPrevInPatternN);
                                 break gapFixing;
                             }
 
@@ -675,21 +684,21 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
                             if ( ! diffMoreThanOne && cPrevIndexBeforeCIndex ) {
                                 wcPrevInPattern = wcPrevInPatternN;
-                                //logln("      gap fixed char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s] - PATTERN:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
+                                logln("      gap fixed char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s] - PATTERN:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
                                 gaps--;
-                                //logln("      MATCH, gap fixed");
+                                logln("      MATCH, gap fixed");
                                 gapNotFixed = false;
                                 if ( diffInWord == 1 ) {
-                                    //logln("      FULL MATCH [2]");
+                                    logln("      FULL MATCH [2]");
                                     matchFull++;
                                     if ( prevCharResult == PREV_CHAR_MATCH_PATTERN || prevCharResult == PREV_CHAR_FOUND ) {
                                         if ( matchInPatternWeak > 0 ) {
                                             matchInPatternWeak--;
                                             matchInPatternStrong++;
-                                            //logln("        weak-- strong++ [1]");
+                                            logln("        weak-- strong++ [1]");
                                             prevCharMatchStrength = PREV_CHAR_STRONG;
                                             if ( mismatches == 0 && diffInWordSum < 2 ) {
-                                                //logln("        strong bonus");
+                                                logln("        strong bonus");
                                                 matchInPatternStrengthBonus++;
                                             }
                                         }
@@ -697,7 +706,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                             if ( ! iterationIsStrong ) {
                                                 matchInPatternStrong++;
                                                 iterationIsStrong = true;
-                                                //logln("        strong++ [2]");
+                                                logln("        strong++ [2]");
                                             }
                                         }
                                     }
@@ -715,9 +724,9 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     if ( iNext > -1 ) {
                                         int wordRemnant = wordLength - i - 1;
                                         if ( wordRemnant >= patternRemnant ) {
-                                            //logln("      WORD:%s[PATTERN:%s] too far [5], ignore and continue!", wc, wcInPattern);
+                                            logln("      WORD:%s[PATTERN:%s] too far [5], ignore and continue!", wc, wcInPattern);
                                             order--;
-                                            //logln("      order--");
+                                            logln("      order--");
                                             if ( iterationIsStrong ) {
                                                 matchInPatternStrong--;
                                             }
@@ -742,7 +751,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 }
 
                 if ( wordInPatternLength > wordLength + 2 ) {
-                    //logln("      word-in-pattern-length is substantially longer than word");
+                    logln("      word-in-pattern-length is substantially longer than word");
                     found++;
                     if ( wordFirstFoundCharIndex < 0 ) {
                         wordFirstFoundCharIndex = i;
@@ -754,7 +763,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 if ( diffInWord > -1 ) {
                     diffInWordSum = diffInWordSum + diffInWord - 1;
                     diffInPatternSum = diffInPatternSum + diffInPattern - 1;
-                    //logln("      diff++");
+                    logln("      diff++");
                 }
 
                 wcPrevInPattern = wcInPattern;
@@ -765,7 +774,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                     wordFirstFoundCharIndex = i;
                 }
                 wordLastFoundCharIndex = i;
-                //logln("   found++[4]");
+                logln("   found++[4]");
                 if ( prevCharResult == PREV_CHAR_UNINITIALIZED ) {
                     prevCharResult = PREV_CHAR_FOUND;
                 }
@@ -776,7 +785,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         continue wordCharsIterating;
                     }
                     else {
-                        //logln("      end of pattern reached");
+                        logln("      end of pattern reached");
                         if ( i == lastInWord-1 ) {
                             boolean noDoubleChars = wc != word.charAt(lastInWord);
                             boolean longEnough = wordLength > 4;
@@ -789,14 +798,14 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     (diffsTooHigh ? 1 : 0) +
                                     (moreWeakThanStrong ? 1 : 0);
                             if ( noDoubleChars && conditions > 2 ) {
-                                //logln("      only 1 char remain in word");
+                                logln("      only 1 char remain in word");
                                 if ( prevCharMatchStrength == PREV_CHAR_STRONG ) {
                                     matchInPatternWeak++;
                                     iterationIsWeak = true;
-                                    //logln("        weak++ strong--");
+                                    logln("        weak++ strong--");
                                     if ( matchInPatternStrong == 0 && matchInPatternWeak > 2 && ! matchInPatternWeakTooMuchNoStrong ) {
                                         matchInPatternWeakTooMuchNoStrong = true;
-                                        //logln("        too weak, no strong");
+                                        logln("        too weak, no strong");
                                     }
                                     matchInPatternStrong--;
                                     prevCharMatchStrength = PREV_CHAR_WEAK;
@@ -839,13 +848,13 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         }
 
         if ( found == 0 || order == 0 || matchFull + matchInPattern == 0 ) {
-            //logln("   not found anything!");
+            logln("   not found anything!");
             return -1;
         }
 
         if ( patternLength < wordLength && patternLength < 5 ) {
             if ( found < patternLength ) {
-                //logln("   pattern is too short to accept missed chars!");
+                logln("   pattern is too short to accept missed chars!");
                 return -1;
             }
         }
@@ -872,7 +881,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
             }
         }
 
-        //logln("match type: %s", matchType == WORD_IS_PATTERN_FRAGMENT ? "WORD_IS_PATTERN_FRAGMENT" : "PATTERN_IS_WORD_FRAGMENT");
+        logln("match type: %s", matchType == WORD_IS_PATTERN_FRAGMENT ? "WORD_IS_PATTERN_FRAGMENT" : "PATTERN_IS_WORD_FRAGMENT");
 
         if ( matchType == PATTERN_IS_WORD_FRAGMENT ) {
             if ( firstWcInPattern != 0 ) {
@@ -968,17 +977,17 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                     - firstCharMissed * 80
                     - secondCharMissed * mismatchesMinorWeight;
         }
-        //logln("     base rate: " + rate);
+        logln("     base rate: " + rate);
 
         if ( matchInPatternWeakTooMuchNoStrong && backwardMatches == 0 && typoMatches == 0 ) {
             rate = rate - 30;
-            //logln("    -30 to much weak ");
+            logln("    -30 to much weak ");
         }
 
         if ( diffInWordSum == longestDiffInWord ) {
             if ( diffInWordSum > 3 ) {
                 rate = rate - 10;
-                //logln("    -10 single long word diff");
+                logln("    -10 single long word diff");
             }
         }
 
@@ -990,17 +999,17 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 matchInPatternWeak == 0 ) {
             if ( firstCharMissed == 0 ) {
                 rate = rate + 50;
-                //logln("    +50");
+                logln("    +50");
             }
             else if ( found > notFound ) {
                 rate = rate + 30;
-                //logln("    +30");
+                logln("    +30");
             }
 
         }
 
         if ( order > found ) {
-            //logln("ORDER > FOUND");
+            logln("ORDER > FOUND");
         }
 
         boolean embraceStartEnd = false;
@@ -1012,7 +1021,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 && iPrev == lastInWord
                 && wcPrevInPattern == lastInPattern ) {
             if ( (diffInWordSum + diffInPatternSum*2 ) < found) {
-                //logln(" embrace [start-end]");
+                logln(" embrace [start-end]");
                 embraceStartEnd = true;
                 if ( lengthRatioType == LENGTHS_APPROX_EQUAL ) {
 
@@ -1022,7 +1031,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 }
             }
             else if ( (diffInWordSum > 0 && diffInPatternSum > 0) || longestDiffInWord >= found ) {
-                //logln("   -40 : embrace [start-end] with a lot of diff");
+                logln("   -40 : embrace [start-end] with a lot of diff");
                 rate = rate - 40;
                 embraceStartEndTooMuchDiff = true;
             }
@@ -1035,12 +1044,12 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 && matchFull >= 2
                 && !embraceStartEndTooMuchDiff) {
             if ( (diffInWordSum + diffInPatternSum*2) > 3) {
-                //logln(" embrace [end] failed");
+                logln(" embrace [end] failed");
                 rate = rate - 10;
                 embraceEnd = false;
             }
             else {
-                //logln(" embrace [end]");
+                logln(" embrace [end]");
                 embraceEnd = true;
             }
         }
@@ -1051,40 +1060,40 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 (secondCharMissed == 0 || diffInWordSum <= 2) &&
                 diffInPatternSum == 0
                 && !embraceStartEndTooMuchDiff) {
-            //logln(" embrace [start]");
+            logln(" embrace [start]");
             embraceStart = true;
         }
 
         if ( embraceStartEnd ) {
-            //logln("   +5 : embraceStartEnd");
+            logln("   +5 : embraceStartEnd");
             rate = rate + 5;
         }
 
         if ( embraceEnd ) {
-            //logln("   +10 : embraceEnd");
+            logln("   +10 : embraceEnd");
             rate = rate + 10;
             if ( matchInPatternStrengthBonus > 0 ) {
-                //logln("   +5 : embraceEnd && strength bonus > 0");
+                logln("   +5 : embraceEnd && strength bonus > 0");
                 rate = rate + 5;
             }
             if ( notFound < 4 ) {
-                //logln("   +5 : not found < 4");
+                logln("   +5 : not found < 4");
                 rate = rate + 5;
             }
         }
 
         if ( embraceStart ) {
-            //logln("   +10 : embraceStart");
+            logln("   +10 : embraceStart");
             rate = rate + 10;
         }
 
         if ( (embraceStartEnd || embraceStart) && Ab_c_pattern ) {
-            //logln("   +10 : embrace start|end + ab_c");
+            logln("   +10 : embrace start|end + ab_c");
             rate = rate + 10;
         }
 
         if ( embraceStartEnd && embraceEnd ) {
-            //logln("   +15 + embrace startEnd+end");
+            logln("   +15 + embrace startEnd+end");
             rate = rate + 15;
         }
 
@@ -1092,33 +1101,33 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
         if ( found < 4 && mismatchWordChars > 0 ) {
             rate = rate - 5;
-            //logln("   other word -5");
+            logln("   other word -5");
             int wordRemnant = wordLength - (found + mismatchWordChars);
             if ( wordRemnant == 1 ) {
                 rate = rate - 15;
-                //logln("   other word -15");
+                logln("   other word -15");
             }
             else if ( wordRemnant == 2 ) {
                 rate = rate - 5;
-                //logln("   other word -5");
+                logln("   other word -5");
             }
         }
 
         if ( patternLength < 7 && matchIndex != 0 ) {
             int patternRemnant = patternLength - matchIndex - wordInPatternLength;
             if ( patternRemnant == 1 ) {
-                //logln("    -10 : single char remains of pattern");
+                logln("    -10 : single char remains of pattern");
                 rate = rate - 10;
             }
         }
 
         if ( matchFull == 0 ) {
             if ( diffInWordSum >= found ) {
-                //logln("   -20 full match == 0 && word diff >= found");
+                logln("   -20 full match == 0 && word diff >= found");
                 rate = rate - 20;
             }
             if ( matchInPattern < found ) {
-                //logln("   -30 pattern match < found");
+                logln("   -30 pattern match < found");
                 rate = rate - 30;
             }
         }
@@ -1128,7 +1137,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         if ( secondCharMissed  == 0 ) {
             if ( found < 6 && order < found ) {
                 if ( diffInPatternSum > 0 && diffTotalSum > found ) {
-                    //logln("   -30 1 char missed & diff total > found");
+                    logln("   -30 1 char missed & diff total > found");
                     rate = rate - 30;
                     diffTotalTooHigh = true;
                 }
@@ -1136,7 +1145,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         }
         else {
             if ( diffInPatternSum > 0 && diffTotalSum >= found ) {
-                //logln("   -40");
+                logln("   -40");
                 rate = rate - 40;
                 diffTotalTooHigh = true;
             }
@@ -1144,14 +1153,14 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
         if ( diffInPatternSum == 0 && diffInWordSum < 3 && longestDiffInWord == 1 && matchInPatternStrong > 0 ) {
             rate = rate + 15;
-            //logln("   +15 longest word diff = 1");
+            logln("   +15 longest word diff = 1");
         }
 
         if ( found == 2 && wordLength == 3 ) {
             if ( matchIndex == 0 ) {
                 if ( diffInWordSum == 1 ) {
                     rate = rate + 10;
-                    //logln("   +10 found=2 wordL=3");
+                    logln("   +10 found=2 wordL=3");
                 }
             }
         }
@@ -1160,71 +1169,71 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         if ( found == 3 && order == found && backwardMatches == 0 ) {
             if ( matchInPatternStrong == 2 || strongWordEnd ) {
                 if ( diffInPatternSum > 0 && diffInWordSum > 0 ) {
-                    //logln("     -5 found=order=3 backward=0 strong=2 || stong-end && diffs > 0");
+                    logln("     -5 found=order=3 backward=0 strong=2 || stong-end && diffs > 0");
                     rate = rate - 5;
                     if ( diffInPatternSum > 1 && diffInWordSum > 1 ) {
-                        //logln("     -15 found=order=3 backward=0 strong=2 || stong-end && both diffs > 1");
+                        logln("     -15 found=order=3 backward=0 strong=2 || stong-end && both diffs > 1");
                         rate = rate - 15;
                     }
                 }
 
                 if ( diffInWordSum + diffInPatternSum > 3 ) {
-                    //logln("     -20 found=order=3 backward=0 strong=2 || stong-end && diffs sum > 3");
+                    logln("     -20 found=order=3 backward=0 strong=2 || stong-end && diffs sum > 3");
                     rate = rate - 20;
                 }
 
                 if ( diffInPatternSum == 0 ) {
                     if ( diffInWordSum == 0 ) {
-                        //logln("     +30 : word diff == 0 ");
+                        logln("     +30 : word diff == 0 ");
                         rate = rate + 30;
                     }
                     else if ( diffInWordSum < 3 ) {
-                        //logln("     +20 : word diff < 3");
+                        logln("     +20 : word diff < 3");
                         rate = rate + 20;
                     }
                     else {
-                        //logln("     -20 found=order=3 backward=0 strong=2 && word diff > 2");
+                        logln("     -20 found=order=3 backward=0 strong=2 && word diff > 2");
                         rate = rate - 20;
                     }
                 }
 
                 if ( typoMatches > 0 ) {
-                    //logln("     -5");
+                    logln("     -5");
                     rate = rate - 5;
                 }
             }
             else if ( matchInPatternStrong == 1 ) {
                 if ( diffInPatternSum > 1 && diffInWordSum > 1 ) {
-                    //logln("     -30 strong = 1 && diff pattern > 0 && diff word > 0");
+                    logln("     -30 strong = 1 && diff pattern > 0 && diff word > 0");
                     rate = rate - 30;
                 }
                 if ( matchIndex == 0 ) {
                     if ( diffInWordSum + diffInPatternSum > 2 ) {
-                        //logln("     -10");
+                        logln("     -10");
                         rate = rate - 10;
                     }
                 }
                 else {
                     if ( diffInWordSum + diffInPatternSum > 1 ) {
-                        //logln("     -10");
+                        logln("     -10");
                         rate = rate - 10;
                     }
                 }
             }
             else if ( matchInPatternStrong == 0 ) {
                 if ( diffInPatternSum > 0 && diffInWordSum > 0 ) {
-                    //logln("     -30");
+                    logln("     -30");
                     rate = rate - 30;
                 }
                 if ( matchIndex == 0 ) {
                     if ( diffInWordSum + diffInPatternSum > 2 ) {
-                        //logln("     -10");
+                        logln("     -10");
                         rate = rate - 10;
                     }
                 }
                 else {
                     if ( diffInWordSum + diffInPatternSum > 1 ) {
-                        //logln("     -10");
+                        logln("     -10");
                         rate = rate - 10;
                     }
                 }
@@ -1236,21 +1245,21 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 if ( diffInPatternSum > diffInWordSum ) {
                     int penalty = (diffInWordSum + diffInPatternSum*2) * 5;
                     rate = rate - penalty;
-                    //logln("     -penalty[found=4] " + penalty);
+                    logln("     -penalty[found=4] " + penalty);
                 }
             }
             else if ( diffInPatternSum == 0 && !embraceStartEndTooMuchDiff ) {
                 if ( secondCharMissed == 0 || diffInWordSum <= 2 || anyEmbrace) {
                     if ( matchInPatternStrong == 3 ) {
-                        //logln("     +30 : pattern diff == 0 word diff <= 2 ");
+                        logln("     +30 : pattern diff == 0 word diff <= 2 ");
                         rate = rate + 30;
                     }
                     else if ( matchInPatternStrong == 2 ) {
-                        //logln("     +20 : strong matches == 2");
+                        logln("     +20 : strong matches == 2");
                         rate = rate + 20;
                     }
                     else if ( matchInPatternStrong == 1 ) {
-//                        //logln("     +15 : strong matches == 1");
+//                        logln("     +15 : strong matches == 1");
 //                        rate = rate + 15;
                     }
                     else if ( matchInPatternStrong == 0 ) {
@@ -1268,7 +1277,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                 if ( diffInPatternSum > diffInWordSum ) {
                     int penalty = (diffInWordSum + diffInPatternSum*2) * 5;
                     rate = rate - penalty;
-                    //logln("     -penalty[found>4] " + penalty);
+                    logln("     -penalty[found>4] " + penalty);
                 }
             }
         }
@@ -1302,25 +1311,25 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         int patternMatchesOnly = found-matchFull;
                         if ( diffInPatternSum == 0 && diffInWordSum <= patternMatchesOnly ) {
                             rate = rate + 30;
-                            //logln("     +30");
+                            logln("     +30");
                         }
                         else if ( (diffInPatternSum + diffInWordSum) <= patternMatchesOnly ) {
                             rate = rate + 20;
-                            //logln("     +20");
+                            logln("     +20");
                         }
                         else {
                             if ( secondCharMissed == 0 ) {
                                 rate = rate + 10;
-                                //logln("     +10 : ... found > 3 and second char not missed ");
+                                logln("     +10 : ... found > 3 and second char not missed ");
                             }
                             else {
                                 if ( diffInWordSum >= found ) {
                                     rate = rate - 30;
-                                    //logln("     -30");
+                                    logln("     -30");
                                 }
                                 else {
                                     rate = rate - 10;
-                                    //logln("     -10");
+                                    logln("     -10");
                                 }
                             }
                         }
@@ -1340,7 +1349,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                                     + found * matchInPatternWeight
                                     + found * 5
                                     + typoMatches * 3;
-                            //logln("    fix no-full-match, rate %s -> %s", rate, newRate);
+                            logln("    fix no-full-match, rate %s -> %s", rate, newRate);
                             rate = newRate;
                         }
                     }
@@ -1362,14 +1371,14 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                     }
 
                     if ( diffInWordSum + diffInPattern > found ) {
-                        //logln("   too much diffs");
+                        logln("   too much diffs");
                     } else if ( patternMatchLength - found <= accepted && !diffTotalTooHigh ) {
                         matchInPatternWeight = 6;
                         int newRate = found * 10
                                 + found * matchInPatternWeight
                                 + found * 5
                                 + typoMatches * 3;
-                        //logln("   reassign rate %s -> %s", rate, newRate);
+                        logln("   reassign rate %s -> %s", rate, newRate);
                         rate = newRate;
                     }
                 }
@@ -1384,13 +1393,13 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
 
         int wordFoundLength = wordLastFoundCharIndex - wordFirstFoundCharIndex + 1;
         float wordFoundRatio = (wordFoundLength * 100f) / wordLength;
-        //logln("  order:%s, found:%s, pattern-span:%s, word-span:%s, full-matches:%s, pattern-matches:%s (s:%s w:%s), back-matches:%s, typo-matches:%s, w-diff:%s (longest:%s), p-diff:%s, 0-ch-miss:%s, 1-ch-miss:%s", order, found, matchSpanInPattern, matchSpanInWord, matchFull, matchInPattern, matchInPatternStrong, matchInPatternWeak, backwardMatches, typoMatches, diffInWordSum, longestDiffInWord, diffInPatternSum, firstCharMissed, secondCharMissed);
-        //logln("  pattern: ");
-        //logln("     word-in-pattern length: " + wordInPatternLength);
-        //logln("  word: ");
-        //logln("     indexes : %s %s ", wordFirstFoundCharIndex, wordLastFoundCharIndex);
-        //logln("     length  : %s ", wordFoundLength);
-        //logln("     ratio   : %s%% ", wordFoundRatio);
+        logln("  order:%s, found:%s, pattern-span:%s, word-span:%s, full-matches:%s, pattern-matches:%s (s:%s w:%s), back-matches:%s, typo-matches:%s, w-diff:%s (longest:%s), p-diff:%s, 0-ch-miss:%s, 1-ch-miss:%s", order, found, matchSpanInPattern, matchSpanInWord, matchFull, matchInPattern, matchInPatternStrong, matchInPatternWeak, backwardMatches, typoMatches, diffInWordSum, longestDiffInWord, diffInPatternSum, firstCharMissed, secondCharMissed);
+        logln("  pattern: ");
+        logln("     word-in-pattern length: " + wordInPatternLength);
+        logln("  word: ");
+        logln("     indexes : %s %s ", wordFirstFoundCharIndex, wordLastFoundCharIndex);
+        logln("     length  : %s ", wordFoundLength);
+        logln("     ratio   : %s%% ", wordFoundRatio);
 
         int matchFullVsPatternDiff = matchInPattern - matchFull;
 
@@ -1401,11 +1410,11 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                         if ( diffInWordSum <= found/2 ) {
                             if ( found > 5 ) {
                                 rate = rate + 20;
-                                //logln("    +20 ??: ");
+                                logln("    +20 ??: ");
                             }
                             else {
                                 rate = rate + 10;
-                                //logln("    +10 ??: ");
+                                logln("    +10 ??: ");
                             }
 
                         }
@@ -1413,7 +1422,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
                             if ( found < 5 || wordFoundRatio < 70 || order < found ) {
                                 int penalty = matchInPatternWeight * matchInPatternWeak;
                                 rate = rate - penalty;
-                                //logln("    penalty[2]: " + penalty);
+                                logln("    penalty[2]: " + penalty);
                             }
                         }
                     }
@@ -1426,44 +1435,44 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         }
 
 //        if ( matchIndex+1 >= matchLength/2 ) {
-//            //logln("secondary word");
+//            logln("secondary word");
 //            if ( anyEmbrace ) {
-//                //logln("good word");
+//                logln("good word");
 //            }
 //            else {
 //                if ( wordFoundRatio <= 40 ) {
-//                    //logln("[1]ratio <= 40%");
+//                    logln("[1]ratio <= 40%");
 //                }
-//                //logln("secondary no embrace");
+//                logln("secondary no embrace");
 //                if ( matchLength > 6 )  {
 //
 ////                    if ( wordFoundRatio < 45 || wordFoundLength <=3 ) {
 ////                        rate = rate - 30;
-////                        //logln("    -30 ratio<50% and wordFoundLength <=3 ");
+////                        logln("    -30 ratio<50% and wordFoundLength <=3 ");
 ////                    }
 //
 //                    if ( found < 4 ) {
 //                        if ( wordFoundRatio <= 40 ) {
-//                            //logln("secondary no embrace, bad, ratio <= 40%");
+//                            logln("secondary no embrace, bad, ratio <= 40%");
 //                        }
 //                        else {
-//                            //logln("secondary no embrace, bad");
+//                            logln("secondary no embrace, bad");
 //                        }
 //                    }
 //                    else if ( found == 4 ) {
 //                        if ( wordFoundRatio <= 40 ) {
-//                            //logln("secondary no embrace, moderate, ratio <= 40%");
+//                            logln("secondary no embrace, moderate, ratio <= 40%");
 //                        }
 //                        else {
-//                            //logln("secondary no embrace, moderate");
+//                            logln("secondary no embrace, moderate");
 //                        }
 //                    }
 //                    else {
 //                        if ( wordFoundRatio <= 40 ) {
-//                            //logln("secondary no embrace, good, ratio <= 40%");
+//                            logln("secondary no embrace, good, ratio <= 40%");
 //                        }
 //                        else {
-//                            //logln("secondary no embrace, good");
+//                            logln("secondary no embrace, good");
 //                        }
 //                    }
 //                }
@@ -1492,7 +1501,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
             case 5:
                 if ( found >= 4 || matchType == PATTERN_IS_WORD_FRAGMENT || STRICT ) {
                     if ( (lengthRatioType == LENGTHS_APPROX_EQUAL || lengthRatioType == LENGTHS_DIFF_INSIGNIFICANT) && matchFullVsPatternDiff > 1 ) {
-                        //logln("  threshold +5");
+                        logln("  threshold +5");
                         thresholdStrictBonus = 5;
                     }
                     requiredFullMatches = 3;
@@ -1528,7 +1537,7 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
         }
 
         int threshold = requiredFullMatches*10 + requiredPatternMatches*7 + found*5 + thresholdStrictBonus;
-        //logln("  threshold:%s, total:%s", threshold, rate);
+        logln("  threshold:%s, total:%s", threshold, rate);
         if ( rate >= threshold ) {
 
             long code = CODE_BASE;
@@ -1546,4 +1555,15 @@ CREATE ALIAS EVAL_MATCHING_V38 AS $$
             return -1;
         }
     }
-$$
+    /* script */
+
+    private static String higlightChar(String s, int i) {
+        char[] chars = s.toCharArray();
+        char c = chars[i];
+        char C = Character.toUpperCase(c);
+        chars[i] = C;
+
+        String ss = s.substring(0, i) + '(' + C + ')' + s.substring(i + 1);
+        return ss;
+    }
+}

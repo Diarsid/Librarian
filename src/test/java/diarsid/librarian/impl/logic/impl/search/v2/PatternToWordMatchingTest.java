@@ -1531,6 +1531,47 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_upshstnoftftclnt_notification_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_upshstnoftftclnt_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_upshstnoftftclnt_status_true() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    public void test_upshstnoftftclnt_client_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsthnotfclntstats_notification_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsthnotfclntstats_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsthnotfclntstats_status_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukrpsthnotfclntstats_client_true() {
+        doTest();
+    }
+
+    @Test
     public void test_maximums() {
         List.of(
                 "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg")
