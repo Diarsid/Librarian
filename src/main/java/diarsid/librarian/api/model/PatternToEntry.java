@@ -49,4 +49,12 @@ public interface PatternToEntry extends Unique, Storable, CreatedAt, Joined<Patt
     default boolean hasSamePattern(PatternToEntry other) {
         return this.has(other.pattern());
     }
+
+    default boolean has(Entry entry) {
+        return this.entry().equals(entry);
+    }
+
+    default boolean hasSameEntry(PatternToEntry other) {
+        return this.has(other.entry());
+    }
 }

@@ -763,6 +763,11 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_rng_rings_true() {
+        doTest();
+    }
+
+    @Test
     public void test_lorofrng_ring_true() {
         doTest();
     }
