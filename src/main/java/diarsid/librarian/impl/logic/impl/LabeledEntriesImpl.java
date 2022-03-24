@@ -352,7 +352,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     }
 
     @Override
-    public List<Entry.Labeled> add(Entry entry, List<Entry.Label> labels) {
+    public List<Entry.Labeled> bind(Entry entry, List<Entry.Label> labels) {
         checkMustBeStored(entry);
         checkMustBeStored(labels);
         entry.checkAllHaveSameUser(labels);
@@ -407,12 +407,12 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     }
 
     @Override
-    public List<Entry.Labeled> add(List<Entry> entries, Entry.Label label) {
+    public List<Entry.Labeled> bind(List<Entry> entries, Entry.Label label) {
         List<Entry.Labeled> allLabeled = new ArrayList<>();
         Entry.Labeled labeled;
 
         for ( Entry entry : entries ) {
-            labeled = this.add(entry, label);
+            labeled = this.bind(entry, label);
             allLabeled.add(labeled);
         }
 
@@ -420,12 +420,12 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     }
 
     @Override
-    public List<Entry.Labeled> add(List<Entry> entries, List<Entry.Label> labels) {
+    public List<Entry.Labeled> bind(List<Entry> entries, List<Entry.Label> labels) {
         List<Entry.Labeled> allLabeled = new ArrayList<>();
         List<Entry.Labeled> labeled;
 
         for ( Entry entry : entries ) {
-            labeled = this.add(entry, labels);
+            labeled = this.bind(entry, labels);
             allLabeled.addAll(labeled);
         }
 
@@ -433,7 +433,7 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     }
 
     @Override
-    public Entry.Labeled add(Entry entry, Entry.Label label) {
+    public Entry.Labeled bind(Entry entry, Entry.Label label) {
         checkMustBeStored(entry);
         checkMustBeStored(label);
         this.entries.checkMustExist(entry);
@@ -502,12 +502,12 @@ public class LabeledEntriesImpl extends ThreadBoundTransactional implements Labe
     }
 
     @Override
-    public boolean remove(Entry entry, List<Entry.Label> labels) {
+    public boolean unbind(Entry entry, List<Entry.Label> labels) {
         return this.entriesLabelsJoinTable.removeBy(entry, labels);
     }
 
     @Override
-    public boolean remove(Entry entry, Entry.Label label) {
+    public boolean unbind(Entry entry, Entry.Label label) {
         return this.entriesLabelsJoinTable.removeBy(entry, label);
     }
 

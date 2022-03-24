@@ -1577,6 +1577,17 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_jrtolkbylord_tolkien_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jrtolkbylord_jrr_true() {
+        doTest();
+    }
+
+
+    @Test
     public void test_maximums() {
         List.of(
                 "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg")

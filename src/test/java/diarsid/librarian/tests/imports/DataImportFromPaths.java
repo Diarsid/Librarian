@@ -47,7 +47,7 @@ public class DataImportFromPaths implements DataImport {
                             .entries()
                             .save(user, line));
 
-            List<Entry.Labeled> labeled = core.store().labeledEntries().add(entry, labels);
+            List<Entry.Labeled> labeled = core.store().labeledEntries().bind(entry, labels);
         };
 
         AtomicInteger pathsCounter = new AtomicInteger();

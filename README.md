@@ -6,13 +6,13 @@ Main goal of this project is to provide semantical search engine for stored stri
 Main advantage and feature of this engine in contrast to common full text search engines is that it can discern words from messy queries. For example, search string like:  
 `tolknlorofrng`  
 will find a string:  
-`The Lord of the Rings by J.R.R. Tolkien`  
-Engine will figure out that words snippets tolkn-lor-of-rngs without any separators. 
+`The Lord of the Rings by J.R.R. Tolkien`    
 
-Such behaviour allows building searches that have following advantages:
+Librarian engine will figure out which words stands behind each human-recognizable snippets of a query string. In given example it will find words 'Tolkien', 'Lord', 'of', 'Rings' for snippets `tolkn` `lor` `of` `rngs` without any provided separators and then will find all entries containing those words. 
+
+Such behaviour is not available for FTS tools or other search engines. It allows building searches that have following advantages:
  - do not require from users to put any words separations
- - tolerate typos
- - tolerate abbreviations
+ - tolerate typos and abbreviations (within reasonable limits)
 
 However, this engine has it's limitations and disadvantages:
  - it has SQL behind it
@@ -24,6 +24,7 @@ Due to those limitations, it's implied, that this search engine will not be used
 ## Non-goal
 
  - it is not a one more FTS-engine
+ - it is not a 'document oriented' storage, so it's not intended for highly structured strings like JSON or XML
  - it is not intended for storing blocks of text
  
 ## Usage
@@ -60,17 +61,29 @@ List<Entry> tolkienBooks = List.of(
 
 Entry.Label tolkienBooksLabel = labels.getOrSave(user, "Tolkien books");
 
-List<Entry.Labeled> labeledBooks = labeledEntries.add(tolkienBooks, tolkienBooksLabel);
+List<Entry.Labeled> labeledBooks = labeledEntries.bind(tolkienBooks, tolkienBooksLabel);
 
 for ( Entry.Labeled labeledBook : labeledBooks ) {
     assertThat(labeledBook.label()).isEqualTo(tolkienBooksLabel);
 }
 ```
+Esentially, Entry.Labeled is just a representation of a single record in join table between entries and labels.   
 
+Labels could be removed from entries. For example:
+```
+Optional<Entry> lotrBookOpt = entries.findBy(user, "The Lord of the Rings by J.R.R. Tolkien");
+Entry lotrBook = lotrBookOpt.get()    // we are sure from behind that this entry exists 
+
+Entry.Label tolkienBooksLabel = labels.getOrSave(user, "Tolkien books");
+
+boolean unbound = labeledEntries.unbind(lotrBook, tolkienBooksLabel);
+assertThat(unbound).isTrue();
+```
 
 ##### Pattern, PatternToEntry, and Entry.Label.Matching
-Pattern is a stored query string.   
-PatternToEntry is a model of search result where some entry string was found by some pattern.
+Pattern represents a last fact of string used as query.   
+PatternToEntry is a model of search result where some entry was found by some pattern. Esentially, PatternToEntry is just a representation of a single record in join table between entries and patterns, where results of each successful search by some pattern are saved.  
+
 ```
 User user = ...
 Search search = ...
@@ -100,7 +113,7 @@ Entry.Label tolkienBooksLabel = labels.getOrSave(user, "Tolkien books");
 String pattern = "tolknlorofrng"; 
 List<PatternToEntry> result = search.findAllBy(user, pattern, tolkienBooksLabel); 
 ```
-If there are other entrie matching to pattern, but they do not labeled by `tolkienBooksLabel`, they will be excluded from results.
+If there are other entries matching to pattern, but they do not labeled by `tolkienBooksLabel`, they will be excluded from results.
 
 Let's assume now that user wants to find any entries by given pattern that has any of several labels, for example books OR movies. In order to do it, Entry.Label.Matching enum can be used:
 ```
@@ -125,9 +138,9 @@ List<PatternToEntry> result = search.findAllBy(user, pattern, ANY_OF, tolkienBoo
 ```
 
 Matching options are:
-- ANY_OF: include in results entries that are bound to **at least one** of given labels
-- ALL_OF: include in results entries that are bound to **all** of given labels 
-- NONE_OF: include in results entries that are **NOT** bound to **any** of given labels 
+- ANY_OF: returns entries that are bound to **at least one** of given labels
+- ALL_OF: returns entries that are bound to **all** of given labels 
+- NONE_OF: returns entries that are **NOT** bound to **any** of given labels 
   
 #### API
 Central class is an interface `diarsid.librarian.api.Core` that contains other repository-like objects to operate 

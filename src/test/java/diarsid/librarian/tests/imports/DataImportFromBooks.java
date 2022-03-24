@@ -134,7 +134,7 @@ public class DataImportFromBooks implements DataImport {
 
             bookLabels.addAll(applicableSemanticLabels);
 
-            store.labeledEntries().add(bookEntry, bookLabels);
+            store.labeledEntries().bind(bookEntry, bookLabels);
 
             System.out.println("[IMPORT] " + booksCounter.getAndIncrement() + " " + book);
             bookLabels.stream().map(Entry.Label::name).forEach(label -> System.out.println("              " + label));

@@ -16,17 +16,17 @@ public interface LabeledEntries {
 
     List<Entry.Labeled> findAllBy(List<Entry> entries);
 
-    List<Entry.Labeled> add(Entry entry, List<Entry.Label> labels);
+    List<Entry.Labeled> bind(Entry entry, List<Entry.Label> labels);
 
-    List<Entry.Labeled> add(List<Entry> entries, Entry.Label label);
+    List<Entry.Labeled> bind(List<Entry> entries, Entry.Label label);
 
-    List<Entry.Labeled> add(List<Entry> entries, List<Entry.Label> labels);
+    List<Entry.Labeled> bind(List<Entry> entries, List<Entry.Label> labels);
 
-    Entry.Labeled add(Entry entry, Entry.Label label);
+    Entry.Labeled bind(Entry entry, Entry.Label label);
 
-    boolean remove(Entry entry, List<Entry.Label> labels);
+    boolean unbind(Entry entry, List<Entry.Label> labels);
 
-    boolean remove(Entry entry, Entry.Label label);
+    boolean unbind(Entry entry, Entry.Label label);
 
     long countEntriesBy(Entry.Label label);
 
@@ -44,12 +44,12 @@ public interface LabeledEntries {
         return this.findAllBy(matching, asList(labels));
     }
 
-    default List<Entry.Labeled> add(Entry entry, Entry.Label... labels) {
-        return this.add(entry, asList(labels));
+    default List<Entry.Labeled> bind(Entry entry, Entry.Label... labels) {
+        return this.bind(entry, asList(labels));
     }
 
-    default boolean remove(Entry entry, Entry.Label... labels) {
-        return this.remove(entry, asList(labels));
+    default boolean unbind(Entry entry, Entry.Label... labels) {
+        return this.unbind(entry, asList(labels));
     }
 
     default long countEntriesBy(Entry.Label.Matching matching, Entry.Label... labels) {

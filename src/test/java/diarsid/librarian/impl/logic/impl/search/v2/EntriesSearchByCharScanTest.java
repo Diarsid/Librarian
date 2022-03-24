@@ -723,4 +723,12 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
         entriesResult.expect().containingAllStringsInAtLeastOneEntry("ukrposhta", "notification", "client").andAssert();
     }
 
+    @Test
+    public void test_jrtolkbylord() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInMostOfEntries("tolkien", "lord", "rings").andAssert();
+    }
+
+
+
 }
