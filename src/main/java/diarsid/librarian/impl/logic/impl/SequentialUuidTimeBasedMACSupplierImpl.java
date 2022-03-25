@@ -33,7 +33,6 @@ public class SequentialUuidTimeBasedMACSupplierImpl implements UuidSupplier {
                 byte[] mac = ni.getHardwareAddress();
                 if ( nonNull(mac) ) {
                     address = new EthernetAddress(mac);
-                    System.out.println(address.toString());
                 }
             }
 
