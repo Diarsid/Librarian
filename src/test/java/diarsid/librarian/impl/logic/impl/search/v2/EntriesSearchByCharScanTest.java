@@ -231,7 +231,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V39(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V43(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -295,13 +295,13 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_before_now_minus_year() throws Exception {
-        search(BEFORE, now().minusYears(1));
+        search(BEFORE, now().minusYears(10));
         entriesResult.expect().noEntries().andAssert();
     }
 
     @Test
     public void test_lorofrngbyjrrtolk_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().someEntries().andAssert();
     }
 
@@ -343,7 +343,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_tolkien_before_now_minus_year() throws Exception {
-        search(BEFORE, now().minusYears(1));
+        search(BEFORE, now().minusYears(10));
         entriesResult.expect().noEntries().andAssert();
     }
 
@@ -355,7 +355,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_tolkien_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().containingAllStringsInEveryEntry("lord", "of", "rings", "by", "tolkien").andAssert();
     }
 
@@ -557,7 +557,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_allof_tolkien_books_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().someEntries().andAssert();
     }
 
@@ -575,7 +575,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_anyof_tolkien_books_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().someEntries().andAssert();
     }
 
@@ -593,7 +593,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_noneof_tolkien_books_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().noEntries().andAssert();
     }
 
@@ -611,7 +611,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_lorofrngbyjrrtolk_noneof_tolkien_after_now_minus_year() throws Exception {
-        search(AFTER_OR_EQUAL, now().minusYears(1));
+        search(AFTER_OR_EQUAL, now().minusYears(10));
         entriesResult.expect().someEntries().andAssert();
     }
 
@@ -729,6 +729,10 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
         entriesResult.expect().containingAllStringsInMostOfEntries("tolkien", "lord", "rings").andAssert();
     }
 
-
+    @Test
+    public void test_goldpath() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("gold", "path").andAssert();
+    }
 
 }

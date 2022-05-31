@@ -1,10 +1,12 @@
 package diarsid.librarian.impl.logic.impl;
 
+import java.util.Comparator;
 import java.util.List;
 
 import diarsid.librarian.api.Search;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.User;
+import diarsid.librarian.tests.console.LoggingSearchObserver;
 import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForServerSetup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,11 +21,18 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
 
     static Search search;
     static User user;
+    static Search.Observer observer;
 
     @BeforeAll
     public static void setUp() {
         search = CORE.search();
         user = USER;
+
+        Comparator<PatternToEntry> comparator = (o1, o2) -> {
+            return CORE_TEST_SETUP.algorithm.compare(o1.weight(), o2.weight());
+        };
+
+        observer = new LoggingSearchObserver(comparator);
     }
 
     @Test
@@ -68,7 +77,7 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
 
     @Test
     public void test_tolsvitrl() {
-        List<PatternToEntry> relations = search.findAllBy(user, "tolsvirtl");
+        List<PatternToEntry> relations = search.findAllBy(user, "tolsvirtl", observer);
         for ( PatternToEntry relation : relations ) {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }
@@ -76,18 +85,11 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
 
     @Test
     public void test_goldpath() {
-        List<PatternToEntry> relations = search.findAllBy(user, "goldpath");
+        List<PatternToEntry> relations = search.findAllBy(user, "goldpath", observer);
         for ( PatternToEntry relation : relations ) {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }
     }
-
-//    @Test
-//    public void test_tolsvitrl_x() {
-//        List<PatternToEntry> relations = search.findAllBy(user, "tolsvirtl");
-//
-//        CORE.search().
-//    }
 
     @Test
     public void test_virtualize() {
@@ -123,7 +125,7 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
 
     @Test
     public void test_swchjava() {
-        List<PatternToEntry> relations = search.findAllBy(user, "swchjava");
+        List<PatternToEntry> relations = search.findAllBy(user, "swchjava", observer);
         for ( PatternToEntry relation : relations ) {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }
@@ -139,7 +141,7 @@ public class SearchTest extends TransactionalRollbackTestForServerSetup {
 
     @Test
     public void test_projsdrs() {
-        List<PatternToEntry> relations = search.findAllBy(user, "projsdrs");
+        List<PatternToEntry> relations = search.findAllBy(user, "projsdrs", observer);
         for ( PatternToEntry relation : relations ) {
             log.info(format("%s %s", relation.weight(), relation.entryString()));
         }

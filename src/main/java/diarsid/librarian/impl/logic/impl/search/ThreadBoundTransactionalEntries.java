@@ -24,8 +24,8 @@ abstract class ThreadBoundTransactionalEntries extends ThreadBoundTransactional 
 
         this.sqlSelectEntriesByUuids = new StringCacheForRepeatedSeparatedPrefixSuffix(
                 "SELECT DISTINCT * \n" +
-                        "FROM entries e \n" +
-                        "WHERE e.uuid IN ( \n",
+                "FROM entries e \n" +
+                "WHERE e.uuid IN ( \n",
                 "    ?", ", \n", ")");
     }
 

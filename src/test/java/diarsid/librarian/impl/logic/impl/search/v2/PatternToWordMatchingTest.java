@@ -1,5 +1,6 @@
 package diarsid.librarian.impl.logic.impl.search.v2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,14 +22,54 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 public class PatternToWordMatchingTest {
 
     private static class Statistic {
+
+        private static class TestInstance {
+
+            private String pattern;
+            private String word;
+            private boolean expectMatching;
+
+            public TestInstance(PatternToWordMatchingTest test) {
+                this.pattern = test.pattern;
+                this.word = test.word;
+                this.expectMatching = test.expectMatching;
+            }
+
+            @Override
+            public String toString() {
+                return "TestInstance{" +
+                        "pattern='" + pattern + '\'' +
+                        ", word='" + word + '\'' +
+                        ", expectMatching=" + expectMatching +
+                        '}';
+            }
+
+            public String report() {
+                return "pattern='" + pattern + '\'' +
+                        " word='" + word + '\'' +
+                        " expectMatching=" + expectMatching;
+            }
+        }
+
         int negative;
         int positive;
+        int experimental;
+        List<TestInstance> experimentalPassed = new ArrayList<>();
+        List<TestInstance> experimentalFailed = new ArrayList<>();
+        int desirable;
+        List<TestInstance> desirablePassed = new ArrayList<>();
+        List<TestInstance> desirableFailed = new ArrayList<>();
+        int success;
+        int fail;
     }
 
     public static Statistic statistic;
 
     private boolean isOnlyDesirable = false;
     private boolean isExperimental = false;
+    private String pattern;
+    private String word;
+    private boolean expectMatching;
     private String comment;
 
     public void experimental() {
@@ -54,8 +95,8 @@ public class PatternToWordMatchingTest {
         assertThat(methodDeclarationWords).hasSizeGreaterThanOrEqualTo(3);
         String test = methodDeclarationWords[0];
         assertThat(test).isEqualTo("test");
-        String pattern = methodDeclarationWords[1];
-        String word = methodDeclarationWords[2];
+        this.pattern = methodDeclarationWords[1];
+        this.word = methodDeclarationWords[2];
 
         if ( nonNull(comment) ) {
             System.out.println("[TEST] comment: " + comment);
@@ -64,7 +105,7 @@ public class PatternToWordMatchingTest {
 
         System.out.println(code);
 
-        boolean expectMatching = findBoolIn(methodDeclarationWords).orElseThrow(
+        this.expectMatching = findBoolIn(methodDeclarationWords).orElseThrow(
                 () -> new IllegalArgumentException("Method declaration does not contain any boolean matching!"));
 
         if ( expectMatching ) {
@@ -80,18 +121,38 @@ public class PatternToWordMatchingTest {
         System.out.println(format("[TEST] expect matching:%s, result:%s",
                 expectMatching ? "TRUE" : "FALSE",
                 mismatch ? "FAIL" : "PASS"));
+
         if ( this.isExperimental ) {
+            statistic.experimental++;
+            if ( mismatch ) {
+                statistic.experimentalFailed.add(new Statistic.TestInstance(this));
+            }
+            else {
+                statistic.experimentalPassed.add(new Statistic.TestInstance(this));
+            }
             System.out.println("[TEST] experimental");
         }
+
         if ( this.isOnlyDesirable ) {
+            statistic.desirable++;
+            if ( mismatch ) {
+                statistic.desirableFailed.add(new Statistic.TestInstance(this));
+            }
+            else {
+                statistic.desirablePassed.add(new Statistic.TestInstance(this));
+            }
             System.out.println("[TEST] is desirable, but not mandatory");
         }
 
         if ( mismatch ) {
             if ( ! this.isOnlyDesirable ) {
                 assumeTrue( ! this.isExperimental, "[TEST] Test is an experimental behavior");
+                statistic.fail++;
                 fail();
             }
+        }
+        else {
+            statistic.success++;
         }
     }
 
@@ -116,11 +177,35 @@ public class PatternToWordMatchingTest {
         statistic = new Statistic();
     }
 
+    private static final String TEST_FORMAT =    "           %-19s %-19s %s";
     @AfterAll
     public static void after() {
+
         System.out.println("=== Statistic ===");
-        System.out.println(" negative tests: " + statistic.negative);
-        System.out.println(" positive tests: " + statistic.positive);
+        System.out.println(" negative tests   : " + statistic.negative);
+        System.out.println(" positive tests   : " + statistic.positive);
+        System.out.println(" desirable        : " + statistic.desirable);
+        System.out.println("     passed       : " + statistic.desirablePassed.size());
+        printTests(statistic.desirablePassed);
+        System.out.println("     failed       : " + statistic.desirableFailed.size());
+        printTests(statistic.desirableFailed);
+        System.out.println(" experimental     : " + statistic.experimental);
+        System.out.println("     passed       : " + statistic.experimentalPassed.size());
+        printTests(statistic.experimentalPassed);
+        System.out.println("     failed       : " + statistic.experimentalFailed.size());
+        printTests(statistic.experimentalFailed);
+        System.out.println(" fail             : " + statistic.fail);
+        System.out.println(" success          : " + statistic.success);
+    }
+
+    private static void printTests(List<Statistic.TestInstance> tests) {
+        if ( tests.isEmpty() ) {
+            return;
+        }
+        System.out.println(format(TEST_FORMAT, "PATTERN", "WORD", "MATCHING"));
+        for ( Statistic.TestInstance test : tests ) {
+            System.out.println(format(TEST_FORMAT, test.pattern, test.word, test.expectMatching));
+        }
     }
 
     @Test
@@ -768,6 +853,16 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_rgns_rings_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_lorofrgns_rings_true() {
+        doTest();
+    }
+
+    @Test
     public void test_lorofrng_ring_true() {
         doTest();
     }
@@ -799,6 +894,11 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_jenknsinstl_installation_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_tools_costa_false() {
         doTest();
     }
 
@@ -1118,6 +1218,61 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_abcedf_abcdeafghij_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_abcedf_abcdefghij_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_sres_servers_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_sers_servers_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ytube_youtube_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ytbe_youtube_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_yutbe_youtube_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_yuotbe_youtube_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_yotbe_youtube_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ggl_google_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_yteb_youtube_false() {
+        doTest();
+    }
+
+    @Test
     public void test_adfg0123_abcdefgh_false() {
         comment("not sure about it is really false");
         doTest();
@@ -1187,19 +1342,16 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tolos_lowndes_false() {
-        experimental();
         doTest();
     }
 
     @Test
     public void test_tolos_looking_false() {
-        experimental();
         doTest();
     }
 
     @Test
     public void test_tolos_blossom_false() {
-        experimental();
         doTest();
     }
 
@@ -1242,7 +1394,6 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tools_toenails_false() {
-        experimental();
         doTest();
     }
 
@@ -1305,7 +1456,6 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tolos_larose_false() {
-        experimental("?");
         doTest();
     }
 
@@ -1356,13 +1506,11 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_servs_superstar_false() {
-        experimental();
         doTest();
     }
 
     @Test
     public void test_servs_sayers_false() {
-        experimental();
         doTest();
     }
 
@@ -1383,13 +1531,11 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tolsvirtl_living_false() {
-        experimental("found 4?????");
         doTest();
     }
 
     @Test
     public void test_tolsvirtl_orville_false() {
-        experimental("WHAT???");
         doTest();
     }
 
@@ -1417,7 +1563,6 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_msser_messaging_true() {
-        experimental("not sure how to balance P:ac == W:abc");
         doTest();
     }
 
@@ -1490,7 +1635,6 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_kwizachederahatrids_federations_false() {
-        experimental();
         doTest();
     }
 
@@ -1586,6 +1730,70 @@ public class PatternToWordMatchingTest {
         doTest();
     }
 
+    @Test
+    public void test_path_goldpath_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_goldpath_path_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_dth_death_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_gml_gmail_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_trnslt_translate_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_trsnlt_translate_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_tsrnlt_translate_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpd_notepad_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpd_notepadplusplus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpdpp_notepadplusplus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpdpls_notepadplusplus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpdplspls_notepadplusplus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_servs_stress_false() {
+        doTest();
+    }
 
     @Test
     public void test_maximums() {

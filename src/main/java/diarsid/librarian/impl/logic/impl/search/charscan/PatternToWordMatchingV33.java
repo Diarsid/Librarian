@@ -1,8 +1,6 @@
 package diarsid.librarian.impl.logic.impl.search.charscan;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.logln;
-
-public final class PatternToWordMatchingV33 implements PatternToWordMatchingCodeV2 {
+public final class PatternToWordMatchingV33 extends LoggingInScript implements PatternToWordMatchingCodeV2 {
 
     @Override
     public int version() {

@@ -10,6 +10,7 @@ import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
 import diarsid.librarian.tests.model.WordMatchingCode;
 import diarsid.support.strings.MultilineMessage;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,11 +89,6 @@ public class AggregationTest {
 //        message.add("words length :").add(wordsLengthSum).newLine();
 //        return message.toString();
 //    }
-
-    @BeforeAll
-    public static void setUp() throws Exception {
-        PatternToWordMatching.logEnabled.resetTo(false);
-    }
 
     @Test
     public void test() throws Exception {
@@ -208,6 +204,14 @@ public class AggregationTest {
     }
 
     @Test
+    public void test_8_1() throws Exception {
+        pattern = "whltwhtmn";
+        words = List.of("walt", "whitman");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
     public void test_9() throws Exception {
         pattern = "tolos";
         words = List.of("to", "london");
@@ -283,7 +287,6 @@ public class AggregationTest {
     public void test_lororng() throws Exception {
         pattern = "lororng";
         words = List.of(
-                "the",
                 "lord",
                 "of",
                 "rings");
@@ -349,20 +352,6 @@ public class AggregationTest {
         words = List.of(
                 "hartmann",
                 "what");
-        expectOk = true;
-        analyze();
-    }
-
-//    too much 7
-//            P:lorofrng
-//            51 : L'Étranger by Albert Camus
-//    result:80009201009000400 pos:11117777 rateSum:92 missed:0 span-missed:4 overlaps:0 words:1 wordsLength:9
-//    létranger : 10809209000804 : pattern_L=8, word_L=9, found=4, match_Ix=0, match_Span=8, rate=92
-    @Test
-    public void test_lorofrng() throws Exception {
-        pattern = "lorofrng";
-        words = List.of(
-                "létranger");
         expectOk = true;
         analyze();
     }

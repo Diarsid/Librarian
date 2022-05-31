@@ -1,31 +1,14 @@
 package diarsid.librarian.impl.logic.impl.search.charscan;
 
+import java.util.List;
+
 import diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.H2SqlFunctionScriptInJava;
-import diarsid.support.objects.references.Possible;
-
-import static java.lang.String.format;
-
-import static diarsid.support.objects.references.References.simplePossibleButEmpty;
 
 public interface PatternToWordMatching extends H2SqlFunctionScriptInJava {
 
-    PatternToWordMatching CURRENT_VERSION = new PatternToWordMatchingV39();
+    PatternToWordMatching CURRENT_VERSION = new PatternToWordMatchingV43();
 
-    Possible<Boolean> logEnabled = simplePossibleButEmpty();
-
-    static void logln(String s) {
-        if ( logEnabled.isNotPresent() || logEnabled.get() ) {
-            System.out.println(s);
-        }
-    }
-
-    static void logln(String s, Object... args) {
-        if ( logEnabled.isNotPresent() || logEnabled.get() ) {
-            System.out.println(format(s, args));
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         CURRENT_VERSION.rewriteScript();
     }
 
@@ -37,5 +20,15 @@ public interface PatternToWordMatching extends H2SqlFunctionScriptInJava {
     long evaluate(String pattern, String word);
 
     MatchingCode describe(long code);
+
+    @Override
+    default List<String> stringsToRemoveInScript() {
+        return List.of("public ");
+    }
+
+    @Override
+    default List<String> stringsToCommentInScript() {
+        return List.of("logln(\"");
+    }
 
 }

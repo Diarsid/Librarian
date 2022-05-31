@@ -7,8 +7,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 
 public interface H2SqlFunctionScriptInJava extends H2SqlScriptInJava {
+
+    default List<String> stringsToCommentInScript() {
+        return emptyList();
+    }
+
+    default List<String> stringsToRemoveInScript() {
+        return emptyList();
+    }
 
     @Override
     default String scriptType() {
@@ -36,7 +45,16 @@ public interface H2SqlFunctionScriptInJava extends H2SqlScriptInJava {
                     scriptMarkerCounter.incrementAndGet();
                     return;
                 }
-                scriptLines.add(line.replace("public ", "").replace("logln(\"", "//logln(\"")); // comment logln invocation
+
+                for ( String stringToRemove : this.stringsToRemoveInScript() ) {
+                    line = line.replace(stringToRemove, "");
+                }
+
+                for ( String stringToComment : this.stringsToCommentInScript() ) {
+                    line = line.replace(stringToComment, "//"+stringToComment);
+                }
+
+                scriptLines.add(line);
             }
         };
 

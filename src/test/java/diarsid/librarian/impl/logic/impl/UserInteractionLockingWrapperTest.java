@@ -59,7 +59,9 @@ public class UserInteractionLockingWrapperTest extends TransactionalRollbackTest
             competingAccessBegins.set(currentTimeMillis());
         });
 
-        CompletableFuture.allOf(interact, competingAccess).join();
+        CompletableFuture
+                .allOf(interact, competingAccess)
+                .join();
 
         assertThat(interactEnds.get()).isLessThanOrEqualTo(competingAccessBegins.get());
     }

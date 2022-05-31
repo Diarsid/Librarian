@@ -129,7 +129,7 @@ public class LibrarianTestConsole {
                                 command.argAt(0).equalsIgnoreCase("find") &&
                                 command.hasNot(singleFlag)))
                 .withOperation(building -> building
-                        .named("get-by-label")
+                        .named("get-all-by-label")
                         .doing(getByLabels)
                         .matching(command ->
                                 command.args().size() == 2 &&

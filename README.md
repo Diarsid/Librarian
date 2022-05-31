@@ -1,9 +1,9 @@
 # Librarian project
 
 ## Goal
-Main goal of this project is to provide semantical search engine for stored strings data. It is intended for storing and searching of relatively shorts strings like sentences or phrases. It is not intended for storing a huge text bloks like book paragrahs or pages. 
+Main goal of this project is to provide semantical search engine for stored strings data. It is intended for storing and searching simple, relatively short and meaningful strings, like names, phrases, paths, sentences. Good examples are book names, personal names, addresses, file paths, lists of goods in store, etc. 
 
-Main advantage and feature of this engine in contrast to common full text search engines is that it can discern words from messy queries. For example, search string like:  
+Main advantage and feature of this engine in contrast to common full text search engines is that it can discern words from messy, unseparated queries. For example, search string like:  
 `tolknlorofrng`  
 will find a string:  
 `The Lord of the Rings by J.R.R. Tolkien`    
@@ -25,14 +25,14 @@ Due to those limitations, it's implied, that this search engine will not be used
 
  - it is not a one more FTS-engine
  - it is not a 'document oriented' storage, so it's not intended for highly structured strings like JSON or XML
- - it is not intended for storing blocks of text
+ - it is not intended for storing huge blocks of text in one entry like whole book's chapter or page for example.
  
 ## Usage
 
 #### Main concepts
 
 ##### Entry
-Entry is a basical unit of stored data that can be queried. Basical it is represents a single stored string with some metadata - id, saved time, user id etc. It is represented by class `diarsid.librarian.api.model.Entry`. Entries can be created and retrieved by repository-like object of interface `diarsid.librarian.api.Entries`.
+Entry is a basical unit of stored data that can be queried. Basical it represents a single stored string with some metadata - id, saved time, user id etc. It is represented by class `diarsid.librarian.api.model.Entry`. Entries can be created and retrieved by repository-like object of interface `diarsid.librarian.api.Entries`.
 
 For example:
 ```
@@ -186,7 +186,7 @@ This project require following dependencies (not present in Maven central, are p
 
 #### Tests
 
-`src/test` folder contains `resources/datasets/*` fileds that are imported into `resources/database/h2/*.mv.db` H2 database file.
+`src/test` folder contains `resources/datasets/*` files that are imported into `resources/database/h2/search.mv.db` H2 database file.
 If database-file is not present or is new and tables not found, first tests run will create database file and execute data import from those datasets.
 
 Some tests are executed in in-memory database, and some are executed through database tcp-server using database file with imported data. Tests that use tcp-server can start it, if it is not started.   

@@ -6,7 +6,7 @@ public class H2AggregateFunctionForAnalyzeScript implements H2SqlAggregateFuncti
 
     @Override
     public Class aggregateClass() {
-        return H2AggregateFunctionForAnalyzeV23.class;
+        return H2AggregateFunctionForAnalyzeV24.class;
     }
 
     @Override
@@ -16,7 +16,7 @@ public class H2AggregateFunctionForAnalyzeScript implements H2SqlAggregateFuncti
 
     @Override
     public int version() {
-        return 23;
+        return 24;
     }
 
     public static void main(String[] args) throws Exception {
