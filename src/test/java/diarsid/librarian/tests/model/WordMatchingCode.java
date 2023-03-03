@@ -3,7 +3,7 @@ package diarsid.librarian.tests.model;
 import java.util.Comparator;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
-import diarsid.librarian.impl.logic.impl.search.charscan.MatchingCodeV2;
+import diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2;
 
 public class WordMatchingCode extends MatchingCodeV2 {
 

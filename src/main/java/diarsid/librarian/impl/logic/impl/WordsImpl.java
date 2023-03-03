@@ -13,13 +13,12 @@ import diarsid.librarian.impl.logic.api.UuidSupplier;
 import diarsid.librarian.impl.logic.api.Words;
 import diarsid.librarian.impl.logic.impl.jdbc.ThreadBoundTransactional;
 import diarsid.librarian.impl.model.Word;
-import diarsid.support.objects.PooledReusable;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
-import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static diarsid.support.model.Storable.State.STORED;
 
 public class WordsImpl extends ThreadBoundTransactional implements Words {

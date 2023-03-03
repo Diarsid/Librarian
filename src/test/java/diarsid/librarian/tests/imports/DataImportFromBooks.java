@@ -58,7 +58,7 @@ public class DataImportFromBooks implements DataImport {
         Entry.Label booksLabel = store.labels().getOrSave(user, "books");
         List<Entry.Label> semanticLabels = store.labels().getOrSave(user, SEMANTIC_LABEL_NAMES);
         Map<Entry.Label, List<String>> semanticLabelsAndWords = new HashMap<>();
-        semanticLabels.forEach(label -> semanticLabelsAndWords.put(label, toSimplifiedWords(label.name(), CASE_TO_LOWER, true, false, true)));
+        semanticLabels.forEach(label -> semanticLabelsAndWords.put(label, toSimplifiedWords(label.name(), CASE_TO_LOWER, true, false, true, false)));
 
         Map<String, Set<String>> booksAndAuthors = new HashMap<>();
         Map<String, List<String>> authorsAndBooks = new HashMap<>();
@@ -126,7 +126,7 @@ public class DataImportFromBooks implements DataImport {
             List<Entry.Label> applicableSemanticLabels = semanticLabels
                     .stream()
                     .filter(label -> {
-                        List<String> entryWords = toSimplifiedWords(bookEntry.string(), CASE_TO_LOWER, true, false, true);
+                        List<String> entryWords = toSimplifiedWords(bookEntry.string(), CASE_TO_LOWER, true, false, true, false);
                         List<String> labelWords = semanticLabelsAndWords.get(label);
                         return entryWords.containsAll(labelWords);
                     })

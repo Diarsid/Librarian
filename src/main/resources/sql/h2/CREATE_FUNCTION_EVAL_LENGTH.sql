@@ -1,5 +1,5 @@
 -- generated 
---   by diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatchesV5
+--   by diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV5
 --   at 2021-05-19T22:29:36.952602200
 CREATE ALIAS EVAL_LENGTH_V5 AS $$
     int evaluate(

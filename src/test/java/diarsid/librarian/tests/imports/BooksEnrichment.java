@@ -98,7 +98,7 @@ public class BooksEnrichment {
         Map<String, List<String>> authorsWords = new HashMap<>();
         Map<String, Set<String>> wordsToAuthors = new HashMap<>();
         authors.forEach(author -> {
-            List<String> words = toSimplifiedWords(author, CASE_TO_LOWER, true, true, true);
+            List<String> words = toSimplifiedWords(author, CASE_TO_LOWER, true, true, true, false);
             authorsWords.put(author, words);
             words.forEach(word -> {
                 Set<String> authorsByWord = wordsToAuthors.get(word);
@@ -124,8 +124,8 @@ public class BooksEnrichment {
                 return false;
             }
 
-            var wordsInAuthor = toSimplifiedWords(author, CASE_TO_LOWER, true, true, true);
-            var wordsInSomeAuthor = toSimplifiedWords(someAuthor, CASE_TO_LOWER, true, true, true);
+            var wordsInAuthor = toSimplifiedWords(author, CASE_TO_LOWER, true, true, true, false);
+            var wordsInSomeAuthor = toSimplifiedWords(someAuthor, CASE_TO_LOWER, true, true, true, false);
 
             boolean matchButDifferent =
                     wordsInAuthor.containsAll(wordsInSomeAuthor) ^

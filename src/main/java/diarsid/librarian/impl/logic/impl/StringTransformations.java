@@ -74,6 +74,7 @@ public class StringTransformations {
             String target,
             CaseConversion caseConversion,
             boolean decomposeCamelCase,
+            boolean includeDecomposedCamelCaseOriginal,
             boolean joinSingleCharToNextWord,
             boolean allowSingleChar) {
         String simplified;
@@ -90,6 +91,9 @@ public class StringTransformations {
             List<String> wordsDecomposed = new ArrayList<>();
             for ( String word : words ) {
                 wordsDecomposed.addAll(splitCamelCase(word, false));
+                if ( includeDecomposedCamelCaseOriginal ) {
+                    wordsDecomposed.add(word);
+                }
             }
             words = wordsDecomposed;
 

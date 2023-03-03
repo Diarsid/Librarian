@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.String.format;
+import static java.util.Collections.sort;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.CURRENT_VERSION;
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
 import static diarsid.support.misc.Misc.methodName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -21,9 +23,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class PatternToWordMatchingTest {
 
+    private static final PatternToWordMatching MATCHING = currentVersion();
+
     private static class Statistic {
 
-        private static class TestInstance {
+        private static class TestInstance implements Comparable<TestInstance> {
 
             private String pattern;
             private String word;
@@ -48,6 +52,11 @@ public class PatternToWordMatchingTest {
                 return "pattern='" + pattern + '\'' +
                         " word='" + word + '\'' +
                         " expectMatching=" + expectMatching;
+            }
+
+            @Override
+            public int compareTo(TestInstance other) {
+                return Boolean.compare(this.expectMatching, other.expectMatching);
             }
         }
 
@@ -101,7 +110,7 @@ public class PatternToWordMatchingTest {
         if ( nonNull(comment) ) {
             System.out.println("[TEST] comment: " + comment);
         }
-        long code = CURRENT_VERSION.evaluate(pattern, word);
+        long code = MATCHING.evaluate(pattern, word);
 
         System.out.println(code);
 
@@ -178,9 +187,9 @@ public class PatternToWordMatchingTest {
     }
 
     private static final String TEST_FORMAT =    "           %-19s %-19s %s";
+
     @AfterAll
     public static void after() {
-
         System.out.println("=== Statistic ===");
         System.out.println(" negative tests   : " + statistic.negative);
         System.out.println(" positive tests   : " + statistic.positive);
@@ -199,10 +208,11 @@ public class PatternToWordMatchingTest {
     }
 
     private static void printTests(List<Statistic.TestInstance> tests) {
+        sort(tests);
         if ( tests.isEmpty() ) {
             return;
         }
-        System.out.println(format(TEST_FORMAT, "PATTERN", "WORD", "MATCHING"));
+        System.out.println(format(TEST_FORMAT, "PATTERN", "WORD", "EXPECTED_MATCHING"));
         for ( Statistic.TestInstance test : tests ) {
             System.out.println(format(TEST_FORMAT, test.pattern, test.word, test.expectMatching));
         }
@@ -667,6 +677,7 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tolos_llosa_false() {
+        onlyDesirable();
         doTest();
     }
 
@@ -923,11 +934,6 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
-    public void test_projsdrs_diarsid_true() {
-        doTest();
-    }
-
-    @Test
     public void test_drsprojs_projects_true() {
         doTest();
     }
@@ -938,7 +944,27 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_projsdrs_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_projsdrs_projects_true() {
+        doTest();
+    }
+
+    @Test
     public void test_kwisahaderh_haderach_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwistzhadrch_kwisatz_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwistzhadrch_haderach_true() {
         doTest();
     }
 
@@ -974,6 +1000,156 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_porjdrsd_projects_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drsdporj_projects_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_drsdporj_diarsid_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_enginsjva_engins_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_enginsjva_java_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_passnjss_passion_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_passnjss_jesus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_passnjss_jesusx_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_passnjssy_jesusx_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jsspassn_passion_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jsspassn_jesus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jsspassn_jesusx_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jss_jesusx_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jsspassn_jesusxy_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_sex_jesusx_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_uposhtarch_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_upostarch_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_uposhtarch_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_uposhtarch_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukposhtarch_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ukposht_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_uposhtarch_archive_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jss_jesus_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_srvsmsg_servers_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_srvsmsg_message_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_msg_message_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_srvsmesg_message_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_srvsmesg_servers_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_srvsmsg_messaging_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_xxmsg_messaging_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_xxmssg_messaging_true() {
         doTest();
     }
 
@@ -1279,8 +1455,7 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
-    public void test_adfg_abcdefgh_false() {
-        comment("really negative pattern?");
+    public void test_adfg_abcdefgh_true() {
         doTest();
     }
 
@@ -1541,6 +1716,7 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_virtual_via_false() {
+        onlyDesirable();
         doTest();
     }
 
@@ -1608,6 +1784,11 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_tols_tolkiens_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_tols_torrents_false() {
         doTest();
     }
 
@@ -1692,6 +1873,16 @@ public class PatternToWordMatchingTest {
     @Test
     public void test_upshstnoftftclnt_status_true() {
         onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    public void test_upshstsnoftftclnt_status_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_sts_status_true() {
         doTest();
     }
 
@@ -1781,6 +1972,17 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_ntpdpp_notepad_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_ntpdpp_plusplus_true() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
     public void test_ntpdpls_notepadplusplus_true() {
         doTest();
     }
@@ -1796,11 +1998,197 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    public void test_jvaenings_java_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_jvaenings_engines_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_cdrw_coreldraw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldrw_draw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_clrdrw_draw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_cdrw_corel_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_crdrw_corel_true() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    public void test_cdrw_draw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldrw_coreldraw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldr_coreldraw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldw_coreldraw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldwr_coreldraw_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crldrw_corel_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crl_corel_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crl_coreld_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crl_coreldr_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_crld_corel_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_clrdrw_coreldraw_true() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    public void test_clrdrw_corel_true() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    public void test_clrdrw_color_true() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolsvirtl_possible_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolsvirtl_worlds_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolsvirtl_toussaint_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_ilovyo_girlhood_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_delivering_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_delivered_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_virtlservs_resurrection_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwizachoderah_reached_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_kwizachoderah_herbert_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_drklalver_drockefeller_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_goldpath_goddard_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_goldpath_goodall_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_tolosvirtl_overtreated_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_imnlknt_montecristo_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_imnlknt_implementation_false() {
+        doTest();
+    }
+
+    @Test
+    public void test_imnlknt_inmortales_false() {
+        doTest();
+    }
+
+
+
+
+    @Test
     public void test_maximums() {
         List.of(
                 "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg")
                 .stream()
-                .map(word -> CURRENT_VERSION.evaluate(word, word))
+                .map(word -> MATCHING.evaluate(word, word))
                 .collect(toList())
                 .forEach(System.out::println);
     }

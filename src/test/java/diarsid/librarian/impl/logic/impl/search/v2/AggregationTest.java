@@ -4,29 +4,33 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV23;
-import diarsid.librarian.impl.logic.impl.search.UuidAndAggregationCode;
-import diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching;
-import diarsid.librarian.tests.model.WordMatchingCode;
-import diarsid.support.strings.MultilineMessage;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25;
+import diarsid.librarian.impl.logic.impl.search.UuidAndAggregationCode;
+import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
+import diarsid.librarian.tests.model.WordMatchingCode;
+import diarsid.support.strings.MultilineMessage;
+
 import static java.util.UUID.randomUUID;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.PatternToWordMatching.CURRENT_VERSION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
+
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
 
 public class AggregationTest {
 
     static Logger log = LoggerFactory.getLogger(AggregationTest.class);
 
-    H2AggregateFunctionForAnalyzeV23 aggregator = new H2AggregateFunctionForAnalyzeV23();
-    PatternToWordMatching matching = CURRENT_VERSION;
+    static final PatternToWordMatching MATCHING = currentVersion();
+    static {
+        MATCHING.setLoggingEnabled(false);
+    }
+
+    H2AggregateFunctionForAnalyzeV25 aggregator = new H2AggregateFunctionForAnalyzeV25();
     String pattern;
     Boolean expectOk;
     List<String> words;
@@ -39,9 +43,9 @@ public class AggregationTest {
         report.newLine().add("pattern : ").add(pattern);
 
         for ( String word : words ) {
-            long code = matching.evaluate(pattern, word);
+            long code = MATCHING.evaluate(pattern, word);
             wordCodes.add(new WordMatchingCode(word, code));
-            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(matching.describe(code).toString());
+            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(MATCHING.describe(code).toString());
         }
 
         for ( WordMatchingCode wordCode : wordCodes) {
@@ -58,7 +62,7 @@ public class AggregationTest {
             assertThat(uuidAndAggregationCode.rateSum).isEqualTo(aggregator.rateSum());
         }
         else {
-            var reason = H2AggregateFunctionForAnalyzeV23
+            var reason = H2AggregateFunctionForAnalyzeV25
                     .RejectionReason
                     .findByValue((int) resultCode)
                     .map(Enum::name)
@@ -340,6 +344,30 @@ public class AggregationTest {
         analyze();
     }
 
+    @Test
+    public void test_kwistzhadrch() throws Exception {
+        pattern = "kwisahaderh";
+        words = List.of(
+                "kwisatz",
+                "haderach",
+                "is",
+                "desire",
+                "had",
+                "aharkonnen",
+                "have",
+                "her",
+                "adaughter",
+                "desert",
+                "another",
+                "has",
+                "ha",
+                "hebrew",
+                "derekh");
+
+        expectOk = true;
+        analyze();
+    }
+
 //    too much 7
 //    P:
 //        4 : The Last Hours of Ancient Sunlight: The Fate of the World and What We Can Do Before It's Too Late by Neale Donald Walsch and Thom Hartmann, and Joseph Chilton Pearce
@@ -386,4 +414,48 @@ public class AggregationTest {
         analyze();
     }
 
+    @Test
+    public void test_javengins() throws Exception {
+        pattern = "javengins";
+        words = List.of(
+                "java",
+                "engines");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_XXX() throws Exception {
+        pattern = "xabc";
+        words = List.of(
+                "xyyy",
+                "aoboco");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_upostarch() throws Exception {
+        pattern = "upostarch";
+        words = List.of(
+                "poshta",
+                "archive",
+                "ukr");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_upshstnoftftclnt() throws Exception {
+        pattern = "upshstnoftftclnt";
+        words = List.of(
+                "ukrposhta",
+                "poshta",
+                "status",
+                "notification",
+                "client",
+                "ukr");
+        expectOk = true;
+        analyze();
+    }
 }

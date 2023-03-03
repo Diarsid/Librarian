@@ -15,9 +15,7 @@ import diarsid.librarian.api.required.impl.SceptreStringsComparisonAlgorithm;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.model.RealUser;
 import diarsid.librarian.tests.imports.DataImport;
-import diarsid.sceptre.WeightAnalyzeReal;
-import diarsid.sceptre.api.WeightAnalyze;
-import diarsid.strings.similarity.api.Similarity;
+import diarsid.sceptre.api.Sceptre;
 import diarsid.support.configuration.Configuration;
 import diarsid.support.objects.Pools;
 import diarsid.tests.db.h2.H2TestDataBase;
@@ -72,9 +70,8 @@ public class CoreTestSetup {
 
         Configuration configuration = actualConfiguration();
         Pools pools = new Pools();
-        Similarity similarity = Similarity.createInstance(configuration);
-        WeightAnalyze weightAnalyze = new WeightAnalyzeReal(configuration, similarity, pools);
-        this.algorithm = new SceptreStringsComparisonAlgorithm(weightAnalyze);
+        Sceptre.Analyze analyze = Sceptre.newAnalyzeInstance(pools);
+        this.algorithm = new SceptreStringsComparisonAlgorithm(analyze);
 
         UserProvidedResources impl = new UserProvidedResources() {
 

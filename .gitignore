@@ -6,6 +6,7 @@ classes
 gitbash*
 dev_private
 desktop.ini
+src/test/resources/database/h2/search_ignored.mv.db
 
 # Package Files
 *.war

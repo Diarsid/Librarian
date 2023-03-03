@@ -1,26 +1,14 @@
 package diarsid.librarian.impl.logic.impl.jdbc.h2.extensions;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.H2SqlAggregateFunctionScriptInJava;
+import diarsid.support.model.versioning.VersionedByClassName;
 
-public class H2AggregateFunctionForAnalyzeScript implements H2SqlAggregateFunctionScriptInJava {
+public class H2AggregateFunctionForAnalyzeScript extends H2SqlAggregateFunctionScriptInJava {
 
-    @Override
-    public Class aggregateClass() {
-        return H2AggregateFunctionForAnalyzeV24.class;
-    }
+    private static final String NAME = "EVAL_CODES";
+    private static final H2AggregateFunctionForAnalyzeV24 CURRENT_VERSION = new H2AggregateFunctionForAnalyzeV24();
 
-    @Override
-    public String name() {
-        return "EVAL_CODES";
-    }
-
-    @Override
-    public int version() {
-        return 24;
-    }
-
-    public static void main(String[] args) throws Exception {
-        var script = new H2AggregateFunctionForAnalyzeScript();
-        script.rewriteScript();
+    public H2AggregateFunctionForAnalyzeScript() {
+        super(CURRENT_VERSION, NAME, VersionedByClassName.versionOf(CURRENT_VERSION));
     }
 }

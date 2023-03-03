@@ -6,65 +6,69 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import diarsid.librarian.impl.logic.impl.search.charscan.NamedAndVersioned;
+
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 
-public interface H2SqlFunctionScriptInJava extends H2SqlScriptInJava {
+public abstract class H2SqlFunctionScriptInJava extends H2SqlScriptFileInJava {
 
-    default List<String> stringsToCommentInScript() {
-        return emptyList();
-    }
+    public static final String SCRIPT_MARKER = "/* script */";
 
-    default List<String> stringsToRemoveInScript() {
-        return emptyList();
+    private final List<String> stringsToComment;
+    private final List<String> stringsToRemove;
+
+    public H2SqlFunctionScriptInJava(
+            NamedAndVersioned source,
+            List<String> stringsToComment,
+            List<String> stringsToRemove) {
+        super(source);
+        this.stringsToComment = stringsToComment;
+        this.stringsToRemove = stringsToRemove;
     }
 
     @Override
-    default String scriptType() {
+    public final String scriptType() {
         return "FUNCTION";
     }
 
     @Override
-    default List<String> scriptLines() throws Exception {
+    public final List<String> scriptLines() throws Exception {
         List<String> allClassLines = Files.readAllLines(this.sourceFile());
 
         AtomicInteger scriptMarkerCounter = new AtomicInteger();
         List<String> scriptLines = new ArrayList<>();
 
-        Consumer<String> aggregateClassLines = (line) -> {
+        Consumer<String> collectJustScriptLines = (line) -> {
             if ( scriptMarkerCounter.get() == 0 ) {
-                if ( ! line.contains("/* script */") ) {
-                    return;
-                }
-                else {
+                if ( line.contains(SCRIPT_MARKER) ) {
                     scriptMarkerCounter.incrementAndGet();
                 }
             }
             else if ( scriptMarkerCounter.get() == 1 ) {
-                if ( line.contains("/* script */") ) {
+                if ( line.contains(SCRIPT_MARKER) ) {
                     scriptMarkerCounter.incrementAndGet();
                     return;
                 }
 
-                for ( String stringToRemove : this.stringsToRemoveInScript() ) {
+                for ( String stringToRemove : this.stringsToRemove ) {
                     line = line.replace(stringToRemove, "");
                 }
 
-                for ( String stringToComment : this.stringsToCommentInScript() ) {
-                    line = line.replace(stringToComment, "//"+stringToComment);
+                for ( String stringToComment : this.stringsToComment ) {
+                    line = line.replace(stringToComment, "//" + stringToComment);
                 }
 
                 scriptLines.add(line);
             }
         };
 
-        allClassLines.forEach(aggregateClassLines);
+        allClassLines.forEach(collectJustScriptLines);
 
         if ( scriptMarkerCounter.get() != 2 ) {
             throw new IllegalStateException();
         }
 
-        scriptLines.add(0, format("CREATE ALIAS %s AS $$", this.nameAndVersion()));
+        scriptLines.add(0, format("CREATE ALIAS %s AS $$", super.nameAndVersion()));
         scriptLines.add(scriptLines.size(), "$$");
 
         return scriptLines;

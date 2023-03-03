@@ -118,6 +118,9 @@ FOREIGN KEY(user_uuid) REFERENCES users(uuid);
 CREATE INDEX IX_ENTRIES_TIME
 ON entries(time);
 
+CREATE INDEX IX_ENTRIES_STRING_LOWER
+ON entries(string_lower);
+
 CREATE INDEX IX_STRING_AND_USER_IN_WORDS
 ON words(string, user_uuid);
 

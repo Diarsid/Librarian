@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import diarsid.librarian.api.Entries;
 import diarsid.librarian.api.Properties;
 import diarsid.librarian.api.Search;
 import diarsid.librarian.api.model.Entry;
@@ -269,12 +270,32 @@ public class SearchImpl implements Search {
                             patternsToEntries.save(freshEntriesNewRelations);
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, BEFORE, storedChoiceTime);
-                            List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
+                            List<PatternToEntry> oldEntriesOldRelations = patternsToEntries.findBy(storedPattern, oldEntries);
+                            List<Entry> oldEntriesWithRelations = oldEntriesOldRelations
+                                    .stream()
+                                    .map(PatternToEntry::entry)
+                                    .distinct()
+                                    .collect(toList());
 
-                            List<PatternToEntry> allRelations = unite(
-                                    freshEntriesNewRelations,
-                                    freshEntriesStoredRelations,
-                                    oldEntriesRelations);
+                            oldEntries.removeAll(oldEntriesWithRelations);
+
+                            List<PatternToEntry> allRelations;
+                            if ( oldEntries.size() > 0 ) {
+                                List<PatternToEntry> oldEntriesNewRelations = algorithmAdapter.analyze(storedPattern, oldEntries, now);
+                                patternsToEntries.save(oldEntriesNewRelations);
+
+                                allRelations = unite(
+                                        freshEntriesNewRelations,
+                                        freshEntriesStoredRelations,
+                                        oldEntriesOldRelations,
+                                        oldEntriesNewRelations);
+                            }
+                            else {
+                                allRelations = unite(
+                                        freshEntriesNewRelations,
+                                        freshEntriesStoredRelations,
+                                        oldEntriesOldRelations);
+                            }
 
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
@@ -433,12 +454,32 @@ public class SearchImpl implements Search {
                             patternsToEntries.save(freshEntriesNewRelations);
 
                             List<Entry> oldEntries = entriesSearchByPattern.findBy(user, patternString, matching, labels, BEFORE, storedChoiceTime);
-                            List<PatternToEntry> oldEntriesRelations = patternsToEntries.findBy(storedPattern, oldEntries);
+                            List<PatternToEntry> oldEntriesOldRelations = patternsToEntries.findBy(storedPattern, oldEntries);
+                            List<Entry> oldEntriesWithRelations = oldEntriesOldRelations
+                                    .stream()
+                                    .map(PatternToEntry::entry)
+                                    .distinct()
+                                    .collect(toList());
 
-                            List<PatternToEntry> allRelations = unite(
-                                    freshEntriesNewRelations,
-                                    freshEntriesStoredRelations,
-                                    oldEntriesRelations);
+                            oldEntries.removeAll(oldEntriesWithRelations);
+
+                            List<PatternToEntry> allRelations;
+                            if ( oldEntries.size() > 0 ) {
+                                List<PatternToEntry> oldEntriesNewRelations = algorithmAdapter.analyze(storedPattern, oldEntries, now);
+                                patternsToEntries.save(oldEntriesNewRelations);
+
+                                allRelations = unite(
+                                        freshEntriesNewRelations,
+                                        freshEntriesStoredRelations,
+                                        oldEntriesOldRelations,
+                                        oldEntriesNewRelations);
+                            }
+                            else {
+                                allRelations = unite(
+                                        freshEntriesNewRelations,
+                                        freshEntriesStoredRelations,
+                                        oldEntriesOldRelations);
+                            }
 
                             try {
                                 UserChoice userChoice = userInteraction.askForChoice(user, allRelations);
@@ -600,11 +641,25 @@ public class SearchImpl implements Search {
     private List<PatternToEntry> unite(
             List<PatternToEntry> freshEntiresNewRelations,
             List<PatternToEntry> freshEntriesStoredRelations,
-            List<PatternToEntry> oldEntriesRelations) {
-        oldEntriesRelations.addAll(freshEntiresNewRelations);
-        oldEntriesRelations.addAll(freshEntriesStoredRelations);
+            List<PatternToEntry> oldEntriesOldRelations) {
+        oldEntriesOldRelations.addAll(freshEntiresNewRelations);
+        oldEntriesOldRelations.addAll(freshEntriesStoredRelations);
 
-        List<PatternToEntry> result = this.distinctAndSort(oldEntriesRelations);
+        List<PatternToEntry> result = this.distinctAndSort(oldEntriesOldRelations);
+
+        return result;
+    }
+
+    private List<PatternToEntry> unite(
+            List<PatternToEntry> freshEntiresNewRelations,
+            List<PatternToEntry> freshEntriesStoredRelations,
+            List<PatternToEntry> oldEntriesOldRelations,
+            List<PatternToEntry> oldEntriesNewRelations) {
+        oldEntriesOldRelations.addAll(oldEntriesNewRelations);
+        oldEntriesOldRelations.addAll(freshEntiresNewRelations);
+        oldEntriesOldRelations.addAll(freshEntriesStoredRelations);
+
+        List<PatternToEntry> result = this.distinctAndSort(oldEntriesOldRelations);
 
         return result;
     }

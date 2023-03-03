@@ -2,6 +2,7 @@ package diarsid.librarian.impl.logic.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcOperations;
@@ -18,6 +19,7 @@ import diarsid.librarian.impl.model.WordInEntry;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
+import static diarsid.librarian.api.Behavior.Feature.INCLUDE_CAMEL_CASED_WORD_ORIGINAL;
 import static diarsid.librarian.api.Behavior.Feature.JOIN_SINGLE_CHARS_TO_NEXT_WORD;
 import static diarsid.librarian.api.Behavior.Feature.USE_CAMEL_CASE_WORDS_DECOMPOSITION;
 import static diarsid.librarian.api.model.Entry.Type.WORD;
@@ -80,10 +82,19 @@ public class WordsInEntriesImpl extends ThreadBoundTransactional implements Word
     }
 
     private List<String> splitEntryToWords(User user, RealEntry entry) {
-        boolean useCamelCase = this.behavior.isEnabled(user, USE_CAMEL_CASE_WORDS_DECOMPOSITION);
-        boolean useSingleCharJoining = this.behavior.isEnabled(user, JOIN_SINGLE_CHARS_TO_NEXT_WORD);
+        Map<Behavior.Feature, Boolean> features = this.behavior.get(
+                user,
+                USE_CAMEL_CASE_WORDS_DECOMPOSITION,
+                JOIN_SINGLE_CHARS_TO_NEXT_WORD,
+                INCLUDE_CAMEL_CASED_WORD_ORIGINAL);
 
-        return toSimplifiedWords(entry.string(), CASE_TO_LOWER, useCamelCase, useSingleCharJoining, false);
+        return toSimplifiedWords(
+                entry.string(),
+                CASE_TO_LOWER,
+                features.get(USE_CAMEL_CASE_WORDS_DECOMPOSITION),
+                features.get(INCLUDE_CAMEL_CASED_WORD_ORIGINAL),
+                features.get(JOIN_SINGLE_CHARS_TO_NEXT_WORD),
+                false);
     }
 
     private void save(WordInEntry wordInEntry) {

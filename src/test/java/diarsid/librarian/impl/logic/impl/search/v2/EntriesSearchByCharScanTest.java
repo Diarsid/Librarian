@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static java.time.LocalDateTime.now;
@@ -37,9 +36,9 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQUAL;
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
-import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -231,7 +230,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V43(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V46(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -634,6 +633,12 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     }
 
     @Test
+    public void test_imnlknt() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInEveryEntry("immanuel", "kant").andAssert();
+    }
+
+    @Test
     public void test_ilovyo() throws Exception {
         search();
         entriesResult.expect().containingAllStringsInEveryEntry("i", "love", "you").andAssert();
@@ -719,6 +724,12 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_upshstnoftftclnt() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInAtLeastOneEntry("ukrposhta", "notification", "client").andAssert();
+    }
+
+    @Test
+    public void test_ukrptnotfclntsts() throws Exception {
         search();
         entriesResult.expect().containingAllStringsInAtLeastOneEntry("ukrposhta", "notification", "client").andAssert();
     }

@@ -15,6 +15,6 @@ public class StringTransformationsTest {
         String name = "John D.";
         List<String> expected = List.of("john", "d");
 
-        assertThat(expected).isEqualTo(toSimplifiedWords(name, CASE_TO_LOWER, true, true, true));
+        assertThat(expected).isEqualTo(toSimplifiedWords(name, CASE_TO_LOWER, true, true, true, true));
     }
 }

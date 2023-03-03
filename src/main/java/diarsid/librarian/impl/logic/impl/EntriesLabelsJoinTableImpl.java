@@ -35,10 +35,10 @@ public class EntriesLabelsJoinTableImpl extends ThreadBoundTransactional impleme
 
     @Override
     public List<Entry.Labeled> getAllJoinedTo(Entry entry) {
-        LocalDateTime entriesAtualAt = now();
+        LocalDateTime entriesActualAt = now();
         return super.currentTransaction()
                 .doQueryAndStream(
-                        row -> new LabelToEntry(entriesAtualAt, row, "j_", "e_", "l_"),
+                        row -> new LabelToEntry(entriesActualAt, row, "j_", "e_", "l_"),
                         "SELECT \n" +
                         "   le.uuid         AS j_uuid, \n" +
                         "   le.time         AS j_time, \n" +

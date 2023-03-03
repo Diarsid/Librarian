@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.librarian.api.model.Entry.Label.Matching.NONE_OF;
-import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static diarsid.support.model.Unique.uuidsOf;
 
 public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries implements EntriesSearchByPattern {
@@ -36,7 +36,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
 
     public EntriesSearchByCharScan(Jdbc jdbc, UuidSupplier uuidSupplier) {
         super(jdbc, uuidSupplier);
-        this.resultsFiltration = new ResultsLoggingWrapper(new ResultsFiltrationV1());
+        this.resultsFiltration = new ResultsLoggingWrapper(new NoResultsFiltration());
         this.rejected = (entries) -> {
             List<String> ignoreWithMissed = entries
                     .stream()
@@ -53,7 +53,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -84,7 +84,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -117,7 +117,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -154,7 +154,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -193,7 +193,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -232,7 +232,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -267,7 +267,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -302,7 +302,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -335,7 +335,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "labeled_words_scan_raw AS ( \n" +
                 "	SELECT \n" +
                 "		we.entry_uuid, \n" +
-                "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                 "	FROM words w \n" +
                 "		JOIN words_in_entries we \n" +
                 "			ON w.uuid = we.word_uuid \n" +
@@ -470,7 +470,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V43(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V46(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -509,7 +509,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -569,7 +569,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V43(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V46(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -608,7 +608,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         UuidAndAggregationCode::new,
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "	SELECT uuid, string, EVAL_MATCHING_V43(?, string) AS w_code \n" +
+                        "	SELECT uuid, string, EVAL_MATCHING_V46(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
                         "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
@@ -649,7 +649,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -687,7 +687,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, w.string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, w.string) AS word_code \n" +
                         "	FROM labels_to_entries le \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON we.entry_uuid = le.entry_uuid \n" +
@@ -778,7 +778,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -839,7 +839,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +
@@ -887,7 +887,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "labeled_words_scan_raw AS ( \n" +
                         "	SELECT \n" +
                         "		we.entry_uuid, \n" +
-                        "		EVAL_MATCHING_V43(?, string) AS word_code \n" +
+                        "		EVAL_MATCHING_V46(?, string) AS word_code \n" +
                         "	FROM words w \n" +
                         "		JOIN words_in_entries we \n" +
                         "			ON w.uuid = we.word_uuid \n" +

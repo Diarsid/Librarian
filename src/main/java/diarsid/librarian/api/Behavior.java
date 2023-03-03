@@ -1,5 +1,7 @@
 package diarsid.librarian.api;
 
+import java.util.Map;
+
 import diarsid.librarian.api.model.User;
 
 public interface Behavior {
@@ -56,6 +58,13 @@ public interface Behavior {
         USE_CAMEL_CASE_WORDS_DECOMPOSITION( /* default value */ true),
 
         /*
+         * If USE_CAMEL_CASE_WORDS_DECOMPOSITION is set to true, word like CamelCaseWord is treated as
+         * 3 different words in sense of analize. But if this set to true also, original CamelCaseWord will
+         * be preserved as single word in additional to it's splitted part.
+         * */
+        INCLUDE_CAMEL_CASED_WORD_ORIGINAL( /* default value */ true),
+
+        /*
         * If set to true, single chars in entry, separated by any separators, is joined to next word.
         *
         * For example, having entry "A Book Name, written by D.J.Doe"
@@ -91,6 +100,8 @@ public interface Behavior {
     }
 
     boolean get(User user, Feature feature);
+
+    Map<Feature, Boolean> get(User user, Feature... features);
 
     default boolean isEnabled(User user, Feature feature) {
         return this.get(user, feature);

@@ -37,7 +37,7 @@ public class BooksEnrichment2 {
                 authors.forEach(author -> {
                     authorsWords.put(
                             author,
-                            toSimplifiedWords(author, CASE_TO_LOWER, true, false, true));
+                            toSimplifiedWords(author, CASE_TO_LOWER, true, false, true, false));
                 });
 
                 List<String> redundantAuthors = new ArrayList<>();

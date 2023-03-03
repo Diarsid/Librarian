@@ -16,6 +16,12 @@ import static diarsid.support.strings.StringUtils.containsTextSeparator;
 
 public interface Entry extends Unique, Updatable, CreatedAt, UserScoped {
 
+    interface Word extends Unique, CreatedAt, UserScoped {
+
+        String string();
+
+    }
+
     interface Label extends Unique, Storable, CreatedAt, UserScoped {
 
         enum Matching implements CommonEnum<Matching> {
@@ -90,5 +96,4 @@ public interface Entry extends Unique, Updatable, CreatedAt, UserScoped {
     String searchString();
 
     Entry.Type type();
-
 }

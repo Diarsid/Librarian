@@ -2,8 +2,8 @@ package diarsid.librarian.impl.logic.impl.search.v2;
 
 import org.junit.jupiter.api.Test;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.CharSort.transform;
-import static diarsid.librarian.impl.logic.impl.search.charscan.CountCharMatches.CURRENT_VERSION;
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
+import static diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatches.CURRENT_VERSION;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class CharsMatchesTest {

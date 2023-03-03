@@ -1,33 +1,17 @@
 package diarsid.librarian.api.required.impl;
 
-import java.util.Optional;
-
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
-import diarsid.sceptre.api.WeightAnalyze;
+import diarsid.sceptre.api.Sceptre;
+import diarsid.support.model.versioning.Version;
+
+import static diarsid.sceptre.api.Sceptre.Weight.Estimate.BAD;
 
 public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgorithm {
 
-    private final WeightAnalyze weightAnalyze;
-    private final Version version;
+    private final Sceptre.Analyze analyze;
 
-    public SceptreStringsComparisonAlgorithm(WeightAnalyze weightAnalyze) {
-        this.weightAnalyze = weightAnalyze;
-        this.version = new Version() {
-            @Override
-            public int number() {
-                return 1;
-            }
-
-            @Override
-            public Optional<String> name() {
-                return Optional.empty();
-            }
-
-            @Override
-            public int compareTo(Version other) {
-                return Integer.compare(this.number(), other.number());
-            }
-        };
+    public SceptreStringsComparisonAlgorithm(Sceptre.Analyze analyze) {
+        this.analyze = analyze;
     }
 
     @Override
@@ -37,7 +21,7 @@ public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgor
 
     @Override
     public Version version() {
-        return this.version;
+        return this.analyze.version();
     }
 
     @Override
@@ -47,12 +31,12 @@ public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgor
 
     @Override
     public boolean isBad(float weight) {
-        return weightAnalyze.isBad(weight);
+        return Sceptre.Weight.Estimate.of(weight).is(BAD);
     }
 
     @Override
     public float analyze(String pattern, String entry) {
-        return weightAnalyze.weightString(pattern, entry);
+        return this.analyze.processString(pattern, entry);
     }
 
 }

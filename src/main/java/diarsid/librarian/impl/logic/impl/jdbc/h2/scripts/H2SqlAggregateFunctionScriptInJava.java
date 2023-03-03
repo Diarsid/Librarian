@@ -3,23 +3,28 @@ package diarsid.librarian.impl.logic.impl.jdbc.h2.scripts;
 import java.util.ArrayList;
 import java.util.List;
 
+import diarsid.support.model.versioning.Version;
+
 import static java.lang.String.format;
 
-public interface H2SqlAggregateFunctionScriptInJava extends H2SqlScriptInJava {
+public abstract class H2SqlAggregateFunctionScriptInJava extends H2SqlScriptFileInJava {
 
-    Class aggregateClass();
+    public H2SqlAggregateFunctionScriptInJava(Object source, String name, Version version) {
+        super(source, name, version);
+        super.overrideNameAndVersionInFile(this.name());
+    }
 
     @Override
-    default String scriptType() {
+    public final String scriptType() {
         return "AGGREGATE_FUNCTION";
     }
 
     @Override
-    default List<String> scriptLines() {
+    public final List<String> scriptLines() {
         List<String> lines = new ArrayList<>();
 
-        lines.add("CREATE AGGREGATE " + this.nameAndVersion());
-        lines.add(format("FOR \"%s\"", this.aggregateClass().getCanonicalName()));
+        lines.add("CREATE AGGREGATE " + super.nameAndVersion());
+        lines.add(format("FOR \"%s\"", super.source.getClass().getCanonicalName()));
 
         return lines;
     }
