@@ -43,8 +43,22 @@ public final class PatternToWordMatchingV47 extends PatternToWordMatchingCodeV2 
                 return code;
             }
             else if ( wordLength == 2 ) {
-                logln("  [c]");
-                return -1;
+                char wordChar0 = word.charAt(0);
+                char patternChar0 = pattern.charAt(0);
+                if ( wordChar0 == patternChar0 ) {
+                    logln("   first char of a short word! [length 2]");
+
+                    long code = CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY;
+
+                    code = code + patternLength * 100L;
+                    code = code + wordLength;
+
+                    return code;
+                }
+                else {
+                    logln("  [c]");
+                    return -1;
+                }
             }
             else if ( bothLength < 7 ) {
                 logln("  [d]");
@@ -147,6 +161,8 @@ public final class PatternToWordMatchingV47 extends PatternToWordMatchingCodeV2 
         boolean typoAbcAcbInPrev = false;
         int typoAbcAcbCount = 0;
 
+        int wordDuplication2Index = -1;
+
         int longestDiffInWord = -1;
 
         int wordFirstFoundCharIndex = -1;
@@ -236,46 +252,56 @@ public final class PatternToWordMatchingV47 extends PatternToWordMatchingCodeV2 
                     }
                 }
                 else if ( wc == wcPrev ) {
-                    logln("   WORD:%s not found after WORD:%s[PATTERN:%s] - %s : %s", wc, wcPrev, wcPrevInPattern, higlightChar(word, i), higlightChar(pattern, wcPrevInPattern));
-
-                    int iWordFromIncl = iPrev + 1;
-                    int wordCharsToIterate = i - iWordFromIncl;
-                    int patternCharsToIterate = wcPrevInPattern - 1;
-                    int iPatternFromIncl = 1;
-                    if ( patternCharsToIterate > wordCharsToIterate ) {
-                        iPatternFromIncl = wcPrevInPattern - wordCharsToIterate;
-                        patternCharsToIterate = wcPrevInPattern - iPatternFromIncl;
+                    boolean prohibition = false;
+                    if ( wordDuplication2Index > -1 ) {
+                        if ( wordDuplication2Index == i || wordDuplication2Index == i-1 ) {
+                            prohibition = true;
+                            logln("      is duplicate of previous found char, but is duplication of word chars!");
+                        }
                     }
 
-                    logln("      is duplicate of previous found char, backward scan in ranges word:%s, pattern:%s", wordCharsToIterate, patternCharsToIterate);
+                    if ( ! prohibition ) {
+                        logln("   WORD:%s not found after WORD:%s[PATTERN:%s] - %s : %s", wc, wcPrev, wcPrevInPattern, higlightChar(word, i), higlightChar(pattern, wcPrevInPattern));
 
-                    char wcX;
-                    char pcX;
-                    wordIterationX: for ( int iWord = iWordFromIncl; iWord < i; iWord++ ) {
-                        wcX = word.charAt(iWord);
-                        for ( int iPattern = iPatternFromIncl; iPattern < wcPrevInPattern; iPattern++ ) {
-                            pcX = pattern.charAt(iPattern);
+                        int iWordFromIncl = iPrev + 1;
+                        int wordCharsToIterate = i - iWordFromIncl;
+                        int patternCharsToIterate = wcPrevInPattern - 1;
+                        int iPatternFromIncl = 1;
+                        if ( patternCharsToIterate > wordCharsToIterate ) {
+                            iPatternFromIncl = wcPrevInPattern - wordCharsToIterate;
+                            patternCharsToIterate = wcPrevInPattern - iPatternFromIncl;
+                        }
 
-                            if ( wcX == pcX ) {
-                                logln("         found potential missed char: '%s' pattern:%s word:%s", wcX, iPattern, iWord);
-                                if ( iWord == i-1 && iPattern == wcPrevInPattern-1 ) {
-                                    if ( ! backwardMatchInPrev ) {
-                                        logln("         found++ strong match");
+                        logln("      is duplicate of previous found char, backward scan in ranges word:%s, pattern:%s", wordCharsToIterate, patternCharsToIterate);
 
-                                        order++;
-                                        found++;
-                                        matchInPattern++;
-                                        matchInPatternStrong++;
-                                        iterationIsStrong = true;
-                                        wordLastFoundCharIndex = i;
-                                        iPrev = i;
-                                        prevCharResult = PREV_CHAR_FOUND;
-                                        prevCharMatchStrength = PREV_CHAR_STRENGTH_IS_STRONG;
+                        char wcX;
+                        char pcX;
+                        wordIterationX: for ( int iWord = iWordFromIncl; iWord < i; iWord++ ) {
+                            wcX = word.charAt(iWord);
+                            for ( int iPattern = iPatternFromIncl; iPattern < wcPrevInPattern; iPattern++ ) {
+                                pcX = pattern.charAt(iPattern);
 
-                                        diffInWordSum--;
-                                        diffInPatternSum--;
+                                if ( wcX == pcX ) {
+                                    logln("         found potential missed char: '%s' pattern:%s word:%s", wcX, iPattern, iWord);
+                                    if ( iWord == i-1 && iPattern == wcPrevInPattern-1 ) {
+                                        if ( ! backwardMatchInPrev ) {
+                                            logln("         found++ strong match");
 
-                                        break wordIterationX;
+                                            order++;
+                                            found++;
+                                            matchInPattern++;
+                                            matchInPatternStrong++;
+                                            iterationIsStrong = true;
+                                            wordLastFoundCharIndex = i;
+                                            iPrev = i;
+                                            prevCharResult = PREV_CHAR_FOUND;
+                                            prevCharMatchStrength = PREV_CHAR_STRENGTH_IS_STRONG;
+
+                                            diffInWordSum--;
+                                            diffInPatternSum--;
+
+                                            break wordIterationX;
+                                        }
                                     }
                                 }
                             }
@@ -402,17 +428,27 @@ public final class PatternToWordMatchingV47 extends PatternToWordMatchingCodeV2 
                                                 }
                                                 else {
                                                     if ( gaps > 0 ) {
-                                                        logln("      WORD:%s[PATTERN:%s] backward match [+2] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPatternIndex, wcPrev, wcPrevInPattern);
-                                                        wcPrevInPattern = wcInPatternWeak;
-                                                        backwardMatches++;
-                                                        backwardMatchInCurr = true;
-                                                        found++;
-                                                        if ( wordFirstFoundCharIndex < 0 ) {
-                                                            wordFirstFoundCharIndex = i;
+                                                        if ( i != lastInWord ) {
+                                                            char wcNext = word.charAt(i + 1);
+
+                                                            if ( wcNext == wcPrev ) {
+                                                                logln("      WORD:%s[PATTERN:%s] backward match [+2] prohibited - is duplication in word!",  wc, wcInPatternWeak);
+                                                                wordDuplication2Index = i;
+                                                            }
+                                                            else {
+                                                                logln("      WORD:%s[PATTERN:%s] backward match [+2] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPatternIndex, wcPrev, wcPrevInPattern);
+                                                                wcPrevInPattern = wcInPatternWeak;
+                                                                backwardMatches++;
+                                                                backwardMatchInCurr = true;
+                                                                found++;
+                                                                if ( wordFirstFoundCharIndex < 0 ) {
+                                                                    wordFirstFoundCharIndex = i;
+                                                                }
+                                                                wordLastFoundCharIndex = i;
+                                                                logln("      found++[2]");
+                                                                gaps--;
+                                                            }
                                                         }
-                                                        wordLastFoundCharIndex = i;
-                                                        logln("      found++[2]");
-                                                        gaps--;
                                                     }
                                                 }
                                             }
@@ -1087,7 +1123,7 @@ public final class PatternToWordMatchingV47 extends PatternToWordMatchingCodeV2 
         }
 
         if ( found == 1 && wordLength < 6 && patternStartsWithWord ) {
-            logln("   fisrt char of a short word!");
+            logln("   first char of a short word!");
 
             long code = CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY;
 

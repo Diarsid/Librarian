@@ -37,7 +37,7 @@ public class AlgorithmToModelAdapter implements Comparator<PatternToEntry> {
     }
 
     public PatternToEntry analyze(Pattern pattern, Entry entry, LocalDateTime time) {
-        float weight = algorithm.analyze(pattern.string(), entry.searchString());
+        float weight = algorithm.analyze(pattern.string(), entry.string());
         PatternToEntry relation = new RealPatternToEntry(
                 uuidSupplier.nextRandomUuid(), time, entry, pattern, algorithm, weight);
         return relation;

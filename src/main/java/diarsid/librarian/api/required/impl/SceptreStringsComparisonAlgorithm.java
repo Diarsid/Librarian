@@ -1,16 +1,17 @@
 package diarsid.librarian.api.required.impl;
 
 import diarsid.librarian.api.required.StringsComparisonAlgorithm;
-import diarsid.sceptre.api.Sceptre;
+import diarsid.sceptre.api.Analyze;
+import diarsid.sceptre.api.WeightEstimate;
 import diarsid.support.model.versioning.Version;
 
-import static diarsid.sceptre.api.Sceptre.Weight.Estimate.BAD;
+import static diarsid.sceptre.api.WeightEstimate.BAD;
 
 public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgorithm {
 
-    private final Sceptre.Analyze analyze;
+    private final Analyze analyze;
 
-    public SceptreStringsComparisonAlgorithm(Sceptre.Analyze analyze) {
+    public SceptreStringsComparisonAlgorithm(Analyze analyze) {
         this.analyze = analyze;
     }
 
@@ -31,12 +32,12 @@ public class SceptreStringsComparisonAlgorithm implements StringsComparisonAlgor
 
     @Override
     public boolean isBad(float weight) {
-        return Sceptre.Weight.Estimate.of(weight).is(BAD);
+        return WeightEstimate.of(weight).is(BAD);
     }
 
     @Override
     public float analyze(String pattern, String entry) {
-        return this.analyze.processString(pattern, entry);
+        return this.analyze.process(pattern, entry);
     }
 
 }

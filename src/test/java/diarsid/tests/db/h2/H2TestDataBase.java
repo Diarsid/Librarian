@@ -136,7 +136,7 @@ public class H2TestDataBase implements TestDataBase {
         }
     }
 
-    public void executeScript(Reader reader) throws SQLException {
+    private void executeScript(Reader reader) throws SQLException {
         try (Connection con = this.getConnection()) {
             RunScript.execute(con, reader);
         }

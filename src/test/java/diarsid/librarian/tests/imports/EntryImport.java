@@ -11,7 +11,6 @@ public class EntryImport {
 
     static String text = "D:/DEV/1__Projects/UkrPoshta/UkrPoshta_API";
 
-
     public static void main(String[] args) {
         CoreTestSetup server = server();
         Store store = server.core.store();

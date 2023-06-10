@@ -1,7 +1,7 @@
 -- generated 
---   by diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV5
---   at 2021-05-19T22:29:36.952602200
-CREATE ALIAS EVAL_LENGTH_V5 AS $$
+--   by diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.CountCharMatchesH2SqlFunctionScript
+--   at 2023-04-17T23:18:02.750118500
+CREATE ALIAS EVAL_LENGTH_V7 AS $$
     int evaluate(
             String string1 /* longer */ ,
             String string2 /* shorter */ ,
@@ -12,6 +12,8 @@ CREATE ALIAS EVAL_LENGTH_V5 AS $$
         }
 
         int matchLength;
+        int maxLength;
+        int lengthDiff;
         if ( string1.length() < string2.length() ) {
             matchLength = string1.length();
             String swap = string1;
@@ -22,10 +24,13 @@ CREATE ALIAS EVAL_LENGTH_V5 AS $$
             matchLength = string2.length();
         }
 
-        int len1 = string1.length();
-        int len2 = string2.length();
-        int s1Last = len1 - 1;
-        int s2Last = len2 - 1;
+        maxLength = string1.length();
+        lengthDiff = maxLength - matchLength;
+
+        int length1 = string1.length();
+        int length2 = string2.length();
+        int s1Last = length1 - 1;
+        int s2Last = length2 - 1;
 
         int match = 0;
 
@@ -38,7 +43,7 @@ CREATE ALIAS EVAL_LENGTH_V5 AS $$
         int c1Duplicates = 0;
         int c2Duplicates = 0;
 
-        while ( (i1 < len1) && (i2 < len2) ) {
+        while ( (i1 < length1) && (i2 < length2) ) {
             c1 = string1.charAt(i1);
             c2 = string2.charAt(i2);
             if ( c1Prev == c1 ) {
@@ -105,7 +110,16 @@ CREATE ALIAS EVAL_LENGTH_V5 AS $$
             }
         }
 
+        int maxDuplicates = Math.max(c1Duplicates, c2Duplicates);
+        boolean hasDuplicates = maxDuplicates > 0;
+
         matchLength = matchLength - c2Duplicates;
+        if ( hasDuplicates ) {
+            int length1Unique = length1 - c1Duplicates;
+            int length2Unique = length2 - c2Duplicates;
+            lengthDiff = length1Unique - length2Unique;
+        }
+
 
         if ( match > 4 ) {
             return match;
@@ -124,6 +138,12 @@ CREATE ALIAS EVAL_LENGTH_V5 AS $$
                     threshold = 3;
                     break;
                 case 6:
+                    if ( hasDuplicates ) {
+                        if ( lengthDiff <= 3 ) {
+                            threshold = 3;
+                            break;
+                        }
+                    }
                 case 7:
                     threshold = 4;
                     break;

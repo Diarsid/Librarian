@@ -2,25 +2,42 @@ package diarsid.librarian.impl.logic.impl.search.v2;
 
 
 import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatches;
+
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class LengthTest {
 
+    private static final Logger log = LoggerFactory.getLogger(LengthTest.class);
 
     public void testLength(String pattern, String word, boolean expectMatching) {
         int rate = CountCharMatches.CURRENT_VERSION.evaluate(transform(pattern), transform(word), 60);
+        boolean pass;
         if ( expectMatching ) {
             if ( rate < 0 ) {
-                fail();
+                pass = false;
+            }
+            else {
+                pass = true;
             }
         }
         else {
             if ( rate > -1 ) {
-                fail();
+                pass = false;
             }
+            else {
+                pass = true;
+            }
+        }
+
+        log.info("pattern:{}, word:{}, expect:{}, pass:{}", pattern, word, expectMatching, pass);
+        if ( ! pass ) {
+            fail();
         }
     }
 
@@ -202,6 +219,49 @@ public class LengthTest {
     @Test
     public void test_drklalver_lover() {
         testLength("drklalver", "lover", true);
+    }
+
+    @Test
+    public void test_posecom_poshta() {
+        testLength("posecom", "poshta", true);
+    }
+
+    @Test
+    public void test_posecom_ukrposhta() {
+        testLength("posecom", "ukrposhta", true);
+    }
+
+    @Test
+    public void test_posecom_ecom() {
+        testLength("posecom", "ecom", true);
+    }
+
+    @Test
+    public void test_proupsth_ukrposhta_true() {
+        testLength("proupsth", "ukrposhta", true);
+    }
+
+    @Test
+    public void test_proupsth_poshta_true() {
+        testLength("proupsth", "poshta", true);
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_programs_true() {
+        testLength("progsloclscl", "programs", true);
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_local_true() {
+        testLength("progsloclscl", "local", true);
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_social_true() {
+        testLength("progsloclscl", "social", true);
     }
 
 }

@@ -1,7 +1,6 @@
 package diarsid.librarian.impl.model;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;

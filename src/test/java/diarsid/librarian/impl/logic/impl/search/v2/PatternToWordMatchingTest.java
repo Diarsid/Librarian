@@ -4,23 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
+import diarsid.librarian.tests.setup.transactional.AwareOfTestAnnotations;
+import diarsid.librarian.tests.setup.transactional.AwareOfTestName;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
-import static diarsid.support.misc.Misc.methodName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
+import static diarsid.support.misc.Misc.methodName;
+
+@ExtendWith(AwareOfTestName.class)
+@ExtendWith(AwareOfTestAnnotations.class)
 public class PatternToWordMatchingTest {
 
     private static final PatternToWordMatching MATCHING = currentVersion();
@@ -107,9 +115,16 @@ public class PatternToWordMatchingTest {
         this.pattern = methodDeclarationWords[1];
         this.word = methodDeclarationWords[2];
 
+        if ( ! this.isOnlyDesirable ) {
+            this.isOnlyDesirable = AwareOfTestAnnotations
+                    .oneAnnotation(OnlyDesirable.class)
+                    .isPresent();
+        }
+
         if ( nonNull(comment) ) {
             System.out.println("[TEST] comment: " + comment);
         }
+
         long code = MATCHING.evaluate(pattern, word);
 
         System.out.println(code);
@@ -727,7 +742,97 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V48")
+    public void test_tolsvirtl_savitch_false() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_tolsvirtl_little_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_tolsvirtl_tvollmann_false() {
+        doTest();
+    }
+
+    @Test
     public void test_virtlservs_variants_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_servs_sorceress_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_servs_speirs_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    @OnlyDesirable
+    public void test_servs_ravishing_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_servs_sorcerers_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    @OnlyDesirable
+    public void test_servs_serenissima_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_servs_spears_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    @OnlyDesirable
+    public void test_servs_revised_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_servs_sierras_false() {
+        onlyDesirable();
+        doTest();
+    }
+
+    @Test
+    @OnlyDesirable
+    public void test_servs_sgerstein_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    @OnlyDesirable
+    public void test_servrs_sgerstein_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_srvrs_sgerstein_false() {
         doTest();
     }
 
@@ -929,6 +1034,12 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V48")
+    public void test_virtlzn_virtualization_true() {
+        doTest();
+    }
+
+    @Test
     public void test_drsprojs_diarsid_true() {
         doTest();
     }
@@ -1100,6 +1211,18 @@ public class PatternToWordMatchingTest {
 
     @Test
     public void test_ukposht_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_proupsth_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_proupsth_poshta_true() {
         doTest();
     }
 
@@ -1516,6 +1639,12 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V48")
+    public void test_tolos_its_false() {
+        doTest();
+    }
+
+    @Test
     public void test_tolos_lowndes_false() {
         doTest();
     }
@@ -1871,6 +2000,18 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V48")
+    public void test_upshstnoftftclnt_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_upshstnoftftclnt_ua_true() {
+        doTest();
+    }
+
+    @Test
     public void test_upshstnoftftclnt_status_true() {
         onlyDesirable();
         doTest();
@@ -2180,8 +2321,299 @@ public class PatternToWordMatchingTest {
         doTest();
     }
 
+    @Test
+    @Tag("V48")
+    public void test_imnlknt_intelligence_false() {
+        doTest();
+    }
 
+    @Test
+    @Tag("V48")
+    public void test_imnlknt_diamant_false() {
+        doTest();
+    }
 
+    @Test
+    @Tag("V48")
+    public void test_mvnxercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_xercsmvn_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnxyercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvanxercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_xercsmvan_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvenxercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnexercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnxyz123ercs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_xyz123ercsmvn_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_xyzm123ercsmvn_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_xyzm123evrcsmvn_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnxzrcs_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnxzrcs_xerces_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_mvnxercs_xerces_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_eclpmemanl_analizer_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_eclpanlmem_analizer_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_eclpanlmem_eclipse_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_eclpanlmem_memory_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_posecom_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_uposecom_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_posecom_ecom_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_antrplctable_another_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_antrplctable_place_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_antrplctable_table_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_anmlpanitng_animals_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_anmlpanitng_painting_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_hofmaninctant_hoffman_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_hofmaninctant_incantation_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_brontstreflc_brontosaurus_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_brontstreflc_reflections_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_pirctstokn_pictures_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V48")
+    public void test_pirctstokn_tolkien_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_projupsth_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_xrojupsth_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_poshtapiukr_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_poshtapiukr_api_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_poshtapiukr_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_poshtapiukr_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_programs_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_local_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsloclscl_social_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progxloclscl_social_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progxxxxxscl_social_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_progsxxxxscl_social_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_solmnmies_assassination_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_solmnmies_solomon_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V50")
+    public void test_solmnmies_mines_true() {
+        doTest();
+    }
 
     @Test
     public void test_maximums() {

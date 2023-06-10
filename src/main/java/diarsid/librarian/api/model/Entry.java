@@ -8,13 +8,13 @@ import diarsid.support.model.CreatedAt;
 import diarsid.support.model.Joined;
 import diarsid.support.model.Storable;
 import diarsid.support.model.Unique;
-import diarsid.support.model.Updatable;
+import diarsid.support.model.UpdatedAt;
 import diarsid.support.objects.CommonEnum;
 
 import static diarsid.support.strings.StringUtils.containsPathSeparator;
 import static diarsid.support.strings.StringUtils.containsTextSeparator;
 
-public interface Entry extends Unique, Updatable, CreatedAt, UserScoped {
+public interface Entry extends Unique, UpdatedAt, CreatedAt, UserScoped, Storable {
 
     interface Word extends Unique, CreatedAt, UserScoped {
 

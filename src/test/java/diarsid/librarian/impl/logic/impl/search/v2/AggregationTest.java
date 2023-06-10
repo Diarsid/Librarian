@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV26;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV27;
 import diarsid.librarian.impl.logic.impl.search.UuidAndAggregationCode;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import diarsid.librarian.tests.model.WordMatchingCode;
@@ -30,7 +31,7 @@ public class AggregationTest {
         MATCHING.setLoggingEnabled(false);
     }
 
-    H2AggregateFunctionForAnalyzeV25 aggregator = new H2AggregateFunctionForAnalyzeV25();
+    H2AggregateFunctionForAnalyzeV27 aggregator = new H2AggregateFunctionForAnalyzeV27();
     String pattern;
     Boolean expectOk;
     List<String> words;
@@ -62,7 +63,7 @@ public class AggregationTest {
             assertThat(uuidAndAggregationCode.rateSum).isEqualTo(aggregator.rateSum());
         }
         else {
-            var reason = H2AggregateFunctionForAnalyzeV25
+            var reason = H2AggregateFunctionForAnalyzeV26
                     .RejectionReason
                     .findByValue((int) resultCode)
                     .map(Enum::name)
@@ -380,7 +381,7 @@ public class AggregationTest {
         words = List.of(
                 "hartmann",
                 "what");
-        expectOk = true;
+        expectOk = false;
         analyze();
     }
 
@@ -401,7 +402,6 @@ public class AggregationTest {
         analyze();
     }
 
-    // TODO test
     @Test
     public void test_tolknlororing() throws Exception {
         pattern = "tolknlororing";
@@ -449,12 +449,62 @@ public class AggregationTest {
     public void test_upshstnoftftclnt() throws Exception {
         pattern = "upshstnoftftclnt";
         words = List.of(
-                "ukrposhta",
+                "ukr",
                 "poshta",
                 "status",
                 "notification",
                 "client",
-                "ukr");
+                "ua");
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_virtualization_virtlzn() throws Exception {
+        pattern = "virtlzn";
+        words = List.of(
+                "virtualization"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_hofmaninctant() throws Exception {
+        pattern = "hofmaninctant";
+        words = List.of(
+                "incantation",
+                "hoffman",
+                "by",
+                "alice"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_projupsth() throws Exception {
+        pattern = "projupsth";
+        words = List.of(
+                "1projects",
+                "ddev",
+                "dev",
+                "poshta",
+                "projects",
+                "ukr"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_progsloclscl() throws Exception {
+        pattern = "progsloclscl";
+        words = List.of(
+                "programs",
+                "locally",
+                "social"
+        );
         expectOk = true;
         analyze();
     }

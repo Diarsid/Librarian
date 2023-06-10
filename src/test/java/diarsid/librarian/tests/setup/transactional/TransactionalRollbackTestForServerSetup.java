@@ -7,7 +7,7 @@ import diarsid.librarian.tests.setup.CoreTestSetup;
 import diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JunitTestInvocationInterceptorJdbcTransactionForServerSetup.class)
+@ExtendWith(TransactionalRollbackForServerSetup.class)
 public class TransactionalRollbackTestForServerSetup {
 
     public final static CoreTestSetup CORE_TEST_SETUP = CoreTestSetupStaticSingleton.server();

@@ -58,15 +58,15 @@ public class LoggingSearchObserver implements Search.Observer {
     }
 
     @Override
-    public void entriesAssessed(List<Entry> entries, List<PatternToEntry> relations) {
-        if ( entries.isEmpty() ) {
+    public void entriesAssessed(List<Entry> rejectedEntries, List<PatternToEntry> relations) {
+        if ( rejectedEntries.isEmpty() ) {
             return;
         }
 
         MultilineMessage message = new MultilineMessage("[OBSERVER] ");
         if ( relations.isEmpty() ) {
             message.newLine().add("rejected entries :");
-            entries
+            rejectedEntries
                     .stream()
                     .map(entry -> entry.string())
                     .forEach(s -> message.newLine().add(s));
@@ -81,7 +81,7 @@ public class LoggingSearchObserver implements Search.Observer {
                     .map(relation -> relation.weight() + " : " + relation.entry().string())
                     .forEach(s -> message.newLine().add(s));
 
-            List<Entry> entriesCopy = new ArrayList<>(entries);
+            List<Entry> entriesCopy = new ArrayList<>(rejectedEntries);
             entriesCopy.removeAll(assessedEntries);
 
             if ( entriesCopy.isEmpty() ) {

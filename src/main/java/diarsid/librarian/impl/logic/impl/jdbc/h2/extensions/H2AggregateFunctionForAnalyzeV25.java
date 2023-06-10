@@ -8,6 +8,7 @@ import org.h2.api.AggregateFunction;
 
 import static java.sql.Types.BIGINT;
 
+import static diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25.RejectionReason.FIRST_CHAR_FOUND_FROM_SINGLE_CHAR_MATCHES_BUT_1_OR_2_CHARS_MISSED;
 import static diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25.RejectionReason.NO_WORDS;
 import static diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25.RejectionReason.PATTERN_START_NOT_FOUND_AND_MANY_WORDS;
 import static diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV25.RejectionReason.PATTERN_START_NOT_FOUND_AND_ONE_WORD;
@@ -50,7 +51,8 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
         PATTERN_START_NOT_FOUND_AND_MANY_WORDS(-11),
         PATTERN_TOO_SMALL_TO_HAVE_MISSED_CHARS(-12),
         TOO_MUCH_SPACES_IN_WORDS(-13),
-        TOO_MUCH_SPACES_AND_MISSED_IN_WORDS(-14);
+        TOO_MUCH_SPACES_AND_MISSED_IN_WORDS(-14),
+        FIRST_CHAR_FOUND_FROM_SINGLE_CHAR_MATCHES_BUT_1_OR_2_CHARS_MISSED(-15);
 
         private final int value;
 
@@ -83,6 +85,9 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
     private int overlapsDuplicated = 0;
     private boolean patternStartFound = false;
     private int firstIndexInPattern = UNASSIGNED;
+    private int onlyFirstCharMatchCount = 0;
+    private boolean char1Found;
+    private boolean char2Found;
     private int missed = 0;
     private int wordSpaces = 0;
     private int rateSum = 0;
@@ -164,6 +169,8 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
             argMatchSpan = 1;
             argMatchIndex = 0;
             argRate = RATE_NOT_APPLICABLE;
+
+            onlyFirstCharMatchCount++;
         }
         else {
             matchType = USUAL_MATCH_TYPE;
@@ -216,23 +223,39 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
                 if ( positionIndexInRow == 0 ) {
                     break;
                 }
+
+                if ( (! char1Found) && i == 1 ) {
+                    char1Found = true;
+                }
+                else if ( (! char2Found) && i == 2 ) {
+                    char2Found = true;
+                }
+
                 position = positionAt(positionsRow, positionIndexInRow);
-                if ( position == NON_FILLED_POSITION ) {
-                    positionsRow = positionsRow - positionIndexInRow * (NON_FILLED_POSITION-1);
-                }
-                else if ( position == WORD_SPACE_POSITION ) {
-                    positionsRow = positionsRow - positionIndexInRow * (WORD_SPACE_POSITION-1);
-                }
-                else if ( position == WORD_SPACE_POSITION-1 ) {
-                    overlapsInWord++;
-                    if ( i == argMatchIndex ) {
-                        matchStartsWithOverlap = true;
+
+                if ( matchType == FISRT_CHAR_MATCH_TYPE ) {
+                    if ( position == NON_FILLED_POSITION ) {
+                        positionsRow = positionsRow - positionIndexInRow * (NON_FILLED_POSITION-1);
                     }
-                } else if ( position < WORD_SPACE_POSITION-1 ) {
-                    positionsRow = positionsRow + positionIndexInRow;
-                    overlapsInWord++;
-                    if ( i == argMatchIndex ) {
-                        matchStartsWithOverlap = true;
+                }
+                else {
+                    if ( position == NON_FILLED_POSITION ) {
+                        positionsRow = positionsRow - positionIndexInRow * (NON_FILLED_POSITION-1);
+                    }
+                    else if ( position == WORD_SPACE_POSITION ) {
+                        positionsRow = positionsRow - positionIndexInRow * (WORD_SPACE_POSITION-1);
+                    }
+                    else if ( position == WORD_SPACE_POSITION-1 ) {
+                        overlapsInWord++;
+                        if ( i == argMatchIndex ) {
+                            matchStartsWithOverlap = true;
+                        }
+                    } else if ( position < WORD_SPACE_POSITION-1 ) {
+                        positionsRow = positionsRow + positionIndexInRow;
+                        overlapsInWord++;
+                        if ( i == argMatchIndex ) {
+                            matchStartsWithOverlap = true;
+                        }
                     }
                 }
             }
@@ -245,6 +268,14 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
                 if ( positionIndexInRow == 0 ) {
                     break;
                 }
+
+                if ( (! char1Found) && i == 1 ) {
+                    char1Found = true;
+                }
+                else if ( (! char2Found) && i == 2 ) {
+                    char2Found = true;
+                }
+
                 position = positionAt(positionsRow, positionIndexInRow);
 
                 boolean isPositionFull = i < matchFoundEnd;
@@ -314,7 +345,7 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
             return code;
         }
 
-        if ( ! patternStartFound ) {
+        if ( ! patternStartFound && onlyFirstCharMatchCount == 0 ) {
             if ( words == 1 ) {
                 code = PATTERN_START_NOT_FOUND_AND_ONE_WORD.value;
                 return code;
@@ -347,6 +378,13 @@ public class H2AggregateFunctionForAnalyzeV25 implements AggregateFunction {
         if ( patternLength < 6 && missed > 0 ) {
             code = PATTERN_TOO_SMALL_TO_HAVE_MISSED_CHARS.value;
             return code;
+        }
+
+        if ( onlyFirstCharMatchCount > 0 ) {
+            if ( ! char1Found || ! char2Found ) {
+                code = FIRST_CHAR_FOUND_FROM_SINGLE_CHAR_MATCHES_BUT_1_OR_2_CHARS_MISSED.value;
+                return code;
+            }
         }
 
         if ( wordsDuplicated > 0 ) {

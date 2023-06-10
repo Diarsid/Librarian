@@ -3,9 +3,9 @@ package diarsid.librarian.impl.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import diarsid.support.model.Updatable;
+import diarsid.support.model.UpdatedAt;
 
-public abstract class AbstractUpdatableUserScoped extends AbstractIdentifiableUserScoped implements Updatable {
+public abstract class AbstractUpdatableUserScoped extends AbstractIdentifiableUserScoped implements UpdatedAt {
 
     private final LocalDateTime actualAt;
 

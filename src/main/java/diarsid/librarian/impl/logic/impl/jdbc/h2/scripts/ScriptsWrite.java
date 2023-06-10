@@ -5,7 +5,7 @@ import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionF
 class ScriptsWrite {
 
     static class AggregateFunctionForAnalyzeCodes {
-        public static void main(String[] args) throws Exception {
+        public static void main(String[] args) {
             var script = new H2AggregateFunctionForAnalyzeScript();
             script.writeScriptIntoFile();
         }

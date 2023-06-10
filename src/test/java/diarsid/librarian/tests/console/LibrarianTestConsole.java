@@ -35,23 +35,6 @@ import static diarsid.support.model.Joined.distinctLeftsOf;
 
 public class LibrarianTestConsole {
 
-    static {
-//        configure().withDefault(
-//                "log = true",
-//                "analyze.result.variants.limit = 100",
-//                "diarsid.strings.similarity.log.multiline = true",
-//                "diarsid.strings.similarity.log.multiline.prefix = [similarity]",
-//                "diarsid.strings.similarity.log.multiline.indent = 1",
-//                "diarsid.strings.similarity.log.base = true",
-//                "diarsid.strings.similarity.log.advanced = true",
-//                "analyze.weight.base.log = false",
-//                "analyze.weight.positions.search.log = true",
-//                "analyze.weight.positions.clusters.log = true",
-////                "analyze.result.variants.limit = 11",
-//                "analyze.similarity.log.base = false",
-//                "analyze.similarity.log.advanced = true");
-    }
-
     public static void main(String[] args) {
         Command.Flag labelFlag = Command.Flag.openValue("label", "l", true);
         Command.Flag singleFlag = Command.Flag.noValue("single", "s");

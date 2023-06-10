@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.JdbcOption;
 import diarsid.librarian.api.Core;
@@ -15,40 +18,21 @@ import diarsid.librarian.api.required.impl.SceptreStringsComparisonAlgorithm;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.model.RealUser;
 import diarsid.librarian.tests.imports.DataImport;
-import diarsid.sceptre.api.Sceptre;
-import diarsid.support.configuration.Configuration;
+import diarsid.sceptre.api.Analyze;
 import diarsid.support.objects.Pools;
 import diarsid.tests.db.h2.H2TestDataBase;
 import diarsid.tests.db.h2.SqlConnectionsSourceTestBase;
 import diarsid.tests.db.h2.TestDataBase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static diarsid.jdbc.api.JdbcOption.SQL_HISTORY_ENABLED;
 import static diarsid.librarian.api.Core.Mode.DEVELOPMENT;
-import static diarsid.support.configuration.Configuration.actualConfiguration;
-import static diarsid.support.configuration.Configuration.configure;
+import static diarsid.sceptre.api.LogType.BASE;
+import static diarsid.sceptre.api.LogType.POSITIONS_CLUSTERS;
+import static diarsid.sceptre.api.LogType.POSITIONS_SEARCH;
 
 public class CoreTestSetup {
 
     private static final Logger log = LoggerFactory.getLogger(CoreTestSetup.class);
-
-    static {
-        configure().withDefault(
-                "log = true",
-                "analyze.result.variants.limit = 100",
-                "diarsid.strings.similarity.log.multiline = true",
-                "diarsid.strings.similarity.log.multiline.prefix = [similarity]",
-                "diarsid.strings.similarity.log.multiline.indent = 1",
-                "diarsid.strings.similarity.log.base = false",
-                "diarsid.strings.similarity.log.advanced = true",
-                "analyze.weight.base.log = false",
-                "analyze.weight.positions.search.log = true",
-                "analyze.weight.positions.clusters.log = true",
-//                "analyze.result.variants.limit = 11",
-                "analyze.similarity.log.base = false",
-                "analyze.similarity.log.advanced = true");
-    }
 
     private static final boolean sqlHistoryEnabled = true;
 
@@ -68,9 +52,16 @@ public class CoreTestSetup {
         Map<JdbcOption, Object> options = Map.of(SQL_HISTORY_ENABLED, sqlHistoryEnabled);
         jdbc = Jdbc.init(connections, options);
 
-        Configuration configuration = actualConfiguration();
         Pools pools = new Pools();
-        Sceptre.Analyze analyze = Sceptre.newAnalyzeInstance(pools);
+        Analyze analyze = Analyze.Builder
+                .newInstance()
+                .withPools(pools)
+                .withLogEnabled(true)
+                .withLogTypeEnabled(BASE, true)
+                .withLogTypeEnabled(POSITIONS_CLUSTERS, true)
+                .withLogTypeEnabled(POSITIONS_SEARCH, true)
+                .build();
+
         this.algorithm = new SceptreStringsComparisonAlgorithm(analyze);
 
         UserProvidedResources impl = new UserProvidedResources() {

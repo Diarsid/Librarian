@@ -25,9 +25,15 @@ public interface Search {
         default void entriesFound(List<Entry> entries) {
         }
 
-        default void entriesAssessed(List<Entry> entries, List<PatternToEntry> relations) {
+        default void entriesAssessed(List<Entry> rejectedEntries, List<PatternToEntry> relations) {
         }
     }
+
+//    void bind(Observer observer);
+//
+//    void unbind(Observer observer);
+//
+//    boolean isBound(Observer observer);
 
     List<PatternToEntry> findAllBy(
             User user,

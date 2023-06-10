@@ -8,10 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV23;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV26;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
 import diarsid.librarian.tests.model.EntriesResult;
@@ -20,11 +26,6 @@ import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForS
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.nonNull;
@@ -32,6 +33,8 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static diarsid.librarian.api.model.Entry.Label.Matching.ALL_OF;
 import static diarsid.librarian.api.model.Entry.Label.Matching.ANY_OF;
@@ -41,7 +44,6 @@ import static diarsid.librarian.impl.logic.impl.search.TimeDirection.AFTER_OR_EQ
 import static diarsid.librarian.impl.logic.impl.search.TimeDirection.BEFORE;
 import static diarsid.support.misc.Misc.methodName;
 import static diarsid.support.model.Unique.uuidsOf;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForServerSetup {
 
@@ -75,7 +77,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     LocalDateTime time;
     EntriesResult entriesResult;
     Map<String, List<WordMatchingCode>> resultingEntriesAndWords;
-    Map<String, H2AggregateFunctionForAnalyzeV23> entriesAggregates;
+    Map<String, H2AggregateFunctionForAnalyzeV26> entriesAggregates;
     List<ResultLine> resultLines;
 
     @BeforeAll
@@ -230,10 +232,10 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V46(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V50(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
-                    "       EVAL_LENGTH_V5(?, string_sort, 60) > -1 AND \n" +
+                    "       EVAL_LENGTH_V7(?, string_sort, 60) > -1 AND \n" +
                     "       USER_uuid = ? \n" +
                     "), \n" +
                     "words_scan AS ( \n" +
@@ -263,7 +265,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
             entriesAggregates = new HashMap<>();
             for ( Map.Entry<String, List<WordMatchingCode>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
-                H2AggregateFunctionForAnalyzeV23 aggregate = new H2AggregateFunctionForAnalyzeV23();
+                H2AggregateFunctionForAnalyzeV26 aggregate = new H2AggregateFunctionForAnalyzeV26();
                 for ( WordMatchingCode wordCode : entryAndWords.getValue() ) {
                     aggregate.add(wordCode.code);
                 }
@@ -383,6 +385,12 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     }
 
     @Test
+    public void test_lororng() throws Exception {
+        search();
+        entriesResult.expect().containingAllStringsInMostOfEntries("lord", "of", "rings").andAssert();
+    }
+
+    @Test
     public void test_byjrrtolk() throws Exception {
         search();
         entriesResult.expect().containingAllStringsInMostOfEntries("by", "j.r.r", "tolkien").andAssert();
@@ -490,6 +498,12 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @Test
     public void test_virtlzt() throws Exception {
+        search();
+        entriesResult.expect().someEntries().andAssert();
+    }
+
+    @Test
+    public void test_virtlzn() throws Exception {
         search();
         entriesResult.expect().someEntries().andAssert();
     }

@@ -4,11 +4,7 @@ import diarsid.librarian.impl.logic.impl.search.charscan.NamedAndVersionedByClas
 
 public interface CountCharMatches extends NamedAndVersionedByClassName {
 
-    CountCharMatches CURRENT_VERSION = new CountCharMatchesV5();
-
-//    public static void main(String[] args) throws Exception {
-//        CURRENT_VERSION.rewriteScript();
-//    }
+    CountCharMatches CURRENT_VERSION = new CountCharMatchesV7();
 
     @Override
     default String name() {
