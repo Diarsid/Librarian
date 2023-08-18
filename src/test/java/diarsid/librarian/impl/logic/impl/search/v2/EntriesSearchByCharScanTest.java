@@ -232,7 +232,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V50(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V53(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
                     "       EVAL_LENGTH_V7(?, string_sort, 60) > -1 AND \n" +

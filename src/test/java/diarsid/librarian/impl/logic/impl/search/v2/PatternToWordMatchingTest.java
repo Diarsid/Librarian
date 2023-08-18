@@ -201,7 +201,7 @@ public class PatternToWordMatchingTest {
         statistic = new Statistic();
     }
 
-    private static final String TEST_FORMAT =    "           %-19s %-19s %s";
+    private static final String TEST_FORMAT = "           %-19s %-19s %s";
 
     @AfterAll
     public static void after() {
@@ -2436,6 +2436,12 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V51")
+    public void test_anlmemeclp_eclipse_true() {
+        doTest();
+    }
+
+    @Test
     @Tag("V48")
     public void test_eclpanlmem_memory_true() {
         doTest();
@@ -2520,6 +2526,12 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V51")
+    public void test_toknpircts_pictures_true() {
+        doTest();
+    }
+
+    @Test
     @Tag("V48")
     public void test_pirctstokn_tolkien_true() {
         doTest();
@@ -2532,6 +2544,49 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
+    @Tag("V51")
+    public void test_upsthproj_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_upsthproj_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_upsthproj_projects_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_projsupsth_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_projsupsth_projects_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    @OnlyDesirable
+    public void test_projsupsth_ukr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_projsupsth_ukrposhta_true() {
+        doTest();
+    }
+
+    @Test
     @Tag("V50")
     public void test_xrojupsth_poshta_true() {
         doTest();
@@ -2540,6 +2595,18 @@ public class PatternToWordMatchingTest {
     @Test
     @Tag("V50")
     public void test_poshtapiukr_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_apiposhtukr_poshta_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V51")
+    public void test_apiukrposht_poshta_true() {
         doTest();
     }
 
@@ -2612,6 +2679,48 @@ public class PatternToWordMatchingTest {
     @Test
     @Tag("V50")
     public void test_solmnmies_mines_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V52")
+    public void test_rddragnhanballectr_red_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V52")
+    public void test_rddragnhanballectr_dragon_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V52")
+    public void test_rddragnhanballectr_hannibal_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V52")
+    public void test_rddragnhanballectr_lecter_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V53")
+    public void test_urbrsedssn_ouroboros_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V53")
+    public void test_rrhgtphilpsy_right_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V53")
+    public void test_rhgtphilpsy_right_true() {
         doTest();
     }
 

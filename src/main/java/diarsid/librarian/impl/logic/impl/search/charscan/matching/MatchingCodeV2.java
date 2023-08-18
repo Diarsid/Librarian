@@ -104,8 +104,8 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
             return "mismatch";
         }
         else {
-            return (type.isNot(FULL) ? type.name() + ", " : "") +
-                    "pattern_L=" + patternLength +
+            return type.name() +
+                    ", pattern_L=" + patternLength +
                     ", word_L=" + wordLength +
                     ", found=" + found +
                     ", match_Ix=" + matchIndex +

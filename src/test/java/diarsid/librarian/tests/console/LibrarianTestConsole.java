@@ -36,10 +36,10 @@ import static diarsid.support.model.Joined.distinctLeftsOf;
 public class LibrarianTestConsole {
 
     public static void main(String[] args) {
-        Command.Flag labelFlag = Command.Flag.openValue("label", "l", true);
-        Command.Flag singleFlag = Command.Flag.noValue("single", "s");
-        Command.Flag commitFlag = Command.Flag.noValue("commit", "c");
-        Command.Flag labelsModeFlag = Command.Flag.restrictingValues("labelsmode", "lm", false, "any", "all", "none");
+        Command.Flag labelFlag = Command.Flag.withAnyValues("label", "l", true);
+        Command.Flag singleFlag = Command.Flag.withNoValue("single", "s");
+        Command.Flag commitFlag = Command.Flag.withNoValue("commit", "c");
+        Command.Flag labelsModeFlag = Command.Flag.withAllowedValues("labelsmode", "lm", false, "any", "all", "none");
         CoreTestSetup setup = server();
         Core core = setup.core;
         User user = setup.user;
@@ -53,27 +53,30 @@ public class LibrarianTestConsole {
 
         OperationLogic findByMatching = (interaction, command) -> {
             JdbcTransaction tx = jdbc.createTransaction();
+            try {
+                String arg = command.argAt(1);
 
-            String arg = command.argAt(1);
-            List<String> labelNames = command.valuesOf(labelFlag);
-            String labelsMode = command.valueOf(labelsModeFlag).orElse("any");
+                List<String> labelNames = command.valuesOf(labelFlag);
+                String labelsMode = command.valueOf(labelsModeFlag).orElse("any");
 
-            Entry.Label.Matching matching = matchingOfFlag(labelsMode);
-            List<Entry.Label> labels = core.store().labels().getOrSave(user, labelNames);
+                Entry.Label.Matching matching = matchingOfFlag(labelsMode);
+                List<Entry.Label> labels = core.store().labels().getOrSave(user, labelNames);
 
-            List<PatternToEntry> entries = core.search().findAllBy(user, arg, matching, labels, observer);
+                List<PatternToEntry> entries = core.search().findAllBy(user, arg, matching, labels, observer);
 
-            if ( command.has(commitFlag) ) {
-                tx.commitAndClose();
+                return entries
+                        .stream()
+                        .map(pair -> format("%s : %s ", pair.weight(), pair.entryString()))
+                        .collect(toList());
             }
-            else {
-                tx.rollbackAnd(CLOSE);
+            finally {
+                if ( command.has(commitFlag) ) {
+                    tx.commitAndClose();
+                }
+                else {
+                    tx.rollbackAnd(CLOSE);
+                }
             }
-
-            return entries
-                    .stream()
-                    .map(pair -> format("%s : %s ", pair.weight(), pair.entryString()))
-                    .collect(toList());
         };
 
         OperationLogic getByLabels = (interaction, command) -> {

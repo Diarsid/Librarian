@@ -1,21 +1,13 @@
 package diarsid.librarian.impl.logic.impl.search.v2;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV26;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV27;
-import diarsid.librarian.impl.logic.impl.search.UuidAndAggregationCode;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
-import diarsid.librarian.tests.model.WordMatchingCode;
-import diarsid.support.strings.MultilineMessage;
-
-import static java.util.UUID.randomUUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -31,49 +23,23 @@ public class AggregationTest {
         MATCHING.setLoggingEnabled(false);
     }
 
-    H2AggregateFunctionForAnalyzeV27 aggregator = new H2AggregateFunctionForAnalyzeV27();
     String pattern;
     Boolean expectOk;
     List<String> words;
-    List<WordMatchingCode> wordCodes = new ArrayList<>();
     long resultCode;
-    UuidAndAggregationCode uuidAndAggregationCode;
 
     void analyze() throws SQLException {
-        MultilineMessage report = new MultilineMessage("", "   ");
-        report.newLine().add("pattern : ").add(pattern);
+        PatternAndWords patternAndWords = new PatternAndWords(MATCHING, pattern, words);
 
-        for ( String word : words ) {
-            long code = MATCHING.evaluate(pattern, word);
-            wordCodes.add(new WordMatchingCode(word, code));
-            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(MATCHING.describe(code).toString());
+        if ( patternAndWords.aggregationCode != null ) {
+            assertThat(patternAndWords.aggregationCode.missed).isEqualTo(patternAndWords.aggregator.missed());
+            assertThat(patternAndWords.aggregationCode.overlaps).isEqualTo(patternAndWords.aggregator.overlaps());
+            assertThat(patternAndWords.aggregationCode.rateSum).isEqualTo(patternAndWords.aggregator.rateSum());
         }
 
-        for ( WordMatchingCode wordCode : wordCodes) {
-            if ( wordCode.code > 0 ) {
-                aggregator.add(wordCode.code);
-            }
-        }
+        log.info(patternAndWords.report.compose());
 
-        resultCode = aggregator.getResult();
-        if ( resultCode > -1 ) {
-            uuidAndAggregationCode = new UuidAndAggregationCode(randomUUID(), resultCode);
-            assertThat(uuidAndAggregationCode.missed).isEqualTo(aggregator.missed());
-            assertThat(uuidAndAggregationCode.overlaps).isEqualTo(aggregator.overlaps());
-            assertThat(uuidAndAggregationCode.rateSum).isEqualTo(aggregator.rateSum());
-        }
-        else {
-            var reason = H2AggregateFunctionForAnalyzeV26
-                    .RejectionReason
-                    .findByValue((int) resultCode)
-                    .map(Enum::name)
-                    .orElse("UNKOWN");
-
-            report.newLine().add("rejection reason: ").add(reason);
-        }
-
-        report.newLine().add("result  : ").add(aggregator.report());
-        log.info(report.compose());
+        resultCode = patternAndWords.resultCode;
 
         boolean expectOkButFail = expectOk && resultCode < 0;
         boolean expectFailButOk = !expectOk && resultCode > 0;
@@ -498,12 +464,40 @@ public class AggregationTest {
     }
 
     @Test
+    public void test_projsupsth() throws Exception {
+        pattern = "projsupsth";
+        words = List.of(
+                "1projects",
+                "ddev",
+                "dev",
+                "poshta",
+                "projects",
+                "ukr"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
     public void test_progsloclscl() throws Exception {
         pattern = "progsloclscl";
         words = List.of(
-                "programs",
+                "social",
                 "locally",
-                "social"
+                "programs"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_rddragnhanballectr() throws Exception {
+        pattern = "rddragnhanballectr";
+        words = List.of(
+                "red",
+                "dragon",
+                "hannibal",
+                "lecter"
         );
         expectOk = true;
         analyze();

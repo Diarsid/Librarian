@@ -47,6 +47,8 @@ public interface Entries {
 
     Optional<Entry> findBy(User user, String entry);
 
+    Optional<Entry> findBy(User user, UUID entryUuid);
+
     boolean doesExistBy(User user, String entry);
 
     default boolean doesNotExistBy(User user, String entry) {

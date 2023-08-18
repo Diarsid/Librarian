@@ -1,13 +1,12 @@
 package diarsid.librarian.tests.console;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import diarsid.console.api.Console;
 import diarsid.console.api.format.ConsoleFormat;
 import diarsid.console.api.io.Command;
-import diarsid.console.api.io.ConsoleInteraction;
-import diarsid.console.api.io.operations.Operation;
 import diarsid.console.api.io.operations.OperationLogic;
 import diarsid.console.impl.building.ConsoleBuilding;
 import diarsid.jdbc.api.Jdbc;
@@ -17,6 +16,7 @@ import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.tests.setup.CoreTestSetup;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
@@ -32,56 +32,40 @@ public class DescriptonConsole {
         User user = setup.user;
         Jdbc jdbc = setup.jdbc;
 
-        OperationLogic getWordsOfEntry = (interaction, command) -> {
-            String arg = command.args().get(1);
-            UUID uuid = null;
+        Command.Flag.Validator uuidValidator = (s) -> {
             try {
-                uuid = UUID.fromString(arg);
+                UUID.fromString(s);
             }
-            catch (IllegalArgumentException e) {
-                // not a UUID
+            catch (Throwable t) {
+                throw new IllegalArgumentException("not a uuid!");
             }
-
-            Entry entry;
-            if ( isNull(uuid) ) {
-                entry = core.store().entries().findBy(user, arg).orElseThrow();
-            }
-            else {
-                entry = core.store().entries().getBy(user, uuid);
-            }
-
-            List<String> words = jdbc
-                    .doQueryAndStream(
-                            ColumnGetter.stringOf("string"),
-                            "SELECT w.string \n" +
-                            "FROM words_in_entries we \n" +
-                            "    JOIN words w \n" +
-                            "        ON w.uuid = we.word_uuid \n" +
-                            "WHERE we.entry_uuid = ?",
-                            entry.uuid())
-                    .collect(toList());
-
-            return words;
         };
 
-        OperationLogic describePattern = (interaction, command) -> {
-            return emptyList();
-        };
+        Command.Flag uuidFlag = Command.Flag.withValidatedValues("uuid", "u", false, uuidValidator);
+        Command.Flag patternFlag = Command.Flag.withAnyValues("pattern", "p", false);
+        Command.Flag entryFlag = Command.Flag.withAnyValues("entry", "e", false);
 
-        OperationLogic describePatternAndEntry = (interaction, command) -> {
-            return emptyList();
-        };
+        OperationLogic getWordsOfEntry = new GetWordsOfEntry(core, user, jdbc);
+        OperationLogic describePatternAndEntry = new DescribePatternAndEntry(core, user, jdbc);
 
         Console console = new ConsoleBuilding()
                 .withFormat(ConsoleFormat
                         .building()
                         .with(NAME, "librarian.describe"))
                 .stopWhenInputIs("exit")
+                .withFlags(
+                        uuidFlag,
+                        patternFlag,
+                        entryFlag)
                 .enableExitConfirmation("y", "+", "yes")
                 .withOperation(building -> building
                         .named("get-words-of-entry")
                         .doing(getWordsOfEntry)
-                        .matching(command -> command.firstArgIs("words") && command.hasArgs(2)))
+                        .matching(command -> command.firstArgIs("words")))
+                .withOperation(building -> building
+                        .named("describe-entry-and-pattern")
+                        .doing(describePatternAndEntry)
+                        .matching(command -> command.firstArgIs("describe")))
                 .done();
 
         console.life().start();

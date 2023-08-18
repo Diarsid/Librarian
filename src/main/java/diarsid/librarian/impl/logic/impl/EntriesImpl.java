@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import diarsid.jdbc.api.Jdbc;
-import diarsid.jdbc.api.JdbcOperations;
 import diarsid.librarian.api.Behavior;
 import diarsid.librarian.api.Entries;
 import diarsid.librarian.api.exceptions.NotFoundException;
@@ -25,6 +24,7 @@ import diarsid.librarian.impl.model.WordInEntry;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.time.LocalDateTime.now;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.jdbc.api.JdbcOperations.mustAllBe;
@@ -182,7 +182,13 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
     @Override
     public Entry reload(Entry entry) {
         checkMustBeStored(entry);
-        return this.getBy(entry.userUuid(), entry.uuid());
+        Entry saved = this.getByOrNull(entry.userUuid(), entry.uuid());
+
+        if ( isNull(saved) ) {
+            throw new NotFoundException();
+        }
+
+        return saved;
     }
 
     @Override
@@ -201,10 +207,16 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
 
     @Override
     public Entry getBy(User user, UUID entryUuid) {
-        return this.getBy(user.uuid(), entryUuid);
+        Entry entry = this.getByOrNull(user.uuid(), entryUuid);
+
+        if ( isNull(entry) ) {
+            throw new NotFoundException();
+        }
+
+        return entry;
     }
 
-    private Entry getBy(UUID userUUid, UUID entryUuid) {
+    private Entry getByOrNull(UUID userUUid, UUID entryUuid) {
         List<Entry> entries = super.currentTransaction()
                 .doQueryAndStream(
                         row -> new RealEntry(row, now()),
@@ -225,7 +237,7 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
             return entries.get(0);
         }
         else if ( entries.isEmpty() ) {
-            throw new NotFoundException();
+            return null;
         }
         else {
             throw new IllegalStateException();
@@ -263,6 +275,11 @@ public class EntriesImpl extends ThreadBoundTransactional implements Entries {
                         entryString, user.uuid());
 
         return foundEntry;
+    }
+
+    @Override
+    public Optional<Entry> findBy(User user, UUID entryUuid) {
+        return Optional.ofNullable(this.getByOrNull(user.uuid(), entryUuid));
     }
 
     @Override

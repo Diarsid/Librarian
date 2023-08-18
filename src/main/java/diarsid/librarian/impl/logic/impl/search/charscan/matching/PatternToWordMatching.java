@@ -6,7 +6,7 @@ import diarsid.librarian.impl.logic.impl.search.charscan.NamedAndVersionedByClas
 public abstract class PatternToWordMatching extends LoggerOwner implements NamedAndVersionedByClassName {
 
     public static PatternToWordMatching currentVersion() {
-        return new PatternToWordMatchingV50();
+        return new PatternToWordMatchingV53();
     }
 
     @Override

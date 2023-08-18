@@ -37,7 +37,6 @@ public class UserInteractionLockingWrapper implements UserInteraction {
     private UserChoice lockUserAndAskForChoice(User user, List<PatternToEntry> variants) {
         ThreadBoundJdbcTransaction transaction = jdbc.threadBinding().currentTransaction();
         transaction.sqlHistory().comment("user data locking transaction while interacting with user");
-        transaction.doNotGuard();
         locking.lock(user);
         return userInteraction.askForChoice(user, variants);
     }
