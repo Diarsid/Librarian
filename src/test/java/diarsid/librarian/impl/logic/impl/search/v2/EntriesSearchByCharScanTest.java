@@ -58,7 +58,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
         public ResultLine(Row row) {
             this.entry = row.stringOf("string_origin");
-            this.word = new WordMatchingCode(row);
+            this.word = new WordMatchingCode(row, "w_code", "string");
         }
 
         String entry() {
@@ -232,10 +232,10 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V53(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V54(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
-                    "       EVAL_LENGTH_V7(?, string_sort, 60) > -1 AND \n" +
+                    "       EVAL_LENGTH_V8(?, string_sort, 60) > -1 AND \n" +
                     "       USER_uuid = ? \n" +
                     "), \n" +
                     "words_scan AS ( \n" +

@@ -2713,7 +2713,7 @@ public class PatternToWordMatchingTest {
     }
 
     @Test
-    @Tag("V53")
+    @Tag("V54")
     public void test_rrhgtphilpsy_right_true() {
         doTest();
     }
@@ -2721,6 +2721,36 @@ public class PatternToWordMatchingTest {
     @Test
     @Tag("V53")
     public void test_rhgtphilpsy_right_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V54")
+    public void test_witwidsmwinstchucrl_wisdom_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V54")
+    public void test_witwidsmwinstchucrl_wit_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V54")
+    public void test_witwidsmwinstchucrl_winston_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V54")
+    public void test_witwidsmwinstchucrl_churchill_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V54")
+    public void test_devenigs_engines_true() {
         doTest();
     }
 

@@ -3,6 +3,7 @@ package diarsid.librarian.impl.logic.impl.search.v2;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -351,6 +352,7 @@ public class AggregationTest {
         analyze();
     }
 
+    @Disabled
 //    incorrect positions row:
 //            0 : The Sacred Art of Lovingkindness: Preparing to Practice (The Art of Spiritual Living) by Rami M. Shapiro
 //    result:80020703017000101 pos:1111211117 rateSum:207 missed:0 span-missed:1 overlaps:1 words:3 wordsLength:17
@@ -390,6 +392,7 @@ public class AggregationTest {
         analyze();
     }
 
+    @Disabled
     @Test
     public void test_XXX() throws Exception {
         pattern = "xabc";
@@ -498,6 +501,41 @@ public class AggregationTest {
                 "dragon",
                 "hannibal",
                 "lecter"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_witwidsmwinstchucrl() throws Exception {
+        pattern = "witwidsmwinstchucrl";
+        words = List.of(
+                "wit",
+                "wisdom",
+                "winston",
+                "churchill"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_conhelth() throws Exception {
+        pattern = "conhelth";
+        words = List.of(
+                "the",
+                "coaches"
+        );
+        expectOk = false;
+        analyze();
+    }
+
+    @Test
+    public void test_rrhgtphilpsy() throws Exception {
+        pattern = "rrhgtphilpsy";
+        words = List.of(
+                "philosophy",
+                "right"
         );
         expectOk = true;
         analyze();

@@ -6,7 +6,7 @@ import diarsid.support.model.versioning.VersionedByClassName;
 public class H2AggregateFunctionForAnalyzeScript extends H2SqlAggregateFunctionScriptInJava {
 
     private static final String NAME = "EVAL_CODES";
-    private static final H2AggregateFunctionForAnalyzeV28 CURRENT_VERSION = new H2AggregateFunctionForAnalyzeV28();
+    private static final H2AggregateFunctionForAnalyzeV31 CURRENT_VERSION = new H2AggregateFunctionForAnalyzeV31();
 
     public H2AggregateFunctionForAnalyzeScript() {
         super(CURRENT_VERSION, NAME, VersionedByClassName.versionOf(CURRENT_VERSION));

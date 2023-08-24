@@ -1,7 +1,7 @@
 -- generated 
 --   by diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.PatternToWordMatchingH2SqlFunctionScript
---   at 2023-08-19T00:25:03.012504500
-CREATE ALIAS EVAL_MATCHING_V53 AS $$
+--   at 2023-08-24T19:04:46.558938300
+CREATE ALIAS EVAL_MATCHING_V54 AS $$
     long evaluate(String pattern, String word) {
         //logln("%s : PATTERN:%s  <--->  WORD:%s", this.nameAndVersion(), pattern, word);
 
@@ -604,9 +604,12 @@ CREATE ALIAS EVAL_MATCHING_V53 AS $$
                                 }
 
                                 if ( wcPrevInPatternNprev != wcPrevInPattern && firstWcInPatternIndex == wcPrevInPattern ) {
-                                    if ( true ) {
-                                        if ( wcPrevInPatternNprev > wcPrevInPattern && wcPrevInPatternNprev < wcInPattern ) {
-                                            //logln("      move: WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s] switch check [move 1]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                    if ( wcPrevInPatternNprev > wcPrevInPattern && wcPrevInPatternNprev < wcInPattern ) {
+                                        //logln("      move: WORD:%s[PATTERN:%s] -> WORD:%s[PATTERN:%s] switch check [move 1]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
+                                        if ( wcPrevInPattern == wcPrevInPatternNprev-1 ) {
+                                            //logln("         move has no sense");
+                                        }
+                                        else {
                                             int matchesInLoop = 0;
                                             char patternLoopChar;
                                             int iWord = i+1;
@@ -681,31 +684,6 @@ CREATE ALIAS EVAL_MATCHING_V53 AS $$
                                             }
                                         }
                                     }
-                                    else {
-//                                        int distanceChange = wcPrevInPatternNprev - wcPrevInPattern;
-//                                        if ( distanceChange > 0 && distanceChange < distanceFromItoWordEnd && wcPrevInPatternNprev < wcInPattern ) {
-//                                            //logln("      move: WORD:%s[PATTERN:%s] --> WORD:%s[PATTERN:%s] [move 2]", wcPrev, wcPrevInPattern, wcPrev, wcPrevInPatternNprev);
-//                                            wcPrevInPattern = wcPrevInPatternNprev;
-//                                            if ( diffInPatternSum > 0 ) {
-//                                                diffInPatternSum = diffInPatternSum + distanceChange - 1;
-//                                            }
-//                                            distanceFromCPrevToC = wcInPattern - wcPrevInPattern;
-//                                            if ( distanceFromCPrevToC > (distanceFromItoWordEnd + 2) ) {
-//                                                //logln("   WORD:%s not found on reasonable length [1] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
-//                                                order--;
-//                                                //logln("   order-- [2][1]");
-//                                                prevCharResult = PREV_CHAR_NOT_FOUND;
-//                                                continue wordCharsIterating;
-//                                            }
-//                                        }
-//                                        else {
-//                                            //logln("   WORD:%s not found on reasonable length [2] after WORD:%s[PATTERN:%s], found at [PATTERN:%s]", wc, wcPrev, wcPrevInPattern, wcInPattern);
-//                                            prevCharResult = PREV_CHAR_NOT_FOUND;
-//                                            order--;
-//                                            //logln("   order-- [2][2]");
-//                                            continue wordCharsIterating;
-//                                        }
-                                    }
                                 }
                                 else {
                                     boolean switchFromStartAllowed = i == 3 || i == 2;
@@ -713,7 +691,7 @@ CREATE ALIAS EVAL_MATCHING_V53 AS $$
                                         char firstWordChar = word.charAt(0);
                                         int next = pattern.indexOf(firstWordChar, firstWcInPatternIndex + 1);
 
-                                        if ( next > -1 ) {
+                                        if ( next > firstWcInPatternIndex+1 ) {
                                             boolean proceed = next < wcPrevInPattern;
 
                                             if ( ! proceed ) {
@@ -1229,10 +1207,21 @@ CREATE ALIAS EVAL_MATCHING_V53 AS $$
                                 if ( wcPrevInPattern > -1 ) {
                                     wcPrevPrevInPattern = wcPrevInPattern;
                                 }
-                                wcPrevInPattern = wcPrevInPatternN;
                                 //logln("      gap fixed char WORD:%s[PATTERN:%s] and previous char WORD:%s[PATTERN:%s] - PATTERN:%s!", wc, wcInPattern, wcPrev, wcPrevInPattern, wcPrevInPatternN);
                                 gaps--;
                                 //logln("      MATCH, gap fixed");
+
+                                if ( iPrev == 0 ) {
+                                    if ( firstWcInPatternIndex == wcPrevInPattern ) {
+                                        firstWcInPatternIndex = wcPrevInPatternN;
+                                    }
+                                    if ( firstFoundWcInPatternIndex == wcPrevInPattern ) {
+                                        firstFoundWcInPatternIndex = wcPrevInPatternN;
+                                    }
+                                }
+
+                                wcPrevInPattern = wcPrevInPatternN;
+
                                 gapNotFixed = false;
                                 if ( diffInWord == 1 ) {
                                     //logln("      FULL MATCH [2]");

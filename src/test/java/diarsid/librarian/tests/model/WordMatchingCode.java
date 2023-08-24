@@ -14,9 +14,9 @@ public class WordMatchingCode extends MatchingCodeV2 {
     public final String string;
     public final String description;
 
-    public WordMatchingCode(Row row) {
-        super(row.longOf("w_code"));
-        this.string = row.stringOf("string");
+    public WordMatchingCode(Row row, String codeColumnName, String wordColumnName) {
+        super(row.longOf(codeColumnName));
+        this.string = row.stringOf(wordColumnName);
         this.description = super.toString();
     }
 

@@ -264,4 +264,9 @@ public class LengthTest {
         testLength("progsloclscl", "social", true);
     }
 
+    @Test
+    public void test_devr_r_true() {
+        testLength("devr", "r", true);
+    }
+
 }

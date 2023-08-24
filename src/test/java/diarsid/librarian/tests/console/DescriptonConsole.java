@@ -65,7 +65,9 @@ public class DescriptonConsole {
                 .withOperation(building -> building
                         .named("describe-entry-and-pattern")
                         .doing(describePatternAndEntry)
-                        .matching(command -> command.firstArgIs("describe")))
+                        .matching(command ->
+                                command.firstArgIs("describe") ||
+                                command.firstArgIs("desc")))
                 .done();
 
         console.life().start();

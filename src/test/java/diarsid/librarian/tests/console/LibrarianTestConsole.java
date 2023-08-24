@@ -1,6 +1,5 @@
 package diarsid.librarian.tests.console;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +14,9 @@ import diarsid.jdbc.api.JdbcTransaction;
 import diarsid.librarian.api.Core;
 import diarsid.librarian.api.Search;
 import diarsid.librarian.api.model.Entry;
-import diarsid.librarian.api.model.Pattern;
 import diarsid.librarian.api.model.PatternToEntry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.tests.setup.CoreTestSetup;
-import diarsid.support.strings.MultilineMessage;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
