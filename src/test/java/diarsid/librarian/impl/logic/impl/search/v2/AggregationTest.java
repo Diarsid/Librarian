@@ -540,4 +540,28 @@ public class AggregationTest {
         expectOk = true;
         analyze();
     }
+
+    @Test
+    public void test_srwrsmove() throws Exception {
+        pattern = "srwrsmove";
+        words = List.of(
+                "star",
+                "wars",
+                "movie"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+    @Test
+    public void test_beitcons() throws Exception {
+        pattern = "beitcons";
+        words = List.of(
+                "bitcoins"
+        );
+        expectOk = true;
+        analyze();
+    }
+
+
 }

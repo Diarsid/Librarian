@@ -48,13 +48,20 @@ public class AlgorithmToModelAdapter implements Comparator<PatternToEntry> {
 
         PatternToEntry relation;
         for ( Entry entry : entries ) {
-            relation = this.analyze(pattern, entry, time);
+            try {
+                relation = this.analyze(pattern, entry, time);
 
-            if ( this.isBad(relation) ) {
-                continue;
+                if ( this.isBad(relation) ) {
+                    continue;
+                }
+
+                relations.add(relation);
             }
-
-            relations.add(relation);
+            catch (Throwable t) {
+                System.out.println(entry.string());
+                int a = 5;
+                throw t;
+            }
         }
 
         relations.sort(this);

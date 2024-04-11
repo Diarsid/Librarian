@@ -53,13 +53,13 @@ public interface Behavior {
 
         /*
         * If set to true, word like CamelCaseWord is treated as 3 different words in sense of
-        * analize. If set to false, it is treated as 1 long word.
+        * analyze. If set to false, it is treated as 1 long word.
         * */
         USE_CAMEL_CASE_WORDS_DECOMPOSITION( /* default value */ true),
 
         /*
          * If USE_CAMEL_CASE_WORDS_DECOMPOSITION is set to true, word like CamelCaseWord is treated as
-         * 3 different words in sense of analize. But if this set to true also, original CamelCaseWord will
+         * 3 different words in sense of analyze. But if this set to true also, original CamelCaseWord will
          * be preserved as single word in additional to it's splitted part.
          * */
         INCLUDE_CAMEL_CASED_WORD_ORIGINAL( /* default value */ true),

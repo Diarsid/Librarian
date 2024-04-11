@@ -1,7 +1,5 @@
 package diarsid.librarian.tests.console;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import diarsid.console.api.Console;
@@ -10,16 +8,9 @@ import diarsid.console.api.io.Command;
 import diarsid.console.api.io.operations.OperationLogic;
 import diarsid.console.impl.building.ConsoleBuilding;
 import diarsid.jdbc.api.Jdbc;
-import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.librarian.api.Core;
-import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.api.model.User;
 import diarsid.librarian.tests.setup.CoreTestSetup;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toList;
 
 import static diarsid.console.api.format.ConsoleFormatElement.NAME;
 import static diarsid.librarian.tests.setup.CoreTestSetupStaticSingleton.server;
@@ -47,6 +38,7 @@ public class DescriptonConsole {
 
         OperationLogic getWordsOfEntry = new GetWordsOfEntry(core, user, jdbc);
         OperationLogic describePatternAndEntry = new DescribePatternAndEntry(core, user, jdbc);
+        OperationLogic getEntriesOfWord = new GetEntriesOfWord(core, user, jdbc);
 
         Console console = new ConsoleBuilding()
                 .withFormat(ConsoleFormat
@@ -62,6 +54,10 @@ public class DescriptonConsole {
                         .named("get-words-of-entry")
                         .doing(getWordsOfEntry)
                         .matching(command -> command.firstArgIs("words")))
+                .withOperation(builder -> builder
+                        .named("get-entries-of-word")
+                        .doing(getEntriesOfWord)
+                        .matching(command -> command.firstArgIs("entries")))
                 .withOperation(building -> building
                         .named("describe-entry-and-pattern")
                         .doing(describePatternAndEntry)

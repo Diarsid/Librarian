@@ -11,9 +11,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.AggregationCodeV2;
+import diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import diarsid.librarian.tests.setup.transactional.AwareOfTestAnnotations;
 import diarsid.librarian.tests.setup.transactional.AwareOfTestName;
+import diarsid.support.tests.expectations.Expectation;
+import diarsid.support.tests.expectations.Expectations;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
@@ -88,6 +92,7 @@ public class PatternToWordMatchingTest {
     private String word;
     private boolean expectMatching;
     private String comment;
+    private Expectations<MatchingCodeV2> expectations = new Expectations<>();
 
     public void experimental() {
         this.isExperimental = true;
@@ -127,7 +132,10 @@ public class PatternToWordMatchingTest {
 
         long code = MATCHING.evaluate(pattern, word);
 
-        System.out.println(code);
+        if ( this.expectations.areNotEmpty() ) {
+            MatchingCodeV2 decomposedCode = new MatchingCodeV2(code);
+            this.expectations.accept(decomposedCode);
+        }
 
         this.expectMatching = findBoolIn(methodDeclarationWords).orElseThrow(
                 () -> new IllegalArgumentException("Method declaration does not contain any boolean matching!"));
@@ -140,15 +148,17 @@ public class PatternToWordMatchingTest {
         }
 
         boolean matching = code > -1;
-        boolean mismatch = expectMatching ^ matching;
+        boolean expectationFailed = this.expectations.areFailed();
+
+        boolean testFailed = (expectMatching ^ matching) || expectationFailed;
 
         System.out.println(format("[TEST] expect matching:%s, result:%s",
                 expectMatching ? "TRUE" : "FALSE",
-                mismatch ? "FAIL" : "PASS"));
+                testFailed ? "FAIL" : "PASS"));
 
         if ( this.isExperimental ) {
             statistic.experimental++;
-            if ( mismatch ) {
+            if ( testFailed ) {
                 statistic.experimentalFailed.add(new Statistic.TestInstance(this));
             }
             else {
@@ -159,7 +169,7 @@ public class PatternToWordMatchingTest {
 
         if ( this.isOnlyDesirable ) {
             statistic.desirable++;
-            if ( mismatch ) {
+            if ( testFailed ) {
                 statistic.desirableFailed.add(new Statistic.TestInstance(this));
             }
             else {
@@ -168,11 +178,16 @@ public class PatternToWordMatchingTest {
             System.out.println("[TEST] is desirable, but not mandatory");
         }
 
-        if ( mismatch ) {
+        if ( testFailed ) {
             if ( ! this.isOnlyDesirable ) {
                 assumeTrue( ! this.isExperimental, "[TEST] Test is an experimental behavior");
                 statistic.fail++;
-                fail();
+                if ( expectationFailed ) {
+                    this.expectations.assertPassed();
+                }
+                else {
+                    fail();
+                }
             }
         }
         else {
@@ -2753,6 +2768,262 @@ public class PatternToWordMatchingTest {
     public void test_devenigs_engines_true() {
         doTest();
     }
+
+    @Test
+    @Tag("V55")
+    public void test_mvnantlr_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_mvnantlr_antlr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_mvnantle_maven_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_mvnantle_antlr_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_chenrbly_chernobyl_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_waltwitmn_wanted_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_waltwitmn_lattimore_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_wcrft_warcraft_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_wrcft_warcraft_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_wrcrft_warcraft_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    @OnlyDesirable
+    public void test_tolsvirtl_literature_false() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_witchsrls_witcher_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_witchsrls_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlswworld_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlswworld_westworld_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlswsworld_westworld_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlswsworld_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srwrsmove_movies_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srwrsmove_star_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_movesrwrs_star_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srwrsmove_wars_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_movesrwrs_wars_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_bkscs_books_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_bkscs_cs_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_seralsffly_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_seralsffly_firefly_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsslcnvally_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsslcnvally_silicon_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsslcnvally_valley_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlslcfr_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlslcfr_lucifer_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsaltcrbn_serials_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsaltcrbn_altered_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_srlsaltcrbn_carbon_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_engnspthn_python_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V55")
+    public void test_engnspthn_engines_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_jpath_java_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_beitcons_bitcoins_true() {
+        expectations.add(code -> {
+            assertThat(code.matchSpan).isGreaterThanOrEqualTo(7);
+        });
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_trky_turkey_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_vvm_visual_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_vvm_vm_true() {
+        doTest();
+    }
+
+//    @Test
+//    @Tag("V55")
+//    public void test_P_W_true() {
+//        doTest();
+//    }
 
     @Test
     public void test_maximums() {

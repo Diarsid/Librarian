@@ -108,10 +108,10 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                         (row) -> new WordMatchingCode(row, "w_code", "string"),
                         "WITH \n" +
                         "words_scan_raw AS ( \n" +
-                        "    SELECT uuid, string, EVAL_MATCHING_V54(?, string) AS w_code \n" +
+                        "    SELECT uuid, string, EVAL_MATCHING_V55(?, string) AS w_code \n" +
                         "    FROM words \n" +
                         "    WHERE \n" +
-                        "       EVAL_LENGTH_V8(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V9(?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +

@@ -269,4 +269,19 @@ public class LengthTest {
         testLength("devr", "r", true);
     }
 
+    @Test
+    public void test_srwrsmove_star_true() {
+        testLength("srwrsmove", "star", true);
+    }
+
+    @Test
+    public void test_srwrsmove_wars_true() {
+        testLength("srwrsmove", "wars", true);
+    }
+
+    @Test
+    public void test_srwrsmove_movie_true() {
+        testLength("srwrsmove", "movie", true);
+    }
+
 }

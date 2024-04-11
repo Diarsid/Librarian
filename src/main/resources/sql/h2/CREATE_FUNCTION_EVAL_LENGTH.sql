@@ -1,7 +1,7 @@
 -- generated 
 --   by diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.CountCharMatchesH2SqlFunctionScript
---   at 2023-08-24T16:25:42.186714100
-CREATE ALIAS EVAL_LENGTH_V8 AS $$
+--   at 2023-11-07T19:45:47.375979500
+CREATE ALIAS EVAL_LENGTH_V9 AS $$
     int evaluate(
             String string1 /* longer */ ,
             String string2 /* shorter */ ,
@@ -143,6 +143,8 @@ CREATE ALIAS EVAL_LENGTH_V8 AS $$
                     threshold = 2;
                     break;
                 case 4:
+                    threshold = hasDuplicates ? 2 : 3;
+                    break;
                 case 5:
                     threshold = 3;
                     break;
