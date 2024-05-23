@@ -284,4 +284,14 @@ public class LengthTest {
         testLength("srwrsmove", "movie", true);
     }
 
+    @Test
+    public void test_sonqbe_sonar_true() {
+        testLength("sonqbe", "sonar", true);
+    }
+
+    @Test
+    public void test_elfgramtolk_elvish_true() {
+        testLength("elfgramtolk", "elvish", true);
+    }
+
 }

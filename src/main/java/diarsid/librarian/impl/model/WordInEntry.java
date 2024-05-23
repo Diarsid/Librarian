@@ -2,6 +2,8 @@ package diarsid.librarian.impl.model;
 
 import java.util.UUID;
 
+import diarsid.jdbc.api.sqltable.rows.Row;
+import diarsid.librarian.api.model.Entry;
 import diarsid.support.objects.CommonEnum;
 
 public class WordInEntry extends AbstractUniqueStorable {
@@ -10,25 +12,33 @@ public class WordInEntry extends AbstractUniqueStorable {
         FIRST, MIDDLE, LAST, SINGLE
     }
 
-    private final RealEntry entry;
-    private final Word word;
+    private final UUID entryUuid;
+    private final UUID wordUuid;
     private final Position position;
     private final int index;
 
-    public WordInEntry(UUID uuid, RealEntry entry, Word word, Position position, int index) {
+    public WordInEntry(UUID uuid, RealEntry entry, Entry.Word word, Position position, int index) {
         super(uuid);
-        this.entry = entry;
-        this.word = word;
+        this.entryUuid = entry.uuid();
+        this.wordUuid = word.uuid();
         this.position = position;
         this.index = index;
     }
 
-    public RealEntry entry() {
-        return entry;
+    public WordInEntry(Row row) {
+        super(row.get("uuid", UUID.class));
+        this.entryUuid = row.get("entry_uuid", UUID.class);
+        this.wordUuid = row.get("word_uuid", UUID.class);
+        this.position = row.get("position", Position.class);
+        this.index = row.get("index", Integer.class);
     }
 
-    public Word word() {
-        return word;
+    public UUID entryUuid() {
+        return entryUuid;
+    }
+
+    public UUID wordUuid() {
+        return wordUuid;
     }
 
     public Position position() {
@@ -42,8 +52,8 @@ public class WordInEntry extends AbstractUniqueStorable {
     @Override
     public String toString() {
         return "WordInEntry{" +
-                "entry=" + entry +
-                ", word=" + word +
+                "entry=" + entryUuid +
+                ", word=" + wordUuid +
                 ", position=" + position +
                 ", index=" + index +
                 '}';

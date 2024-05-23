@@ -11,12 +11,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.AggregationCodeV2;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import diarsid.librarian.tests.setup.transactional.AwareOfTestAnnotations;
 import diarsid.librarian.tests.setup.transactional.AwareOfTestName;
-import diarsid.support.tests.expectations.Expectation;
 import diarsid.support.tests.expectations.Expectations;
 
 import static java.lang.String.format;
@@ -28,6 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2.Type.FIRST_CHAR_ONLY;
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2.Type.FIRST_SECOND_CHARS_ONLY;
 import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
 import static diarsid.support.misc.Misc.methodName;
 
@@ -147,18 +147,40 @@ public class PatternToWordMatchingTest {
             statistic.negative++;
         }
 
-        boolean matching = code > -1;
+        MatchingCodeV2 matching = new MatchingCodeV2(code);
         boolean expectationFailed = this.expectations.areFailed();
 
-        boolean testFailed = (expectMatching ^ matching) || expectationFailed;
+        boolean testFails;
+
+        if ( expectationFailed ) {
+            testFails = true;
+        }
+        else {
+            if ( expectMatching ) {
+                testFails = matching.isNegative();
+            }
+            else {
+                if ( matching.isPositive() ) {
+                    if ( matching.type.isAny(FIRST_CHAR_ONLY, FIRST_SECOND_CHARS_ONLY) ) {
+                        testFails = false;
+                    }
+                    else {
+                        testFails = true;
+                    }
+                }
+                else {
+                    testFails = false;
+                }
+            }
+        }
 
         System.out.println(format("[TEST] expect matching:%s, result:%s",
                 expectMatching ? "TRUE" : "FALSE",
-                testFailed ? "FAIL" : "PASS"));
+                testFails ? "FAIL" : "PASS"));
 
         if ( this.isExperimental ) {
             statistic.experimental++;
-            if ( testFailed ) {
+            if ( testFails ) {
                 statistic.experimentalFailed.add(new Statistic.TestInstance(this));
             }
             else {
@@ -169,7 +191,7 @@ public class PatternToWordMatchingTest {
 
         if ( this.isOnlyDesirable ) {
             statistic.desirable++;
-            if ( testFailed ) {
+            if ( testFails ) {
                 statistic.desirableFailed.add(new Statistic.TestInstance(this));
             }
             else {
@@ -178,7 +200,7 @@ public class PatternToWordMatchingTest {
             System.out.println("[TEST] is desirable, but not mandatory");
         }
 
-        if ( testFailed ) {
+        if ( testFails ) {
             if ( ! this.isOnlyDesirable ) {
                 assumeTrue( ! this.isExperimental, "[TEST] Test is an experimental behavior");
                 statistic.fail++;
@@ -3016,6 +3038,48 @@ public class PatternToWordMatchingTest {
     @Test
     @Tag("V56")
     public void test_vvm_vm_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_snrdntolkn_sindarin_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_elfgramtolk_elvish_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_elfgramtolk_grammar_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_elfgramtolk_tolkien_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_beengesrt_bene_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_beengesrt_gesserit_true() {
+        doTest();
+    }
+
+    @Test
+    @Tag("V56")
+    public void test_sonqbe_sonar_true() {
         doTest();
     }
 

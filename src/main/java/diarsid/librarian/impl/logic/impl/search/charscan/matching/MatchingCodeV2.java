@@ -1,12 +1,14 @@
 package diarsid.librarian.impl.logic.impl.search.charscan.matching;
 
 import diarsid.librarian.api.Matching;
-import diarsid.support.exceptions.UnsupportedEnumException;
 import diarsid.support.objects.CommonEnum;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCode.Version.V2;
 import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2.Type.FIRST_CHAR_ONLY;
-import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2.Type.FULL;
+import static diarsid.librarian.impl.logic.impl.search.charscan.matching.MatchingCodeV2.Type.FIRST_SECOND_CHARS_ONLY;
 
 public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
 
@@ -14,7 +16,8 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
 
         MOVABLE(3),
         FIRST_CHAR_ONLY(2),
-        FULL(1);
+        FULL(1),
+        FIRST_SECOND_CHARS_ONLY(4);
 
         public final int mask;
 
@@ -27,12 +30,11 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
                 case 1 : return FULL;
                 case 2 : return FIRST_CHAR_ONLY;
                 case 3 : return MOVABLE;
+                case 4 : return FIRST_SECOND_CHARS_ONLY;
                 default: throw new IllegalArgumentException();
             }
         }
     }
-
-    public static final int FISRT_CHAR_MATCH_TYPE = 2;
 
     public final Type type;
     public final int patternLength;
@@ -56,7 +58,9 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
             return;
         }
 
-        if ( code / 1000000 == FIRST_CHAR_ONLY.mask) {
+        long shortCode = code / 1000000;
+
+        if ( shortCode == FIRST_CHAR_ONLY.mask) {
             this.type = FIRST_CHAR_ONLY;
 
             this.wordLength = (int) (code % 100);
@@ -69,6 +73,20 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
             this.rate = 0;
             this.found = 1;
             this.matchSpan = 1;
+        }
+        else if ( shortCode == FIRST_SECOND_CHARS_ONLY.mask ) {
+            this.type = FIRST_SECOND_CHARS_ONLY;
+
+            this.wordLength = (int) (code % 100);
+
+            code = code / 100;
+
+            this.patternLength = (int) (code % 100);
+
+            this.matchIndex = 0;
+            this.rate = 0;
+            this.found = 2;
+            this.matchSpan = 2;
         }
         else {
             int typeMask = (int) (code / 10000000000000L);
@@ -137,6 +155,14 @@ public class MatchingCodeV2 extends MatchingCode implements Matching.Match {
     @Override
     public int charsFound() {
         return this.found;
+    }
+
+    public boolean isPositive() {
+        return nonNull(this.type);
+    }
+
+    public boolean isNegative() {
+        return isNull(this.type);
     }
 
 }

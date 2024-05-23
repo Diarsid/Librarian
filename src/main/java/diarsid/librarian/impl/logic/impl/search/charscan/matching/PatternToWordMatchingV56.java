@@ -7,9 +7,10 @@ public final class PatternToWordMatchingV56 extends PatternToWordMatchingCodeV2 
     public long evaluate(String pattern, String word) {
         logln("%s : PATTERN:%s  <--->  WORD:%s", this.nameAndVersion(), pattern, word);
 
-        final long CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY = 2000000L;
-        final long CODE_V2_BASE_NOT_MOVABLE_MATCH = 10000000000000L;
-        final long CODE_V2_BASE_MOVABLE_MATCH = 30000000000000L;
+        final long CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY =     2000000L;
+        final long CODE_V2_BASE_FIRST_2_CHARS_MATCH_ONLY =  4000000L;
+        final long CODE_V2_BASE_NOT_MOVABLE_MATCH =         10000000000000L;
+        final long CODE_V2_BASE_MOVABLE_MATCH =             30000000000000L;
 
         final int wordLength = word.length();
         final int patternLength = pattern.length();
@@ -520,22 +521,33 @@ public final class PatternToWordMatchingV56 extends PatternToWordMatchingCodeV2 
                                                 }
                                             }
                                             else if ( i == iPrev + 2 ) {
-                                                boolean backwardMatch2Prohibited =
-                                                        (i+1)/2 > matchInPattern+1 ||
-                                                        matchFull+1 > 2 ||
-                                                        wordChar_1_Missed > 0;
-                                                if ( backwardMatch2Prohibited ) {
-                                                    logln("         WORD:%s[PATTERN:%s] backward match [+2] prohibited!",  wc, wcInPatternWeak);
-                                                    mismatchesOnlyWord++;
-                                                }
-                                                else {
-                                                    if ( gaps > 0 ) {
-                                                        if ( i != lastInWord ) {
-                                                            char wcNext = word.charAt(i + 1);
+                                                if ( gaps > 0 ) {
+                                                    if ( i != lastInWord ) {
+                                                        char wcNext = word.charAt(i + 1);
 
-                                                            if ( wcNext == wcPrev ) {
-                                                                logln("      WORD:%s[PATTERN:%s] backward match [+2] prohibited - is duplication in word!",  wc, wcInPatternWeak);
-                                                                wordDuplication2Index = i;
+                                                        if ( wcNext == wcPrev ) {
+                                                            logln("      WORD:%s[PATTERN:%s] backward match [+2] prohibited - is duplication in word!",  wc, wcInPatternWeak);
+                                                            wordDuplication2Index = i;
+                                                        }
+                                                        else {
+                                                            boolean prohibitBackward = iPrev < 3;
+                                                            if ( prohibitBackward ) {
+                                                                if ( matchFull > 0 ) {
+                                                                    prohibitBackward = false;
+                                                                }
+                                                                else {
+                                                                    if ( iPrevPrev >= 0 ) {
+                                                                        int iPrevPrevDiff = iPrev - iPrevPrev - 1;
+                                                                        if ( iPrevPrevDiff == 0 ) {
+                                                                            prohibitBackward = false;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            if ( prohibitBackward ) {
+                                                                logln("      WORD:%s[PATTERN:%s] backward match [+2] prohibited!",  wc, wcInPatternWeak);
+                                                                mismatchesOnlyWord++;
                                                             }
                                                             else {
                                                                 logln("      WORD:%s[PATTERN:%s] backward match [+2] from word-in-pattern beginning [PATTERN:%s] before WORD:%s[PATTERN:%s]",  wc, wcInPatternWeak, firstWcInPatternIndex, wcPrev, wcPrevInPattern);
@@ -552,6 +564,16 @@ public final class PatternToWordMatchingV56 extends PatternToWordMatchingCodeV2 
                                                                 wordLastFoundCharIndex = i;
                                                                 logln("      found++[2]");
                                                                 gaps--;
+
+                                                                if ( iPrev > -1 ) {
+                                                                    iPrevPrev = iPrev;
+                                                                }
+                                                                iPrev = i;
+                                                                prevCharResult = PREV_CHAR_FOUND;
+                                                                prevCharMatchStrength = PREV_CHAR_STRENGTH_IS_WEAK;
+
+//                                                            diffInWordSum--;
+//                                                            diffInPatternSum--;
                                                             }
                                                         }
                                                     }
@@ -1445,6 +1467,7 @@ public final class PatternToWordMatchingV56 extends PatternToWordMatchingCodeV2 
 
                     if ( longestDiffInWord < 0 || diffInWord-1 > longestDiffInWord ) {
                         longestDiffInWord = diffInWord-1;
+                        logln("         [diff word longest] %s", longestDiffInWord);
                     }
 
                     if ( longestDiffInPattern < 0 || diffInPattern-1 > longestDiffInPattern ) {
@@ -2821,15 +2844,30 @@ public final class PatternToWordMatchingV56 extends PatternToWordMatchingCodeV2 
             return code;
         }
         else {
-            if ( found == 2 && wordLength < 6 && patternStartsWithWord && matchFull == 0 && matchInPatternStrong == 0 ) {
-                logln("   first char of a short word! [found = 2]");
+            if ( found == 2 && patternStartsWithWord ) {
+                if ( wordLength < 6 && matchFull == 0 && matchInPatternStrong == 0 ) {
+                    logln("   first char of a short word! [found = 2]");
 
-                long code = CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY;
+                    long code = CODE_V2_BASE_FIRST_CHAR_MATCH_ONLY;
 
-                code = code + patternLength * 100L;
-                code = code + wordLength;
+                    code = code + patternLength * 100L;
+                    code = code + wordLength;
 
-                return code;
+                    return code;
+                }
+                else if ( wordLength < 7 && matchFull == 2 && matchInPatternStrong == 1 ) {
+                    logln("   first and second char of a short word! [found = 2]");
+
+                    long code = CODE_V2_BASE_FIRST_2_CHARS_MATCH_ONLY;
+
+                    code = code + patternLength * 100L;
+                    code = code + wordLength;
+
+                    return code;
+                }
+                else {
+                    return -1;
+                }
             }
             else {
                 return -1;

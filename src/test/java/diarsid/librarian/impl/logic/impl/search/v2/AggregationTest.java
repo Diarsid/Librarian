@@ -563,5 +563,17 @@ public class AggregationTest {
         analyze();
     }
 
+    @Test
+    public void test_elfgramtolk() throws Exception {
+        pattern = "elfgramtolk";
+        words = List.of(
+                "elvish",
+                "grammar",
+                "tolkien"
+        );
+        expectOk = true;
+        analyze();
+    }
+
 
 }

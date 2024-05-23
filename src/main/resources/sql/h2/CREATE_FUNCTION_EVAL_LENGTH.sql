@@ -1,7 +1,7 @@
 -- generated 
 --   by diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.CountCharMatchesH2SqlFunctionScript
---   at 2023-11-07T19:45:47.375979500
-CREATE ALIAS EVAL_LENGTH_V9 AS $$
+--   at 2024-05-24T01:20:01.798075600
+CREATE ALIAS EVAL_LENGTH_V10 AS $$
     int evaluate(
             String string1 /* longer */ ,
             String string2 /* shorter */ ,
@@ -113,7 +113,23 @@ CREATE ALIAS EVAL_LENGTH_V9 AS $$
                         if ( c1 == c2 ) {
                             match++;
                         }
-                        break;
+                        if ( i2 == s2Last ) {
+                            break;
+                        }
+                        else {
+                            do {
+                                i2++;
+                                c2Prev = c2;
+                                c2 = string2.charAt(i2);
+                                if ( c2Prev == c2 ) {
+                                    c2Duplicates++;
+                                }
+
+                                if ( c1 == c2 ) {
+                                    match++;
+                                }
+                            } while ( c2 > c1 && i2 < s2Last );
+                        }
                     }
                 }
             }

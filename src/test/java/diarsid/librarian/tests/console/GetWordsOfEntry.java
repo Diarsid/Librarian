@@ -60,8 +60,8 @@ public class GetWordsOfEntry extends LibrarianConsoleOperationLogic {
 
         List<String> words = jdbc
                 .doQueryAndStream(
-                        ColumnGetter.stringOf("string"),
-                        "SELECT w.string \n" +
+                        row -> row.uuidOf("uuid").toString() + ", " + row.stringOf("string"),
+                        "SELECT w.uuid, w.string \n" +
                         "FROM words_in_entries we \n" +
                         "    JOIN words w \n" +
                         "        ON w.uuid = we.word_uuid \n" +

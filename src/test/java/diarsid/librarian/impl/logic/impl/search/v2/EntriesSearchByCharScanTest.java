@@ -26,6 +26,7 @@ import diarsid.librarian.tests.setup.transactional.TransactionalRollbackTestForS
 import diarsid.support.strings.MultilineMessage;
 import diarsid.support.strings.StringCacheForRepeatedSeparated;
 import diarsid.support.time.Timer;
+import diarsid.support.time.Timing;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.nonNull;
@@ -138,7 +139,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
     @AfterAll
     public static void tearDown() {
-        for ( Timer.Timing timing : timer.timings() ) {
+        for ( Timing timing : timer.timings() ) {
             System.out.println(timing);
         }
     }
@@ -232,10 +233,10 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     row -> resultLines.add(new ResultLine(row)),
                     "WITH \n" +
                     "words_scan_raw AS ( \n" +
-                    "    SELECT uuid, string, EVAL_MATCHING_V55(?, string) AS w_code \n" +
+                    "    SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
-                    "       EVAL_LENGTH_V9(?, string_sort, 60) > -1 AND \n" +
+                    "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
                     "       USER_uuid = ? \n" +
                     "), \n" +
                     "words_scan AS ( \n" +

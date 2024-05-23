@@ -8,7 +8,6 @@ import diarsid.jdbc.api.Jdbc;
 import diarsid.jdbc.api.sqltable.columns.ColumnGetter;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.model.Word;
 import diarsid.support.strings.StringCacheForRepeatedSeparatedPrefixSuffix;
 
 import static java.util.stream.Collectors.toList;
@@ -179,7 +178,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
                 "    )");
     }
 
-    public List<Entry> findBy(Word word, TimeDirection timeDirection, LocalDateTime time) {
+    public List<Entry> findBy(Entry.Word word, TimeDirection timeDirection, LocalDateTime time) {
         switch ( timeDirection ) {
             case BEFORE: return this.findByBefore(word, time);
             case AFTER_OR_EQUAL: return this.findByAfterOrEqual(word, time);
@@ -187,7 +186,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         }
     }
 
-    public List<Entry> findBy(Word word, Entry.Label.Matching matching, List<Entry.Label> labels) {
+    public List<Entry> findBy(Entry.Word word, Entry.Label.Matching matching, List<Entry.Label> labels) {
         if ( labels.isEmpty() ) {
             return this.findBy(word);
         }
@@ -209,7 +208,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         }
     }
 
-    public List<Entry> findBy(Word word, Entry.Label.Matching matching, List<Entry.Label> labels, TimeDirection timeDirection, LocalDateTime time) {
+    public List<Entry> findBy(Entry.Word word, Entry.Label.Matching matching, List<Entry.Label> labels, TimeDirection timeDirection, LocalDateTime time) {
         if ( labels.isEmpty() ) {
             switch ( timeDirection ) {
                 case BEFORE: return this.findByBefore(word, time);
@@ -260,7 +259,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         }
     }
 
-    public List<Entry> findBy(Word word) {
+    public List<Entry> findBy(Entry.Word word) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -275,7 +274,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByBefore(Word word, LocalDateTime time) {
+    private List<Entry> findByBefore(Entry.Word word, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -292,7 +291,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAfterOrEqual(Word word, LocalDateTime time) {
+    private List<Entry> findByAfterOrEqual(Entry.Word word, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -309,7 +308,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
     
-    private List<Entry> findByLabel(Word word, Entry.Label label) {
+    private List<Entry> findByLabel(Entry.Word word, Entry.Label label) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -328,7 +327,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByLabelBefore(Word word, Entry.Label label, LocalDateTime time) {
+    private List<Entry> findByLabelBefore(Entry.Word word, Entry.Label label, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -348,7 +347,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByLabelAfterOrEqual(Word word, Entry.Label label, LocalDateTime time) {
+    private List<Entry> findByLabelAfterOrEqual(Entry.Word word, Entry.Label label, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -368,7 +367,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNotLabel(Word word, Entry.Label label) {
+    private List<Entry> findByNotLabel(Entry.Word word, Entry.Label label) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -389,7 +388,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNotLabelBefore(Word word, Entry.Label label, LocalDateTime time) {
+    private List<Entry> findByNotLabelBefore(Entry.Word word, Entry.Label label, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -411,7 +410,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNotLabelAfterOrEqual(Word word, Entry.Label label, LocalDateTime time) {
+    private List<Entry> findByNotLabelAfterOrEqual(Entry.Word word, Entry.Label label, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -433,7 +432,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAnyOfLabelsBefore(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByAnyOfLabelsBefore(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -444,7 +443,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAnyOfLabelsAfterOrEqual(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByAnyOfLabelsAfterOrEqual(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -455,7 +454,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAnyOf(Word word, List<Entry.Label> labels) {
+    private List<Entry> findByAnyOf(Entry.Word word, List<Entry.Label> labels) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -466,7 +465,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAllOf(Word word, List<Entry.Label> labels) {
+    private List<Entry> findByAllOf(Entry.Word word, List<Entry.Label> labels) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -477,7 +476,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAllOfLabelsBefore(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByAllOfLabelsBefore(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -488,7 +487,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByAllOfLabelsAfterOrEqual(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByAllOfLabelsAfterOrEqual(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -499,7 +498,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNoneOf(Word word, List<Entry.Label> labels) {
+    private List<Entry> findByNoneOf(Entry.Word word, List<Entry.Label> labels) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -510,7 +509,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNoneOfLabelsBefore(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByNoneOfLabelsBefore(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),
@@ -521,7 +520,7 @@ public class EntriesSearchByWord extends ThreadBoundTransactionalEntries {
         return super.getEntriesBy(entryUuids);
     }
 
-    private List<Entry> findByNoneOfLabelsAfterOrEqual(Word word, List<Entry.Label> labels, LocalDateTime time) {
+    private List<Entry> findByNoneOfLabelsAfterOrEqual(Entry.Word word, List<Entry.Label> labels, LocalDateTime time) {
         List<UUID> entryUuids = super.currentTransaction()
                 .doQueryAndStream(
                         ColumnGetter.uuidOf("uuid"),

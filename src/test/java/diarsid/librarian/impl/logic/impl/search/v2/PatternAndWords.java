@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.AggregationCodeV2;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV31;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV32;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import diarsid.librarian.tests.model.WordMatchingCode;
 import diarsid.support.strings.MultilineMessage;
 
 public class PatternAndWords {
 
-    public final H2AggregateFunctionForAnalyzeV31 aggregator;
+    public final H2AggregateFunctionForAnalyzeV32 aggregator;
 
     public final String pattern;
     public final List<String> words;
@@ -26,7 +26,7 @@ public class PatternAndWords {
             PatternToWordMatching matching,
             String pattern,
             List<String> words) {
-        this.aggregator = new H2AggregateFunctionForAnalyzeV31();
+        this.aggregator = new H2AggregateFunctionForAnalyzeV32();
         this.pattern = pattern;
         this.words = words;
 
@@ -56,7 +56,7 @@ public class PatternAndWords {
         }
         else {
             aggregationCode = null;
-            var reason = H2AggregateFunctionForAnalyzeV31
+            var reason = H2AggregateFunctionForAnalyzeV32
                     .RejectionReason
                     .findByValue((int) resultCode)
                     .map(Enum::name)

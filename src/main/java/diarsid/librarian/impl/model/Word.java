@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.UUID;
 
 import diarsid.jdbc.api.sqltable.rows.Row;
+import diarsid.librarian.api.model.Entry;
 
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.support.model.Storable.State.STORED;
 
-public class Word extends AbstractIdentifiableUserScoped {
+public class Word extends AbstractIdentifiableUserScoped implements Entry.Word {
 
     public final static Comparator<Word> COMPARE_WORDS_BY_STRING = Comparator.comparing(word -> word.string);
 

@@ -26,7 +26,7 @@ public class EntriesSearchByPatternImpl implements EntriesSearchByPattern {
     public List<Entry> findBy(
             User user,
             String pattern) {
-        Optional<Word> word = words.findBy(user, pattern);
+        Optional<Entry.Word> word = words.findBy(user, pattern);
 
         List<Entry> entries;
         if ( word.isPresent() ) {
@@ -45,7 +45,7 @@ public class EntriesSearchByPatternImpl implements EntriesSearchByPattern {
             String pattern,
             TimeDirection timeDirection,
             LocalDateTime time) {
-        Optional<Word> word = words.findBy(user, pattern);
+        Optional<Entry.Word> word = words.findBy(user, pattern);
 
         List<Entry> entries;
         if ( word.isPresent() ) {
@@ -64,7 +64,7 @@ public class EntriesSearchByPatternImpl implements EntriesSearchByPattern {
             String pattern,
             Entry.Label.Matching matching,
             List<Entry.Label> labels) {
-        Optional<Word> word = words.findBy(user, pattern);
+        Optional<Entry.Word> word = words.findBy(user, pattern);
 
         List<Entry> entries;
         if ( word.isPresent() ) {
@@ -85,7 +85,7 @@ public class EntriesSearchByPatternImpl implements EntriesSearchByPattern {
             List<Entry.Label> labels,
             TimeDirection timeDirection,
             LocalDateTime time) {
-        Optional<Word> word = words.findBy(user, pattern);
+        Optional<Entry.Word> word = words.findBy(user, pattern);
 
         List<Entry> entries;
         if ( word.isPresent() ) {

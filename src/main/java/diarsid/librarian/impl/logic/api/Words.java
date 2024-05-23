@@ -5,18 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import diarsid.librarian.api.model.User;
-import diarsid.librarian.impl.model.Word;
+import diarsid.librarian.api.model.Entry;
 
-public interface Words {
+public interface Words extends diarsid.librarian.api.Words {
 
-    Word getOrSave(UUID userUuid, String string, LocalDateTime time);
+    Entry.Word getOrSave(UUID userUuid, String string, LocalDateTime time);
 
-    List<Word> getOrSave(UUID userUuid, List<String> string, LocalDateTime time);
+    List<Entry.Word> getOrSave(UUID userUuid, List<String> string, LocalDateTime time);
 
-    Optional<Word> findBy(UUID userUuid, String string);
-
-    default Optional<Word> findBy(User user, String string) {
-        return this.findBy(user.uuid(), string);
-    }
+    Optional<Entry.Word> findBy(UUID userUuid, String word);
 }

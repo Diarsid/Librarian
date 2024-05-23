@@ -15,16 +15,12 @@ import diarsid.librarian.impl.logic.api.Patterns;
 import diarsid.librarian.impl.logic.api.PatternsToEntries;
 import diarsid.librarian.impl.logic.api.UsersLocking;
 import diarsid.librarian.impl.logic.api.UuidSupplier;
-import diarsid.librarian.impl.logic.api.Words;
-import diarsid.librarian.impl.logic.api.WordsInEntries;
 import diarsid.librarian.impl.logic.impl.AlgorithmToModelAdapter;
 import diarsid.librarian.impl.logic.impl.BehaviorImpl;
 import diarsid.librarian.impl.logic.impl.ChoicesImpl;
 import diarsid.librarian.impl.logic.impl.CoreImpl;
 import diarsid.librarian.impl.logic.impl.EntriesImpl;
 import diarsid.librarian.impl.logic.impl.EntriesLabelsJoinTableImpl;
-import diarsid.librarian.impl.logic.impl.UserInteractionLockingWrapper;
-import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.LabeledEntriesImpl;
 import diarsid.librarian.impl.logic.impl.LabelsImpl;
 import diarsid.librarian.impl.logic.impl.PatternsImpl;
@@ -32,12 +28,14 @@ import diarsid.librarian.impl.logic.impl.PatternsToEntriesImpl;
 import diarsid.librarian.impl.logic.impl.PropertiesImpl;
 import diarsid.librarian.impl.logic.impl.SearchImpl;
 import diarsid.librarian.impl.logic.impl.SequentialUuidTimeBasedMACSupplierImpl;
+import diarsid.librarian.impl.logic.impl.UserInteractionLockingWrapper;
 import diarsid.librarian.impl.logic.impl.UsersImpl;
 import diarsid.librarian.impl.logic.impl.UsersLockingImpl;
 import diarsid.librarian.impl.logic.impl.WordsImpl;
 import diarsid.librarian.impl.logic.impl.WordsInEntriesImpl;
 import diarsid.librarian.impl.logic.impl.jdbc.UsersTransactionalLocking;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
+import diarsid.librarian.impl.logic.impl.search.EntriesSearchByPatternImpl;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByWord;
 import diarsid.librarian.impl.validity.StringsComparisonAlgorithmValidation;
 import diarsid.support.objects.CommonEnum;
@@ -90,9 +88,9 @@ public interface Core {
 
         PatternsToEntries patternsToEntries = new PatternsToEntriesImpl(jdbc, uuidSupplier, algorithmAdapter);
 
-        Words words = new WordsImpl(jdbc, uuidSupplier);
+        WordsImpl words = new WordsImpl(jdbc, uuidSupplier);
 
-        WordsInEntries wordsInEntries = new WordsInEntriesImpl(jdbc, uuidSupplier, words, behavior);
+        WordsInEntriesImpl wordsInEntries = new WordsInEntriesImpl(jdbc, uuidSupplier, words, behavior);
 
         EntriesLabelsJoinTable entriesLabelsJoinTable = new EntriesLabelsJoinTableImpl(jdbc, uuidSupplier);
 
@@ -135,7 +133,13 @@ public interface Core {
         Behavior txBehavior = jdbc.createTransactionalProxyFor(
                 Behavior.class, behavior, usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
 
-        Store store = new StoreImpl(txLabels, txEntries, txLabeledEntries);
+        Words txWords = jdbc.createTransactionalProxyFor(
+                Words.class, words, usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
+
+        WordsInEntries txWordsInEntries = jdbc.createTransactionalProxyFor(
+                WordsInEntries.class, wordsInEntries, usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);
+
+        Store store = new StoreImpl(txLabels, txEntries, txLabeledEntries, txWords, txWordsInEntries);
 
         Users txUsers = jdbc.createTransactionalProxyFor(
                 Users.class, new UsersImpl(jdbc, uuidSupplier), usersLockingOnOpenAndJoin, IF_NO_TRANSACTION_OPEN_NEW);

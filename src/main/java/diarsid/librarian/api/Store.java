@@ -8,4 +8,8 @@ public interface Store {
 
     LabeledEntries labeledEntries();
 
+    Words words();
+
+    WordsInEntries wordsInEntries();
+
 }
