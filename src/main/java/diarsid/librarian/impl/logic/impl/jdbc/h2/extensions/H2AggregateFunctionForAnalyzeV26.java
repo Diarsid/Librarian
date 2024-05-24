@@ -193,7 +193,12 @@ public class H2AggregateFunctionForAnalyzeV26 implements AggregateFunction {
         }
 
         if ( positionsRow == UNASSIGNED ) {
-            positionsRow = exemplarAggregate(argPatternLength);
+            try {
+                positionsRow = exemplarAggregate(argPatternLength);
+            }
+            catch (IllegalArgumentException e) {
+                int a = 5;
+            }
         }
 
         if ( patternStartFound || argMatchIndex == 0 ) {

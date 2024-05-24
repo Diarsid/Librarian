@@ -1,6 +1,6 @@
 package diarsid.librarian.impl.logic.impl.search.charscan.count;
 
-public final class CountCharMatchesV4 implements CountCharMatches {
+public final class CountCharMatchesV4 implements CountCharMatchesV1 {
 
     @Override
     public int evaluate(String string1, String string2, int requiredRatio /* 1 - 100 */) {

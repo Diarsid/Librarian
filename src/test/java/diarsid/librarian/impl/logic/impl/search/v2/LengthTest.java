@@ -1,22 +1,25 @@
 package diarsid.librarian.impl.logic.impl.search.v2;
 
 
-import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatches;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
+import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV2;
+
 import static org.junit.jupiter.api.Assertions.fail;
+
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 
 public class LengthTest {
 
     private static final Logger log = LoggerFactory.getLogger(LengthTest.class);
 
     public void testLength(String pattern, String word, boolean expectMatching) {
-        int rate = CountCharMatches.CURRENT_VERSION.evaluate(transform(pattern), transform(word), 60);
+        int rate = CountCharMatchesV2.CURRENT_VERSION.evaluate(
+                pattern, word,
+                transform(pattern), transform(word), 60);
         boolean pass;
         if ( expectMatching ) {
             if ( rate < 0 ) {
@@ -292,6 +295,11 @@ public class LengthTest {
     @Test
     public void test_elfgramtolk_elvish_true() {
         testLength("elfgramtolk", "elvish", true);
+    }
+
+    @Test
+    public void test_elvgramtolk_elvish_true() {
+        testLength("elvgramtolk", "elvish", true);
     }
 
 }

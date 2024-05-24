@@ -1,8 +1,10 @@
 -- generated 
 --   by diarsid.librarian.impl.logic.impl.jdbc.h2.scripts.CountCharMatchesH2SqlFunctionScript
---   at 2024-05-24T01:20:01.798075600
-CREATE ALIAS EVAL_LENGTH_V10 AS $$
+--   at 2024-05-25T00:48:21.063834800
+CREATE ALIAS EVAL_LENGTH_V11 AS $$
     int evaluate(
+            final String pattern,
+            final String word,
             String string1 /* longer */ ,
             String string2 /* shorter */ ,
             int requiredRatio /* 1 - 100 */ ) {
@@ -32,6 +34,10 @@ CREATE ALIAS EVAL_LENGTH_V10 AS $$
                 return -1;
             }
         }
+
+        boolean firstOriginalCharsMatches =
+                word.charAt(0) == pattern.charAt(0) &&
+                word.charAt(1) == pattern.charAt(1);
 
         maxLength = string1.length();
         lengthDiff = maxLength - matchLength;
@@ -178,7 +184,12 @@ CREATE ALIAS EVAL_LENGTH_V10 AS $$
                     threshold = 5;
             }
             if ( match < threshold ) {
-                return -1;
+                if ( firstOriginalCharsMatches ) {
+                    return match;
+                }
+                else {
+                    return -1;
+                }
             }
             else {
                 return match;
@@ -191,7 +202,12 @@ CREATE ALIAS EVAL_LENGTH_V10 AS $$
             return match;
         }
         else {
-            return -1;
+            if ( firstOriginalCharsMatches ) {
+                return match;
+            }
+            else {
+                return -1;
+            }
         }
     }
 $$

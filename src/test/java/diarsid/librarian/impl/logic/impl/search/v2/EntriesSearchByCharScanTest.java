@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import diarsid.jdbc.api.sqltable.rows.Row;
 import diarsid.librarian.api.model.Entry;
 import diarsid.librarian.impl.logic.api.EntriesSearchByPattern;
-import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV26;
+import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV32;
 import diarsid.librarian.impl.logic.impl.search.EntriesSearchByCharScan;
 import diarsid.librarian.impl.logic.impl.search.TimeDirection;
 import diarsid.librarian.tests.model.EntriesResult;
@@ -78,7 +78,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
     LocalDateTime time;
     EntriesResult entriesResult;
     Map<String, List<WordMatchingCode>> resultingEntriesAndWords;
-    Map<String, H2AggregateFunctionForAnalyzeV26> entriesAggregates;
+    Map<String, H2AggregateFunctionForAnalyzeV32> entriesAggregates;
     List<ResultLine> resultLines;
 
     @BeforeAll
@@ -236,8 +236,8 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     "    SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                     "    FROM words \n" +
                     "    WHERE \n" +
-                    "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
-                    "       USER_uuid = ? \n" +
+                    "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
+                    "       user_uuid = ? \n" +
                     "), \n" +
                     "words_scan AS ( \n" +
                     "    SELECT * \n" +
@@ -252,7 +252,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
                     "        ON e.uuid = we.entry_uuid \n" +
                     "WHERE we.entry_uuid IN ( " + wildcards.getFor(entriesResult.list()) + " ) \n" +
                     "ORDER BY e.string_origin ",
-                    pattern, transform(pattern), USER.uuid(), uuidsOf(entriesResult.list()));
+                    pattern, pattern, transform(pattern), USER.uuid(), uuidsOf(entriesResult.list()));
 
             resultingEntriesAndWords = resultLines
                     .stream()
@@ -266,7 +266,7 @@ public class EntriesSearchByCharScanTest extends TransactionalRollbackTestForSer
 
             entriesAggregates = new HashMap<>();
             for ( Map.Entry<String, List<WordMatchingCode>> entryAndWords : resultingEntriesAndWords.entrySet() ) {
-                H2AggregateFunctionForAnalyzeV26 aggregate = new H2AggregateFunctionForAnalyzeV26();
+                H2AggregateFunctionForAnalyzeV32 aggregate = new H2AggregateFunctionForAnalyzeV32();
                 for ( WordMatchingCode wordCode : entryAndWords.getValue() ) {
                     aggregate.add(wordCode.code);
                 }

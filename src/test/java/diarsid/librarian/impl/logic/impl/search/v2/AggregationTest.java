@@ -8,11 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV2;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import static diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV2.CURRENT_VERSION;
 import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
 
 public class AggregationTest {
@@ -20,6 +22,7 @@ public class AggregationTest {
     static Logger log = LoggerFactory.getLogger(AggregationTest.class);
 
     static final PatternToWordMatching MATCHING = currentVersion();
+    static final CountCharMatchesV2 LENGTH = CURRENT_VERSION;
     static {
         MATCHING.setLoggingEnabled(false);
     }
@@ -30,7 +33,7 @@ public class AggregationTest {
     long resultCode;
 
     void analyze() throws SQLException {
-        PatternAndWords patternAndWords = new PatternAndWords(MATCHING, pattern, words);
+        PatternAndWords patternAndWords = new PatternAndWords(MATCHING, LENGTH, pattern, words);
 
         if ( patternAndWords.aggregationCode != null ) {
             assertThat(patternAndWords.aggregationCode.missed).isEqualTo(patternAndWords.aggregator.missed());

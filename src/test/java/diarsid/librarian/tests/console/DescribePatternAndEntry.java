@@ -25,6 +25,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV2.CURRENT_VERSION;
 import static diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching.currentVersion;
 import static diarsid.support.objects.collections.CollectionUtils.nonEmpty;
 
@@ -157,7 +158,7 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                             "    SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                             "    FROM words \n" +
                             "    WHERE \n" +
-                            "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
+                            "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
                             "       user_uuid = ? \n" +
                             "), \n" +
                             "words_scan AS ( \n" +
@@ -176,7 +177,7 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                             ") \n" +
                             "SELECT * \n" +
                             "FROM entries_scan",
-                            pattern, sortedPattern, user.uuid(), entry.uuid())
+                            pattern, pattern, sortedPattern, user.uuid(), entry.uuid())
                     .collect(toList());
         }
         else {
@@ -188,7 +189,7 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                             "    SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                             "    FROM words \n" +
                             "    WHERE \n" +
-                            "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
+                            "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
                             "       user_uuid = ? \n" +
                             "), \n" +
                             "words_scan AS ( \n" +
@@ -205,7 +206,7 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                             ") \n" +
                             "SELECT * \n" +
                             "FROM entries_scan",
-                            pattern, sortedPattern, user.uuid(), entry.uuid())
+                            pattern, pattern, sortedPattern, user.uuid(), entry.uuid())
                     .collect(toList());
         }
 
@@ -216,7 +217,8 @@ public class DescribePatternAndEntry extends LibrarianConsoleOperationLogic {
                 .collect(toList()),
                 1);
 
-        PatternAndWords patternAndWords = new PatternAndWords(currentVersion(), pattern, words);
+        PatternAndWords patternAndWords = new PatternAndWords(
+                currentVersion(), CURRENT_VERSION, pattern, words);
 
         message.newLine().add("In-memory execution:");
         message.addAsLines(patternAndWords.report.composeToLines(), 1);

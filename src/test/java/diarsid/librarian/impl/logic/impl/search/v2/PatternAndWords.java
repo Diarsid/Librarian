@@ -6,9 +6,13 @@ import java.util.List;
 
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.AggregationCodeV2;
 import diarsid.librarian.impl.logic.impl.jdbc.h2.extensions.H2AggregateFunctionForAnalyzeV32;
+import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV1;
+import diarsid.librarian.impl.logic.impl.search.charscan.count.CountCharMatchesV2;
 import diarsid.librarian.impl.logic.impl.search.charscan.matching.PatternToWordMatching;
 import diarsid.librarian.tests.model.WordMatchingCode;
 import diarsid.support.strings.MultilineMessage;
+
+import static diarsid.librarian.impl.logic.impl.search.CharSort.transform;
 
 public class PatternAndWords {
 
@@ -24,6 +28,7 @@ public class PatternAndWords {
 
     public PatternAndWords(
             PatternToWordMatching matching,
+            CountCharMatchesV2 countCharMatches,
             String pattern,
             List<String> words) {
         this.aggregator = new H2AggregateFunctionForAnalyzeV32();
@@ -35,8 +40,14 @@ public class PatternAndWords {
 
         for ( String word : words ) {
             long code = matching.evaluate(pattern, word);
+            int lengthMatch = countCharMatches.evaluate(
+                    pattern,
+                    word,
+                    transform(pattern),
+                    transform(word),
+                    60);
             wordCodes.add(new WordMatchingCode(word, code));
-            report.newLine().indent(2).add(word).add(" : ").add(code).add(" : ").add(matching.describe(code).toString());
+            report.newLine().indent(2).add(word).add(" : lengthMatch:").add(lengthMatch).add(" code:").add(code).add(" : ").add(matching.describe(code).toString());
         }
 
         for ( WordMatchingCode wordCode : wordCodes) {

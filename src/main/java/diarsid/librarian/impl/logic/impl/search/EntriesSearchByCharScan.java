@@ -67,7 +67,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -100,7 +100,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -137,7 +137,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -176,7 +176,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -215,7 +215,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -250,7 +250,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -285,7 +285,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -318,7 +318,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -351,7 +351,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 "			ON we.entry_uuid = le.entry_uuid \n" +
                 "	WHERE \n" +
                 "       w.user_uuid = ? AND \n" +
-                "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                 "), \n" +
                 "entries_scan AS ( \n" +
                 "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -473,7 +473,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -493,7 +493,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	JOIN entries e \n" +
                         "		ON e.uuid = es.entry_uuid \n" +
                         "WHERE es.r_code > 0 ; \n",
-                        pattern, transform(pattern), user.uuid())
+                        pattern, pattern, transform(pattern), user.uuid())
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -518,7 +518,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "		EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -529,7 +529,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, label.uuid(), label.userUuid(), transform(pattern))
+                        pattern, label.uuid(), label.userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -542,7 +542,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabels.getFor(labels),
-                        pattern, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
+                        pattern, uuidsOf(labels), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -555,7 +555,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabels.getFor(labels),
-                        pattern, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
+                        pattern, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -572,7 +572,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -594,7 +594,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "WHERE \n" +
                         "   es.r_code > 0 AND \n" +
                         "   e.time < ?; \n",
-                        pattern, transform(pattern), user.uuid(), time)
+                        pattern, pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -611,7 +611,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	SELECT uuid, string, EVAL_MATCHING_V56(?, string) AS w_code \n" +
                         "	FROM words \n" +
                         "	WHERE \n" +
-                        "       EVAL_LENGTH_V10(?, string_sort, 60) > -1 AND \n" +
+                        "       EVAL_LENGTH_V11(?, string, ?, string_sort, 60) > -1 AND \n" +
                         "       user_uuid = ? \n" +
                         "), \n" +
                         "words_scan AS ( \n" +
@@ -633,7 +633,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "WHERE \n" +
                         "   es.r_code > 0 AND \n" +
                         "   e.time >= ?; \n",
-                        pattern, transform(pattern), user.uuid(), time)
+                        pattern, pattern, transform(pattern), user.uuid(), time)
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -658,7 +658,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "		EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS (" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -671,7 +671,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, label.uuid(), label.userUuid(), transform(pattern), time)
+                        pattern, label.uuid(), label.userUuid(), pattern, transform(pattern), time)
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -696,7 +696,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "	WHERE \n" +
                         "		le.label_uuid = ? AND \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "		EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "		EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS (" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -709,7 +709,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, label.uuid(), label.userUuid(), transform(pattern), time)
+                        pattern, label.uuid(), label.userUuid(), pattern, transform(pattern), time)
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -722,7 +722,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsBeforeTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
+                        pattern, time, uuidsOf(labels), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -735,7 +735,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAnyOfLabelsAfterOrEqualTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), labels.get(0).userUuid(), transform(pattern))
+                        pattern, time, uuidsOf(labels), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -748,7 +748,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsBeforeTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
+                        pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -761,7 +761,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByAllOfLabelsAfterOrEqualTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), transform(pattern))
+                        pattern, time, uuidsOf(labels), labels.size(), labels.get(0).userUuid(), pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -796,7 +796,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -807,7 +807,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, label.uuid(), userUuid, userUuid, transform(pattern))
+                        pattern, label.uuid(), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -822,7 +822,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabels.getFor(labels),
-                        pattern, uuidsOf(labels), userUuid, userUuid, transform(pattern))
+                        pattern, uuidsOf(labels), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -859,7 +859,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -870,7 +870,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, time, label.uuid(), userUuid, userUuid, transform(pattern))
+                        pattern, time, label.uuid(), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -907,7 +907,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "			ON we.entry_uuid = le.entry_uuid \n" +
                         "	WHERE \n" +
                         "       w.user_uuid = ? AND \n" +
-                        "       EVAL_LENGTH_V10(?, w.string_sort, 60) > -1 \n" +
+                        "       EVAL_LENGTH_V11(?, w.string, ?, w.string_sort, 60) > -1 \n" +
                         "), \n" +
                         "entries_scan AS ( \n" +
                         "   SELECT entry_uuid AS uuid, EVAL_CODES_V32(word_code) AS r_code \n" +
@@ -918,7 +918,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                         "SELECT uuid, r_code \n" +
                         "FROM entries_scan \n" +
                         "WHERE r_code > -1 ",
-                        pattern, time, label.uuid(), userUuid, userUuid, transform(pattern))
+                        pattern, time, label.uuid(), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -932,7 +932,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsBeforeTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
+                        pattern, time, uuidsOf(labels), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);
@@ -946,7 +946,7 @@ public class EntriesSearchByCharScan extends ThreadBoundTransactionalEntries imp
                 .doQueryAndStream(
                         UuidAndAggregationCode::new,
                         this.sqlSelectEntriesUuidsByNoneOfLabelsAfterOrEqualTime.getFor(labels),
-                        pattern, time, uuidsOf(labels), userUuid, userUuid, transform(pattern))
+                        pattern, time, uuidsOf(labels), userUuid, userUuid, pattern, transform(pattern))
                 .collect(toList());
 
         List<UUID> entryUuids = this.resultsFiltration.apply(entryUuidsCodes, this.rejected);

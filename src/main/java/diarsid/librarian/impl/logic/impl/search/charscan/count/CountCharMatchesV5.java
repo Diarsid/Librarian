@@ -1,6 +1,6 @@
 package diarsid.librarian.impl.logic.impl.search.charscan.count;
 
-public final class CountCharMatchesV5 implements CountCharMatches {
+public final class CountCharMatchesV5 implements CountCharMatchesV1 {
 
     @Override
     /* script */
